@@ -18,8 +18,9 @@ class User extends Authenticatable
      * @var array<int, string>
      */
     protected $fillable = [
-        'name',
-        'email',
+        'username',
+        'year',
+        'role',
         'password',
     ];
 
@@ -30,7 +31,8 @@ class User extends Authenticatable
      */
     protected $hidden = [
         'password',
-        'remember_token',
+        'role'
+        // 'remember_token',
     ];
 
     /**
@@ -39,7 +41,12 @@ class User extends Authenticatable
      * @var array<string, string>
      */
     protected $casts = [
-        'email_verified_at' => 'datetime',
+        // 'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+
+    public function bookedClubs() {
+        return $this->belongsToMany(\App\Models\ClubInstance::class, 'user_club', 'user_id', 'club_instance_id')
+                    ->withTimestamps();
+    }
 }
