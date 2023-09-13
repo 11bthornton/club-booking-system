@@ -1,10 +1,15 @@
 <?php
 
+
+use App\Http\Controllers\BookingController;
+use App\Http\Controllers\ClubController;
 use App\Http\Controllers\ProfileController;
 
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+
+use App\Models\Club;
 
 use Inertia\Inertia;
 
@@ -28,12 +33,60 @@ Route::get('/', function () {
     ]);
 });
 
+Route::get('/club-market', function () {
+    $user = Auth::user();
+
+    $allClubs = Club::getAllWithInstancesForUser($user);
+    $clubIdsBookedOnto = $user->bookedClubs()->get();
+
+    $clubInstances = $user->bookedClubs()->with('club')->get();
+
+    $organizedByTerm = [];
+    $daysOfWeek = ['Wednesday', 'Friday'];
+    $maxTerms = 6;
+    
+    // Initialize the structure first
+    for ($term = 1; $term <= $maxTerms; $term++) {
+        foreach ($daysOfWeek as $day) {
+            $organizedByTerm[$term][$day] = null;
+        }
+    }
+    
+    // Then populate with actual data
+    foreach ($clubInstances as $instance) {
+        $term = $instance->half_term;
+        $dayOfWeek = ($instance->day_of_week);
+        
+        if (isset($organizedByTerm[$term]) && array_key_exists($dayOfWeek, $organizedByTerm[$term])) {
+            $organizedByTerm[$term][$dayOfWeek] = $instance;
+        }
+    }
+
+
+    return Inertia::render('ClubMarket', [
+        'availableClubs' => $allClubs->keyBy('id'),
+        'alreadyBookedOn' => $organizedByTerm,
+    ]);
+
+})->name('club-market');
+
+
+Route::get('/admin', function() {
+    $clubs = Club::getAllWithInstances();
+    return Inertia::render('AdminBoard', [
+        'clubs' => $clubs
+    ]);
+})->name('admin-board');
+
+
 Route::get('/dashboard', function () {
     $user = Auth::user();
-    $clubs = $user->bookedClubs;
+
+    // Laravel Eager Loading.
+    $bookedClubInstances = $user->bookedClubs()->with('club')->get();
 
     return Inertia::render('Dashboard', [
-        'clubs' => $clubs
+        'bookedClubInstances' => $bookedClubInstances,
     ]);
 })->middleware(['auth', 'verified'])->name('dashboard');
 
@@ -42,5 +95,12 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
+
+Route::delete('/dashboard/bookings/{clubInstanceID}', [BookingController::class, 'removeBooking'])->middleware(['auth', 'verified'])->name('removeBooking');
+
+
+Route::put('/admin/clubs/{id}', [ClubController::class, 'update'])->name('admin.clubs.update');
+Route::post('/admin/clubs', [ClubController::class, 'store'])->middleware(['is.admin']);
+
 
 require __DIR__.'/auth.php';

@@ -46,7 +46,17 @@ class User extends Authenticatable
     ];
 
     public function bookedClubs() {
-        return $this->belongsToMany(\App\Models\ClubInstance::class, 'user_club', 'user_id', 'club_instance_id')
-                    ->withTimestamps();
+        return $this->belongsToMany(
+                        \App\Models\ClubInstance::class, 
+                        'user_club', 
+                        'user_id', 
+                        'club_instance_id'
+                    )->withTimestamps();
     }
+
+    public function yearGroup()
+    {
+        return $this->belongsTo(YearGroup::class, 'year', 'year'); // Assuming 'year' is a foreign key in users table and primary/unique key in year_groups table
+    }
+
 }

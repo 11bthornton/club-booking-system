@@ -23,7 +23,8 @@ return new class extends Migration
             $table->timestamps();
     
             // Add unique constraint for club_id and day_of_week combination
-            $table->unique(['club_id', 'day_of_week']);
+            $table->unique(['club_id', 'day_of_week', 'half_term']);
+
         });
     }
     
