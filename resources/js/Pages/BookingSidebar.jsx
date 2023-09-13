@@ -1,7 +1,3 @@
-
-import { useState } from "react";
-import { Head, Link, useForm } from '@inertiajs/react';
-
 export default function BookingSidebar({ currentBookingChoices, availableClubs }) {
 
     function getClubById(clubId) {
@@ -25,7 +21,7 @@ export default function BookingSidebar({ currentBookingChoices, availableClubs }
 
             return [1, 2, 3, 4, 5, 6].map(term => (
                 <div className="flex flex-col space-y-2">
-                    <strong>Term {term}</strong>
+                    <strong>Term  sdfsd f{term}</strong>
                     {
                         groupedByTerm[term] ?
                             <div>

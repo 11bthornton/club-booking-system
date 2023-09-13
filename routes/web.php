@@ -1,6 +1,5 @@
 <?php
 
-
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\ClubController;
 use App\Http\Controllers\ProfileController;
@@ -37,7 +36,6 @@ Route::get('/club-market', function () {
     $user = Auth::user();
 
     $allClubs = Club::getAllWithInstancesForUser($user);
-    $clubIdsBookedOnto = $user->bookedClubs()->get();
 
     $clubInstances = $user->bookedClubs()->with('club')->get();
 
@@ -62,27 +60,23 @@ Route::get('/club-market', function () {
         }
     }
 
-
-    return Inertia::render('ClubMarket', [
+    return Inertia::render('ClubMarket/ClubMarket', [
         'availableClubs' => $allClubs->keyBy('id'),
         'alreadyBookedOn' => $organizedByTerm,
     ]);
 
 })->name('club-market');
 
-
 Route::get('/admin', function() {
     $clubs = Club::getAllWithInstances();
-    return Inertia::render('AdminBoard', [
+    return Inertia::render('AdminBoard/AdminMain/AdminBoard', [
         'clubs' => $clubs
     ]);
 })->name('admin-board');
 
-
 Route::get('/dashboard', function () {
     $user = Auth::user();
 
-    // Laravel Eager Loading.
     $bookedClubInstances = $user->bookedClubs()->with('club')->get();
 
     return Inertia::render('Dashboard', [
@@ -98,9 +92,11 @@ Route::middleware('auth')->group(function () {
 
 Route::delete('/dashboard/bookings/{clubInstanceID}', [BookingController::class, 'removeBooking'])->middleware(['auth', 'verified'])->name('removeBooking');
 
-
-Route::put('/admin/clubs/{id}', [ClubController::class, 'update'])->name('admin.clubs.update');
-Route::post('/admin/clubs', [ClubController::class, 'store'])->middleware(['is.admin']);
+Route::middleware('auth')->group(function() {
+    Route::get('/admin/clubs/{id}', [ClubController::class, 'get']);
+    Route::put('/admin/clubs/{id}', [ClubController::class, 'update'])->name('admin.clubs.update');
+    Route::post('/admin/clubs', [ClubController::class, 'store']); 
+});
 
 
 require __DIR__.'/auth.php';

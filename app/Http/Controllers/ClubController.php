@@ -38,27 +38,28 @@ class ClubController extends Controller
     }
 
     public function store(Request $request)
-{
-try {
-    // dd($request);
+    {
+        try {
+            // dd($request);
 
-    $data = $request->validate([
-        'name' => 'required|string|max:255',
-        'description' => 'sometimes|string', // Assuming description can be optional
-        'rule' => 'required'
-    ]);
+            $data = $request->validate([
+                'name' => 'required|string|max:255',
+                'description' => 'required|string',
+                // Assuming description can be optional
+                'rule' => 'required'
+            ]);
 
-    $club = Club::create($data);
+            $club = Club::create($data);
 
-    if ($club) {
-        return response()->json($club, 201);
-    } else {
-        return response()->json(['message' => 'Error creating club'], 500);
+            if ($club) {
+                return response()->json(['success' => $club], 201);
+            } else {
+                return response()->json(['message' => 'Error creating club'], 500);
+            }
+
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Error creating club: ' . $e->getMessage()], 500);
+        }
     }
-
-} catch (\Exception $e) {
-    return response()->json(['message' => 'Error creating club: ' . $e->getMessage()], 500);
-}
-}
 
 }
