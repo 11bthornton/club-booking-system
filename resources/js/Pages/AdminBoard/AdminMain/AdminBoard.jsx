@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 // import { Head } from '@inertiajs/react';
 import { Head } from '@inertiajs/react';
+import { Inertia } from '@inertiajs/inertia';
 
 
 import { toast } from "react-hot-toast";
@@ -14,10 +15,68 @@ export default function Dashboard({ auth, clubs }) {
 
     const [editingId, setEditingId] = React.useState(null);
     const [editedClubData, setEditedClubData] = React.useState({});
+
     const [updatingId, setUpdatingId] = React.useState(null);
     const [successIds, setSuccessIds] = React.useState([]);
 
     const [isModalOpen, setIsModalOpen] = useState(false);
+
+    async function saveClub(id) {
+        try {
+
+            setUpdatingId(id);
+            // Find the original club data
+            const originalClub = clubs.find(club => club.id === id);
+
+            // Merge original data with the edited data
+            const dataToSend = {
+                ...originalClub,
+                ...editedClubData
+            };
+
+            const response = await fetch(`/admin/clubs/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify(dataToSend)
+            });
+
+            const responseData = await response.json();
+            console.table(responseData)
+            if (responseData.message == 'Club updated successfully!') {
+                // console.log("here")
+
+                toast.success("Successfully Modified Club Info!");
+
+                setEditingId(null);
+                setSuccessIds((prev) => [...prev, id]);
+
+                setTimeout(() => {
+                    setSuccessIds((prev) => prev.filter(successId => successId !== id));
+                }, 2000); // Flash green for 2 seconds
+            }
+
+            setEditingId(null); // Exit editing mode
+        } catch (error) {
+            console.error("There was an error updating the club:", error);
+        } finally {
+            setUpdatingId(null);
+        }
+    }
+
+    async function deleteClub(id) {
+        try {
+
+        } catch (error) {
+
+        } finally {
+
+        }
+    }
 
     const handleOpenModal = () => {
         setIsModalOpen(true);
@@ -101,7 +160,13 @@ export default function Dashboard({ auth, clubs }) {
 
                                         <td className="px-5 py-5 border-b border-gray-200 text-sm">
                                             <div className="flex items-center space-x-3">
-                                                <button className="text-white bg-green-500 px-3 py-1 rounded hover:bg-green-600" onClick={() => { }}>View</button>
+                                                <a
+                                                    className="text-white bg-green-500 px-3 py-1 rounded hover:bg-green-600"
+                                                    href={`/admin/clubs/${club.id}`}
+                                                >
+                                                    View
+                                                </a>
+
 
                                                 {editingId === club.id ? (
                                                     <>
@@ -135,49 +200,5 @@ export default function Dashboard({ auth, clubs }) {
 }
 
 
-export async function saveClub(id) {
-    try {
 
-        setUpdatingId(id);
-        // Find the original club data
-        const originalClub = clubs.find(club => club.id === id);
 
-        // Merge original data with the edited data
-        const dataToSend = {
-            ...originalClub,
-            ...editedClubData
-        };
-
-        const response = await fetch(`/admin/clubs/${id}`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-            },
-            body: JSON.stringify(dataToSend)
-        });
-
-        const responseData = await response.json();
-        console.table(responseData)
-        if (responseData.message == 'Club updated successfully!') {
-            // console.log("here")
-
-            toast("Successfully modified club");
-
-            setEditingId(null);
-            setSuccessIds((prev) => [...prev, id]);
-
-            setTimeout(() => {
-                setSuccessIds((prev) => prev.filter(successId => successId !== id));
-            }, 2000); // Flash green for 2 seconds
-        }
-
-        setEditingId(null); // Exit editing mode
-    } catch (error) {
-        console.error("There was an error updating the club:", error);
-    } finally {
-        setUpdatingId(null);
-    }
-}

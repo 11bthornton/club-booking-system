@@ -3,6 +3,8 @@ import { useState } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head } from '@inertiajs/react';
 
+import toast from 'react-hot-toast';
+
 export default function Dashboard({ auth, bookedClubInstances, clubInformation }) {
 
     const sortDays = (a, b) => {
@@ -27,20 +29,22 @@ export default function Dashboard({ auth, bookedClubInstances, clubInformation }
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                 }
             });
-    
-            if (response.ok) {
-                const updatedClubs = await response.json();
+            
+            const updatedClubs = await response.json();
 
-                setCurrentBookings(updatedClubs);
+            if (updatedClubs.success) {
+                
 
-                console.log(updatedClubs); // For debugging purposes
-                alert("Successfully removed the booking!");
+                setCurrentBookings(updatedClubs.data);
+
+
+                toast.success("Successfully removed the booking!")
                 // Here, you can also update your state or any other component data with the updatedClubs data
             } else {
-                alert("Failed to remove the booking. Please try again.");
+                toast.error("Error, ")
             }
         } catch (error) {
-            console.error("Error:", error);
+                toast.error("Error, ")
             alert("An error occurred while removing the booking.");
         }
     }

@@ -7,7 +7,7 @@ import ClubCard from './partials/ClubCard';
 import StickyBookingBar from './partials/StickyBookingBar';
 
 
-export default function ClubMarket({ auth, availableClubs, alreadyBookedOn }) {
+export default function ClubMarket({ auth, availableClubs, alreadyBookedOn, disallowedCombinations, forcedCombinations }) {
 
     const [activeFilters, setActiveFilters] = useState([]);
     const [currentBookingChoices, setCurrentBookingChoices] = useState(alreadyBookedOn);
@@ -47,6 +47,10 @@ export default function ClubMarket({ auth, availableClubs, alreadyBookedOn }) {
         >
             <Head title="Club Market" />
 
+            {
+                JSON.stringify(disallowedCombinations)
+            }
+
             <div className="max-w-7xl mx-auto flex sm:px-6 lg:px-8">
 
                 <div className="w-1/5 overflow-y-auto mt-8 relative">
@@ -83,6 +87,8 @@ export default function ClubMarket({ auth, availableClubs, alreadyBookedOn }) {
                                         club={club}
                                         currentBookingChoices={currentBookingChoices}
                                         setCurrentBookingChoices={setCurrentBookingChoices}
+                                        disallowedCombinations={disallowedCombinations}
+                                        forcedCombinations={forcedCombinations}
                                     />
                                 ))}
                             </div>

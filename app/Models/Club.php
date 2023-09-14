@@ -54,4 +54,11 @@ class Club extends Model
     }
     
 
+    public function getUniqueUsersAttribute()
+    {
+        return User::whereHas('bookedClubs', function($query) {
+            $query->where('club_id', $this->id);
+        })->withCount('bookedClubs as instances_count')->get();
+    }
+
 }
