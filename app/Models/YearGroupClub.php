@@ -11,6 +11,12 @@ class YearGroupClub extends Model
 
     protected $table = 'year_group_club';
 
+    protected $fillable = [
+        'year',
+        'club_instance_id',
+    ];
+
+
     protected static function boot()
     {
         parent::boot();

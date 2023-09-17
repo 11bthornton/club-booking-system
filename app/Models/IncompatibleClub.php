@@ -9,6 +9,9 @@ class IncompatibleClub extends Model
 {
     use HasFactory;
 
+    public $timestamps = false;
+
+
     protected $table = 'incompatible_clubs';
 
     protected $fillable = [

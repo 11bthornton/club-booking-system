@@ -40,18 +40,29 @@ class Club extends Model
     {
         $year = $user->year; // Assuming User model has a 'year' attribute
     
-        return self::with(['clubInstances' => function ($query) use ($year) {
-            $query->whereHas('yearGroups', function ($q) use ($year) {
-                $q->where('year_group_club.year', $year); // Reference the column on the pivot table
-            });
-        }])
+        // Fetch the clubs with their instances
+        $clubs = self::with([
+            'clubInstances' => function ($query) use ($year) {
+                $query->whereHas('yearGroups', function ($q) use ($year) {
+                    $q->where('year_group_club.year', $year);
+                });
+            },
+        ])
         ->whereHas('clubInstances', function ($query) use ($year) {
             $query->whereHas('yearGroups', function ($q) use ($year) {
-                $q->where('year_group_club.year', $year); // Ensure the club has at least one instance for the year
+                $q->where('year_group_club.year', $year);
             });
         })
         ->get();
+    
+        // Since we have a custom attribute to fetch the incompatible club ids, 
+        // we don't need to eager load them in the initial query. 
+        // The attribute will fetch them on-the-fly when accessed.
+    
+        return $clubs;
     }
+    
+
     
 
     public function getUniqueUsersAttribute()

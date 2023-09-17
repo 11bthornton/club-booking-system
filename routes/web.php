@@ -41,7 +41,10 @@ Route::get('/club-market', function () {
 
     $allClubs = Club::getAllWithInstancesForUser($user);
 
-    $clubInstances = $user->bookedClubs()->with('club')->get();
+    $clubInstances = $user->bookedClubs()
+        
+        ->get();
+
 
     $organizedByTerm = [];
     $daysOfWeek = ['Wednesday', 'Friday'];
@@ -64,22 +67,10 @@ Route::get('/club-market', function () {
         }
     }
 
-    $disallowedCombinationsRaw = IncompatibleClub::all();
-    $forcedCombinationsRaw = RequiredClub::all();
-
-    $disallowedCombinations = $disallowedCombinationsRaw->map(function($item) {
-        return [$item->club_instance_id_1, $item->club_instance_id_2];
-    })->all();
-
-    $forcedCombinations = $forcedCombinationsRaw->map(function($item) {
-        return [$item->club_instance_id_1, $item->club_instance_id_2];
-    })->all();
-
     return Inertia::render('ClubMarket/ClubMarket', [
         'availableClubs' => $allClubs->keyBy('id'),
         'alreadyBookedOn' => $organizedByTerm,
-        'disallowedCombinations' => $disallowedCombinations,
-        'forcedCombinations' => $forcedCombinations
+
     ]);
 
 })->name('club-market');
@@ -114,7 +105,7 @@ Route::middleware('auth')->group(function() {
     Route::get('/admin/clubs/{id}', [ClubController::class, 'show']);
     Route::post('/admin/clubs/{id}/update', [ClubController::class, 'updateInstances']);
     Route::put('/admin/clubs/{id}', [ClubController::class, 'update'])->name('admin.clubs.update');
-    Route::post('/admin/clubs', [ClubController::class, 'store']); 
+    Route::post('/club', [ClubController::class, 'store']); 
     
 
 Route::post('/clubs/book', [BookingController::class, 'book'])

@@ -30,12 +30,15 @@ export default function Authenticated({ user, header, children }) {
                     <div className="flex justify-between h-16">
                         <div className="flex">
                             <div className="shrink-0 flex items-center">
+
                                 <Link href="/">
                                     <ApplicationLogo className="block h-9 w-auto fill-current text-gray-800" />
                                 </Link>
+
                             </div>
 
                             <div className="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
+
                                 <NavLink href={route('dashboard')} active={route().current('dashboard')}>
                                     Dashboard
                                 </NavLink>
@@ -43,6 +46,11 @@ export default function Authenticated({ user, header, children }) {
                                 <NavLink href={route('club-market')} active={route().current('club-market')}>
                                     Club Market
                                 </NavLink>
+
+                                <NavLink href={route('admin-board')} active={route().current('admin-board')}>
+                                    Admin
+                                </NavLink>
+
                             </div>
                         </div>
 

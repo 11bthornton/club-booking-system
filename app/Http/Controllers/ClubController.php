@@ -1,10 +1,14 @@
 <?php
 
 namespace App\Http\Controllers;
+use Illuminate\Support\Facades\Mail;
 
 use Illuminate\Http\Request;
+use App\Mail\TestEmail;
 use App\Models\Club;
 use App\Models\ClubInstance;
+use App\Models\YearGroupClub;
+use App\Models\IncompatibleClub;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\DB;
 
@@ -40,31 +44,92 @@ class ClubController extends Controller
         return response()->json(['message' => 'Club updated successfully!']);
     }
 
-    public function store(Request $request)
-    {
+public function store(Request $request)
+{
+    return DB::transaction(function () use ($request) {
         try {
-            // dd($request);
 
             $data = $request->validate([
-                'name' => 'required|string|max:255',
-                'description' => 'required|string',
-                // Assuming description can be optional
-                'rule' => 'required'
+                'clubTitle' => 'required|string',
+                'clubDescription' => 'string|nullable',
+                'clubRules' => 'string|nullable',
+                'instances' => 'required|array',
+                'instances.*.term_no' => 'required|integer',
+                'instances.*.day' => 'required|string|in:Wednesday,Friday',
+                'instances.*.yearGroups' => 'array',
+                // 'instances.*.yearGroups.*' => 'integer|distinct', // assuming yearGroups are integers
+
+                'instances.*.capacity' => 'integer|nullable',
+                'compatibilities' => 'required|array',
+                'compatibilities.in' => 'array',
+                'compatibilities.in.*' => 'array',
+                'compatibilities.must' => 'array',
             ]);
 
-            $club = Club::create($data);
+            // Create a new club
+            $club = Club::create([
+                'name' => $data['clubTitle'],
+                'description' => $data['clubDescription'],
+                'rule' => $data['clubRules'],
+            ]);
 
-            if ($club) {
-                return response()->json(['success' => $club], 201);
-            } else {
-                return response()->json(['message' => 'Error creating club'], 500);
+            // Enumerate through instances
+            $tempToActualIdMap = [];
+            $counter = 1; // Manual counter for enumeration
+
+            foreach ($data['instances'] as $instance) {
+                $createdInstance = ClubInstance::create([
+                    'club_id' => $club->id,
+                    'half_term' => $instance['term_no'],
+                    // 'capacity' => $instance['capacity'],
+                    'capacity' => 500,
+                    'day_of_week' => $instance['day']
+                ]);
+
+                if (isset($instance['yearGroups']) && !empty($instance['yearGroups'])) {
+                    foreach ($instance['yearGroups'] as $year) {
+                        YearGroupClub::create([
+                            'year' => $year,
+                            'club_instance_id' => $createdInstance->id
+                        ]);
+                    }
+                }
+
+                // Store reference of temp ID and actual ID
+                $tempToActualIdMap[$counter] = $createdInstance->id;
+                $counter++;
             }
 
-        } catch (\Exception $e) {
-            return response()->json(['message' => 'Error creating club: ' . $e->getMessage()], 500);
-        }
-    }
+            if (isset($data['compatibilities']['in']) && is_array($data['compatibilities']['in'])) {
+                foreach ($data['compatibilities']['in'] as $tempId1 => $incompatibilities) {
+                    $actualId1 = $tempToActualIdMap[$tempId1];
+            
+                    foreach ($incompatibilities as $tempId2) {
+                        $actualId2 = $tempToActualIdMap[$tempId2];
+            
+                        // Now, store this pair as an incompatible pair
+                        IncompatibleClub::create([
+                            'club_instance_id_1' => $actualId1,
+                            'club_instance_id_2' => $actualId2,
+                        ]);
+                    }
+                }
+            }
+            
+            Mail::to('11bthornton@gmail.com')->send(new TestEmail(2));
+            // Continue with processing the rest of the data
 
+            return response()->json([
+                'message' => 'Data received and stored successfully!',
+            ]);
+        } catch (\Exception $e) {
+            // Return the error message as a JSON response with a 400 status code
+            return response()->json(['error' => $e->getMessage()], 400);
+        }
+    });
+}
+
+    
     public function show($id)
     {
         $club = Club::with([
@@ -84,6 +149,8 @@ class ClubController extends Controller
         ]);
     }
 
+
+    
 
 
     public function updateInstances(Request $request, $id)
