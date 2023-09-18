@@ -116,7 +116,6 @@ public function store(Request $request)
                 }
             }
             
-            Mail::to('11bthornton@gmail.com')->send(new TestEmail(2));
             // Continue with processing the rest of the data
 
             return response()->json([

@@ -5,7 +5,7 @@ import { Head } from '@inertiajs/react';
 import { Inertia } from '@inertiajs/inertia';
 import toast from "react-hot-toast";
 
-export default function Dashboard({ auth, clubs }) {
+export default function ClubCreate({ auth, clubs }) {
 
     const [selectedRule, setSelectedRule] = useState("wholeYear");
 

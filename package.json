@@ -11,6 +11,8 @@
         "@popperjs/core": "^2.11.6",
         "@tailwindcss/forms": "^0.5.3",
         "@vitejs/plugin-react": "^4.0.3",
+        "@mui/icons-material": "^5.14.9",
+        "@mui/material": "^5.14.9",
         "autoprefixer": "^10.4.12",
         "axios": "^1.1.2",
         "bootstrap": "^5.2.3",
@@ -24,8 +26,12 @@
         "webpack-dev-server": "^4.15.1"
     },
     "dependencies": {
+        "@emotion/react": "^11.11.1",
+        "@emotion/styled": "^11.11.0",
         "@inertiajs/inertia": "^0.11.1",
         "@inertiajs/inertia-react": "^0.8.1",
+        "@mui/icons-material": "^5.14.9",
+        "@mui/material": "^5.14.9",
         "browser-sync": "^2.29.3",
         "browser-sync-webpack-plugin": "^2.3.0",
         "react-hot-toast": "^2.4.1",

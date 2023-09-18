@@ -101,6 +101,33 @@ Route::middleware('auth')->group(function () {
 
 Route::delete('/dashboard/bookings/{clubInstanceID}', [BookingController::class, 'removeBooking'])->middleware(['auth', 'verified'])->name('removeBooking');
 
+
+Route::middleware('auth')->group(function() {
+
+    Route::get('/admin', function() {
+
+        return Inertia::render('AdminBoard/AdminMain/AdminBoardNew');
+    });
+
+    Route::get('/admin/clubs/', function() {
+        $clubs = Club::getAllWithInstances();
+
+        return Inertia::render('AdminBoard/AdminMain/ClubView', [
+            'clubs' => $clubs
+        ]);
+    });
+
+    Route::get('/admin/clubs/new', function() {
+        $clubs = Club::getAllWithInstances();
+        return Inertia::render('AdminBoard/AdminMain/ClubCreate', [
+            'clubs' => $clubs
+        ]);
+    })->name('admin-board');
+    
+
+});
+
+
 Route::middleware('auth')->group(function() {
     Route::get('/admin/clubs/{id}', [ClubController::class, 'show']);
     Route::post('/admin/clubs/{id}/update', [ClubController::class, 'updateInstances']);
