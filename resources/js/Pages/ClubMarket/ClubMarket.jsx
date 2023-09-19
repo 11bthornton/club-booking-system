@@ -2,7 +2,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head } from '@inertiajs/react';
 
 import React, { useState } from "react";
-
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
     Stepper,
     Step,
@@ -15,7 +15,8 @@ import {
     Card,
     CardContent,
     CardActions,
-    Paper
+    Paper,
+    Alert
 } from '@mui/material';
 import Badge from '@mui/material/Badge';
 
@@ -43,6 +44,14 @@ export default function ClubMarket({ auth, availableClubs, alreadyBookedOn }) {
             return newSelections;
         });
     };
+
+    const removeClub = (term, day) => {
+        setClubSelections(prevSelections => {
+            const newSelections = [...prevSelections];
+            newSelections[term - 1][day] = null;
+            return newSelections;
+        });
+    }
 
     const [activeStep, setActiveStep] = useState(0);
     const steps = getSteps();
@@ -114,10 +123,12 @@ export default function ClubMarket({ auth, availableClubs, alreadyBookedOn }) {
             user={auth.user}
             header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Club Market</h2>}
         >
+
             <Head title="Club Market" />
 
             <div className="container mx-auto p-6">
                 <Container>
+
                     <Stepper activeStep={activeStep} alternativeLabel>
                         {steps.map((label, index) => (
                             <Step key={label}>
@@ -128,38 +139,34 @@ export default function ClubMarket({ auth, availableClubs, alreadyBookedOn }) {
                         ))}
                     </Stepper>
 
-
                     <ClubFilterComponent
                         availableClubs={availableClubs}
                         activeStep={activeStep}
                         clubSelections={clubSelections}
                         bookClub={bookClub}
+                        removeClub={removeClub}
+                        handleBack={handleBack}
+                        handleNext={handleNext}
+                        steps={steps}
                     />
-                    <Box display="flex" justifyContent="center" marginBottom={2} marginTop={4}>
-                        <Button disabled={activeStep === 0} onClick={handleBack}>
-                            Back
-                        </Button>
 
-                        {activeStep === steps.length - 1 ?
-
-                            <Button variant="contained" color="primary" onClick={() => { }}>
-                                Finish
-                            </Button> :
-
-                            <Button variant="contained" color="primary" onClick={handleNext}>
-                                Next
-                            </Button>
-                        }
-
-                    </Box>
+                <div className="bg-white mt-4 p-6 rounded-lg shadow-md">
+                    <Alert severity='warning'>
+                        Your clubs are booked in real-time. If a selection is filled, you are guaranteed a place until you change it again.
+                        If you remove a booking, you will <strong>not</strong> be guaranteed to undo that change straight away as somebody may have taken your spot.
+                    </Alert>
+                </div>
                 </Container>
+
+                
             </div>
+
         </AuthenticatedLayout>
     );
 }
 
 
-function ClubFilterComponent({ availableClubs, activeStep, clubSelections, setClubSelections, bookClub }) {
+function ClubFilterComponent({ availableClubs, activeStep, clubSelections, setClubSelections, bookClub, handleBack, handleNext, steps, removeClub }) {
 
     const [modalOpen, setModalOpen] = useState(false);
     const [selectedDay, setSelectedDay] = useState("Wednesday");
@@ -182,28 +189,74 @@ function ClubFilterComponent({ availableClubs, activeStep, clubSelections, setCl
     const selectedClubFriday = clubSelections[activeStep].Friday;
 
     return (
-        <Box style={{ padding: '20px', width: '100%', borderRadius: '2em' }} className="mt-8" >
-            <Typography variant="h4" align="" gutterBottom fontWeight={600} fontStyle={"italic"} paddingLeft={2}>
-                Choose your clubs for term {term}.
-            </Typography>
-            <Typography variant="h6" align="" gutterBottom fontWeight={300} paddingLeft={3}>
-                When you're ready, press <em>next</em>.
-            </Typography>
-            <Box display="flex" justifyContent="space-between">
-                <ClubCard
-                    day="Wednesday"
-                    isSelected={!!selectedClubWednesday}
-                    club={findClubByInstanceID(availableClubs, selectedClubWednesday?.id)}
-                    onChoose={handleModalOpen} />
-                <ClubCard
-                    day="Friday"
-                    isSelected={!!selectedClubFriday}
-                    club={findClubByInstanceID(availableClubs, selectedClubFriday?.id)}
-                    onChoose={handleModalOpen} />
-            </Box>
-            <ClubModal bookClub={bookClub} open={modalOpen} handleClose={handleModalClose} day={selectedDay} term={term} availableClubs={availableClubs} />
+        <div className="bg-white rounded-lg shadow-md pr-6">
+            <Box style={{ padding: '20px', width: '100%', borderRadius: '2em' }} className="mt-8" >
+                <div className="flex justify-between items-baseline " >
+                    <Typography variant="h5" align="" gutterBottom fontWeight={600}>
+                        Choose your Clubs for Term {term}.
 
-        </Box>
+                    </Typography>
+                    <Box display="flex" justifyContent="center" marginTop={4}>
+                        <Button disabled={activeStep === 0} onClick={handleBack} color='secondary'>
+                            Back
+                        </Button>
+
+                        {activeStep === steps.length - 1 ?
+
+                            <Button variant="contained" color="primary" onClick={() => { }}>
+                                Finish
+                            </Button> :
+
+                            <Button variant="contained" color="secondary" onClick={handleNext}>
+                                Next
+                            </Button>
+                        }
+
+                    </Box>
+                </div>
+
+                <Typography variant="h6" align="" gutterBottom fontWeight={300}>
+                    When you're ready, press <em>next</em>.
+                </Typography>
+                <div className="flex gap-4 items-baseline justify-center mt-4 mb-2">
+                    <FontAwesomeIcon
+                        icon={faCalendarDays}
+                        className='mb-4'
+                    />
+                    <em>Term dates: 1st September 2024 - 3rd October 2024</em>
+                </div>
+
+                <Box display="flex" justifyContent="space-between">
+                    <ClubCard
+                        day="Wednesday"
+                        isSelected={!!selectedClubWednesday}
+                        club={findClubByInstanceID(availableClubs, selectedClubWednesday?.id)}
+                        onChoose={handleModalOpen}
+                        removeClub={removeClub}
+                        term={term}
+                    />
+                    <ClubCard
+                        day="Friday"
+                        isSelected={!!selectedClubFriday}
+                        club={findClubByInstanceID(availableClubs, selectedClubFriday?.id)}
+                        onChoose={handleModalOpen}
+                        removeClub={removeClub}
+                        term={term}
+                    />
+                </Box>
+                <ClubModal
+                    bookClub={bookClub}
+                    removeClub={removeClub}
+                    open={modalOpen}
+                    handleClose={handleModalClose}
+                    day={selectedDay}
+                    term={term}
+                    availableClubs={availableClubs}
+                    clubSelections={clubSelections}
+                />
+
+            </Box>
+        </div>
     )
 }
 
@@ -213,7 +266,7 @@ function getSteps() {
 
 import Modal from '@mui/material/Modal';
 
-function ClubModal({ open, handleClose, term, day, availableClubs, bookClub }) {
+function ClubModal({ open, handleClose, term, day, availableClubs, bookClub, removeClub, clubSelections }) {
 
     console.log(availableClubs)
     // Filter the club instances based on term and day
@@ -244,45 +297,96 @@ function ClubModal({ open, handleClose, term, day, availableClubs, bookClub }) {
                     overflowY: 'auto',
                 }}
             >
+                
+                <div className="flex justify-between items-baseline">
                 <Typography variant="h4" id="club-modal-title" gutterBottom>
                     Term {term}, {day}
                 </Typography>
-
-                {filteredClubs.map(club => (
-                    <Box key={club.id} style={{ margin: '20px 0' }}>
-                        <Typography variant="h6">
-                            {club.name}
-
-                        </Typography>
-                        <Typography variant="body1">
-                            {club.description}
-                        </Typography>
-                        <Typography variant="body2">
-                            {club.rule}
-                        </Typography>
-                        <Typography variant="body2">
-                            {club.club_instances[0].day_of_week}
-                        </Typography>
-                        <Button
-                            style={{ marginTop: '10px' }}
-                            variant="outlined"
-                            onClick={() => {
-                                bookClub(term, day, club.club_instances[0]);
-                                handleClose(true);
-                            }}
-                        >
-                            Join Club
-                        </Button>
-                    </Box>
-                ))}
-
-                <Button style={{ marginTop: '20px' }} variant="contained" color="primary" onClick={() => handleClose(false)}>
+                <Button data-tooltip-content="Dollar" data-tooltip-id="icon-tooltip-s" style={{ marginTop: '20px' }} variant="contained" color="primary" onClick={() => handleClose(false)}>
                     Close
                 </Button>
+                </div>
+    
+                {/* Placeholder for filters */}
+                <Box style={{ marginBottom: '20px' }}>
+                    {/* Add your filters here */}
+                </Box>
+    
+                <Box display="flex" justifyContent="space-between" style={{ height: 'calc(80vh - 20px)' }}>
+                <Box flex={0.7} style={{ marginRight: '20px' }}>
+        {filteredClubs.map(club => (
+            <Box key={club.id} style={{ margin: '20px 0', border: '1px solid #ddd', padding: '10px', borderRadius: '8px' }}>
+                <Typography variant="h6">{club.name}</Typography>
+                <Divider style={{ margin: '10px 0' }} />
+                <Typography variant="body1">{club.description}</Typography>
+                <Typography variant="body2">{club.rule}</Typography>
+                <Typography variant="body2">{club.club_instances[0].day_of_week}</Typography>
+                <Button
+                    style={{ marginTop: '10px' }}
+                    variant="outlined"
+                    onClick={() => {
+                        bookClub(term, day, club.club_instances[0]);
+                        handleClose(true);
+                    }}
+                >
+                    Select
+                </Button>
+            </Box>
+        ))}
+    </Box>
+    
+                    {/* Vertical Divider */}
+                    <Divider orientation="vertical" flexItem style={{ margin: '0 10px' }} />
+    
+                    <Box flex={0.3} style={{ padding: '0 20px' }} className="sticky top-20">
+                        <Typography variant="h6" gutterBottom>
+                            Your Selections
+                        </Typography>
+                        {clubSelections.map((selection, index) => (
+                            <Box key={index} marginBottom={2} style={{
+                                backgroundColor: (index + 1 === term) ? '#f5f5f5' : 'transparent',
+                                padding: '5px',
+                                borderRadius: '4px'
+                            }}>
+                                <Typography 
+                                    variant="subtitle1"
+                                    style={{
+                                        fontWeight: (index + 1 === term) ? 'bold' : 'normal'
+                                    }}
+                                >
+                                    Term {index + 1}
+                                </Typography>
+                                <Typography 
+                                    color="textSecondary"
+                                    style={{
+                                        textDecoration: (index + 1 === term && selection.Wednesday && day === 'Wednesday') ? 'underline' : 'none'
+                                    }}
+                                >
+                                    Wednesday: {selection.Wednesday ? selection.Wednesday.id : 'Not Selected'}
+                                </Typography>
+                                <Typography 
+                                    color="textSecondary"
+                                    style={{
+                                        textDecoration: (index + 1 === term && selection.Friday && day === 'Friday') ? 'underline' : 'none'
+                                    }}
+                                >
+                                    Friday: {selection.Friday ? selection.Friday.id : 'Not Selected'}
+                                </Typography>
+                            </Box>
+                        ))}
+                    </Box>
+                </Box>
+    
+                
+                <Tooltip id="icon-tooltip-s" effect="solid" />
             </Box>
         </Modal>
     );
+
+
 }
+
+import { Divider } from '@mui/material';
 
 import CheckIcon from '@mui/icons-material/Check';
 import StarIcon from '@mui/icons-material/Star';
@@ -290,8 +394,13 @@ import FavoriteIcon from '@mui/icons-material/Favorite';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import StarBorderIcon from '@mui/icons-material/StarBorder';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
+import { faCalendar, faCalendarDays, faDollarSign, faLeftRight, faRightLeft, faTrashCan, faBan, faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons';
+import { useTheme } from '@mui/material/styles';
 
-const ClubCard = ({ day, isSelected, club, onChoose }) => (
+const ClubCard = ({ day, isSelected, club, onChoose, removeClub, term }) => (
+
+
+
     <Card
         variant="outlined"
         style={{
@@ -300,6 +409,7 @@ const ClubCard = ({ day, isSelected, club, onChoose }) => (
             margin: '1%',
             borderWidth: '2px',
             borderStyle: isSelected ? '' : 'dashed',
+            borderColor: isSelected ? useTheme().palette.primary.main : useTheme().palette.warning.main,
             display: 'flex'
         }}
     >
@@ -326,8 +436,14 @@ const ClubCard = ({ day, isSelected, club, onChoose }) => (
             flexGrow={1}
         >
             <CardContent>
-                <Typography fontWeight={700} variant="h6" align='center'>{day.toUpperCase()}</Typography>
-                <Typography variant="h6" align='center'>{club?.name}</Typography>
+                <Typography fontWeight={700} variant="h6" align='center' className='tracking-wide' style={{letterSpacing: "2px"}}>{day.toUpperCase()}</Typography>
+                <Typography fontWeight={300} variant="h6"  className='mt-10' height={70} marginTop={3}>
+                    {
+                        club ?
+                            <h6 align='center'>{club.name}</h6>
+                            : <Alert severity='warning' > You haven't selected a club for this day yet. You will be allocated "Home" if left unchecked </Alert>
+                    }
+                </Typography>
             </CardContent>
             <CardActions style={{ justifyContent: 'center' }}>
                 <ChooseClubButton day={day} isSelected={isSelected} onChoose={onChoose} />
@@ -342,21 +458,65 @@ const ClubCard = ({ day, isSelected, club, onChoose }) => (
                 paddingY={2}
                 paddingX={2}
                 pr={2}
+                color="grey"
             >
-                {/* Here are some placeholder icons, replace them with your desired icons */}
-                <CheckCircleOutlineIcon style={{ strokeWidth: 2 }} />
-                <StarBorderIcon style={{ strokeWidth: 2 }} />
-                <FavoriteBorderIcon style={{ strokeWidth: 2 }} />
+                <button onClick={() => removeClub(term, day)}
+                    data-tooltip-content="Delete"
+                    data-tooltip-id="icon-tooltip"
+                >
+                    <FontAwesomeIcon icon={faTrashCan} />
+                </button>
+                <button onClick={() => console.log("Swap button clicked")} data-tooltip-content="Swap" data-tooltip-id="icon-tooltip" >
+                    <FontAwesomeIcon icon={faCalendarDays} />
+                </button>
+                {
+                    club.is_paid ?
+                        <button onClick={() => console.log("Icon button clicked")}
+                            data-tooltip-content="This is a paid club, parental consent will be required after booking."
+                            data-tooltip-id="icon-tooltip"
+
+                        >
+                            <FontAwesomeIcon icon={faDollarSign}
+                                color='red'
+                                fontWeight={700}
+                            />
+                        </button>
+                        :
+                        <button>
+                            {
+                                /**
+                                 * Placeholder - need something to take the space. 
+                                 */
+                            }
+                        </button>
+                }
+                <Tooltip id="icon-tooltip" effect="solid" />
+                <Tooltip id="my-tooltip" />
             </Box>
         )}
     </Card>
 );
+import { Tooltip } from 'react-tooltip'
+
 
 const ChooseClubButton = ({ day, isSelected, onChoose }) => (
     <Button
-        variant="contained"
-        style={{ backgroundColor: isSelected ? 'orange' : 'green', color: 'white' }}
+        // style={{ backgroundColor: isSelected ? 'orange' : 'primary', color: 'white' }}
+        color='primary'
+        variant="outlined"
         onClick={() => onChoose(day)}>
-        {isSelected ? 'Change Club' : 'CHOOSE'}
+        {isSelected ?
+            <div className='flex gap-4 items-center'>
+                <FontAwesomeIcon icon={faRightLeft} data-tooltip-content="Dollar" data-tooltip-id="icon-tooltip-s" />
+                Change
+            </div> :
+            <div data-tooltip-content="Dollar" data-tooltip-id="icon-tooltip-s" className='flex gap-4 items-center'>
+                <FontAwesomeIcon icon={faMagnifyingGlass} data-tooltip-content="Dollar" data-tooltip-id="icon-tooltip-s" />
+                CHOOSE
+            </div>
+        }
+        <Tooltip id="icon-tooltip-s" effect="solid" />
+
+
     </Button>
 );
