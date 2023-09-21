@@ -45,18 +45,45 @@ class User extends Authenticatable
         'password' => 'hashed',
     ];
 
-    public function bookedClubs() {
+    public function bookedClubs()
+    {
         return $this->belongsToMany(
-                        \App\Models\ClubInstance::class, 
-                        'user_club', 
-                        'user_id', 
-                        'club_instance_id'
-                    )->withTimestamps();
+            \App\Models\ClubInstance::class,
+            'user_club',
+            'user_id',
+            'club_instance_id'
+        )->withTimestamps();
     }
 
     public function yearGroup()
     {
         return $this->belongsTo(YearGroup::class, 'year', 'year'); // Assuming 'year' is a foreign key in users table and primary/unique key in year_groups table
+    }
+
+    public function organizedByTerm()
+    {
+        $clubInstances = $this->bookedClubs()->get();
+
+        $organizedByTerm = [];
+        $daysOfWeek = ['Wednesday', 'Friday'];
+        $maxTerms = 6;
+
+        for ($term = 1; $term <= $maxTerms; $term++) {
+            foreach ($daysOfWeek as $day) {
+                $organizedByTerm[$term][$day] = null;
+            }
+        }
+
+        foreach ($clubInstances as $instance) {
+            $term = $instance->half_term;
+            $dayOfWeek = $instance->day_of_week;
+
+            if (isset($organizedByTerm[$term]) && array_key_exists($dayOfWeek, $organizedByTerm[$term])) {
+                $organizedByTerm[$term][$dayOfWeek] = $instance;
+            }
+        }
+
+        return $organizedByTerm;
     }
 
 }

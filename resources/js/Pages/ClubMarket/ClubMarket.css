@@ -1,0 +1,54 @@
+@keyframes popIn {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+@keyframes popOut {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+.card-animation {
+    animation-duration: 0.4s;
+}
+
+.card-animation.selected {
+    animation-name: popIn;
+}
+
+.card-animation.deselected {
+    animation-name: popOut;
+}
+
+.fade-enter, .fade-exit, .fade-enter-active, .fade-exit-active {
+    transition: opacity 300ms ease-in-out;
+  }
+  
+  .fade-enter, .fade-exit-active {
+    opacity: 0;
+  }
+  
+  .fade-enter-active, .fade-exit {
+    opacity: 1;
+  }
+  
+
+  .fade-enter {
+    opacity: 0;
+    transition-delay: 300ms; /* delay equal to the fade out duration */
+  }
+  

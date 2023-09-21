@@ -4,6 +4,7 @@ use App\Http\Controllers\BookingController;
 use App\Http\Controllers\ClubController;
 use App\Http\Controllers\ProfileController;
 
+use App\Models\ClubInstance;
 use Illuminate\Foundation\Application;
 use Illuminate\Routing\Middleware\ThrottleRequests;
 use Illuminate\Support\Facades\Auth;
@@ -68,12 +69,12 @@ Route::get('/club-market', function () {
     }
 
     return Inertia::render('ClubMarket/ClubMarket', [
-        'availableClubs' => $allClubs->keyBy('id'),
+        'userAvailableClubs' => $allClubs->keyBy('id'),
         'alreadyBookedOn' => $organizedByTerm,
 
     ]);
 
-})->name('club-market');
+})->middleware("auth")->name('club-market');
 
 
 Route::get('/admin', function() {
@@ -98,6 +99,19 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
+
+Route::get('/booking/{id}/changes', function($id) {
+    $user = Auth::user();
+    
+    $result = ClubInstance::getClubsToChangeIfBooked($user, ClubInstance::findOrFail($id));
+
+    return response()->json($result);
+});
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/simulate-book/{id}', [BookingController::class, 'simulateBook']);
+});
+
 
 Route::delete('/dashboard/bookings/{clubInstanceID}', [BookingController::class, 'removeBooking'])->middleware(['auth', 'verified'])->name('removeBooking');
 
@@ -132,7 +146,10 @@ Route::middleware('auth')->group(function() {
     Route::get('/admin/clubs/{id}', [ClubController::class, 'show']);
     Route::post('/admin/clubs/{id}/update', [ClubController::class, 'updateInstances']);
     Route::put('/admin/clubs/{id}', [ClubController::class, 'update'])->name('admin.clubs.update');
-    Route::post('/club', [ClubController::class, 'store']); 
+    Route::post('/club/{id}', [BookingController::class, 'book']);
+    Route::delete('/club/{id}', [BookingController::class, 'deleteBooking']);
+
+
     
 
 Route::post('/clubs/book', [BookingController::class, 'book'])

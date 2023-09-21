@@ -1,80 +1,188 @@
 import React, { useState } from "react";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {
+    Typography, Box,
+    Card,
+    CardContent,
+    CardActions, Alert
+} from '@mui/material';
+import toast from 'react-hot-toast';
+import { faCalendarDays, faDollarSign, faTrashCan } from '@fortawesome/free-solid-svg-icons';
+import { useTheme } from '@mui/material/styles';
+import { useEffect } from 'react';
+import { Tooltip } from 'react-tooltip';
+import { ChooseClubButton } from './ChooseClubButton';
 
-import { groupBy } from "../ClubMarket";
-import toast from "react-hot-toast";
+export function ClubCard({ day, isSelected, club, onChoose, removeClub, term, instance, setClubSelections, setAvailableClubs }) {
 
-const ClubCard = ({ club, currentBookingChoices, updateBookingChoice, availableClubs }) => {
-
-    const groupedByTerm = groupBy(
-        club.club_instances,
-        instance => instance.half_term.toString()
-    );
-
-    const [isModalOpen, setModalOpen] = useState(false);
-
-    return (
-        <div key={club.id} className="p-4 border rounded shadow bg-gray-50 flex flex-col">
-            <div className="flex justify-between items-center mb-4">
-                <div className="flex-1">
-                    <h3 className="text-xl font-bold">{club.name}</h3>
-                    <p className="text-gray-600 mb-2">{club.description}</p>
-                    <p className="text-sm italic mb-2">{club.rule}</p>
-                </div>
-
-                <button onClick={() => setModalOpen(true)} className="bg-blue-500 text-white px-4 py-2 rounded">Book</button>
-            </div>
-
-            <Modal isOpen={isModalOpen} onClose={() => setModalOpen(false)}>
-                <div className="flex">
-                    {Object.keys(groupedByTerm).map(term => (
-                        <div key={term} className="mb-2 mr-4">
-                            <strong>Term {term}:</strong>
-                            <form>
-                                {groupedByTerm[term].map(instance => (
-                                    <div key={instance.id} className="text-gray-500">
-                                        <label>
-                                            <input
-                                                type="checkbox"
-                                                name={`term-${term}`}
-                                                value={instance.day_of_week}
-                                                className="mr-2"
-                                                checked={currentBookingChoices[term][instance.day_of_week]?.id === instance.id}
-                                                onChange={(e) => updateBookingChoice(e, term, instance)}
-                                            />
-                                            {`Day: ${instance.day_of_week} - ${instance.id}`} - {
-                                                currentBookingChoices[term][instance.day_of_week]?.id === instance.id ?
-                                                    "Selected"
-                                                    :
-                                                    currentBookingChoices[term][instance.day_of_week] ?
-                                                        <em className='text-red-500'>Selecting this will remove your booking for this day: {availableClubs[currentBookingChoices[term][instance.day_of_week].club_id].name}</em>
-                                                        : "Available"
-                                            }
-                                        </label>
-                                    </div>
-                                ))}
-                            </form>
-                        </div>
-                    ))}
-                </div>
-            </Modal>
-        </div>
-    );
-}
-
-export default ClubCard;
+    async function deleteClub(clubId) {
 
 
+        // Retrieve CSRF token from meta tag
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+        console.log("deleting", clubId);
 
+        try {
+            const response = await fetch(`/club/${clubId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': csrfToken
+                },
+            });
 
-const Modal = ({ isOpen, onClose, children }) => {
-    if (!isOpen) return null;
+            const data = await response.json();
+
+            // Check the response status
+            if (response.ok) {
+                // console.log(data); // Successfully booked the club.
+                return data;
+            } else {
+                console.error(data.message); // Error messages, e.g., "No available slots for this club."
+                throw new Error(data.message);
+            }
+
+        } catch (error) {
+            console.error('There was an error:', error);
+            throw error;
+        }
+    }
+
+    const [animationClass, setAnimationClass] = useState('');
+
+    useEffect(() => {
+        if (isSelected) {
+            setAnimationClass('selected');
+        } else {
+            setAnimationClass('deselected');
+        }
+
+        // Remove the animation class after the animation completes
+        const timeoutId = setTimeout(() => setAnimationClass(''), 300);
+
+        return () => clearTimeout(timeoutId);
+    }, [isSelected]);
+
 
     return (
-        <div className="fixed top-0 left-0 w-full h-full flex justify-center items-center bg-black bg-opacity-50 z-50">
-            <div className="bg-white p-4 rounded-lg w-3/4 overflow-auto max-h-3/4">
-                <button onClick={onClose} className="mb-2">Close</button>
-                {children}
-            </div>
-        </div>
+        <Card
+            variant="outlined"
+            className={`card-animation ${animationClass} ${isSelected ? 'shadow-lg' : ''} `} // Use the CSS classes here
+
+            style={{
+                backgroundColor: 'transparent',
+                width: '45%',
+                margin: '1%',
+                borderWidth: '2px',
+                borderStyle: isSelected ? '' : 'dashed',
+                borderColor: isSelected ? useTheme().palette.primary.main : useTheme().palette.warning.main,
+                display: 'flex'
+            }}
+        >
+            {isSelected && (
+                <Box
+                    display="flex"
+                    flexDirection="column"
+                    alignItems="center"
+                    justifyContent="space-between"
+                    paddingY={2}
+                    paddingX={2}
+                    pr={2}
+                >
+                    {/* Here are some placeholder icons, replace them with your desired icons */}
+                    {/* <CheckIcon color="primary" />
+                <StarIcon color="primary" />
+                <FavoriteIcon color="primary" /> */}
+                </Box>
+            )}
+            <Box
+                display="flex"
+                flexDirection="column"
+                justifyContent="center"
+                flexGrow={1}
+            >
+                <CardContent>
+                    <Typography fontWeight={700} variant="h6" align='center' className='tracking-wide' style={{ letterSpacing: "2px" }}>{day.toUpperCase()}</Typography>
+                    <Typography fontWeight={300} variant="h6" className='mt-10' height={70} marginTop={3}>
+                        {club ?
+                            <h6 align='center'>{club.name}</h6>
+                            : <Alert severity='warning'> You haven't selected a club for this day yet. You will be allocated "Home" if left unchecked </Alert>}
+                    </Typography>
+                </CardContent>
+                <CardActions style={{ justifyContent: 'center' }}>
+                    <ChooseClubButton day={day} isSelected={isSelected} onChoose={onChoose} />
+                </CardActions>
+            </Box>
+            {isSelected && (
+                <Box
+                    display="flex"
+                    flexDirection="column"
+                    alignItems="center"
+                    justifyContent="space-between"
+                    paddingY={2}
+                    paddingX={2}
+                    pr={2}
+                    color="grey"
+                >
+                    <button onClick={() => {
+
+                        toast.promise(
+                            deleteClub(instance),
+                            {
+                                icon: faTrashCan,
+                                loading: 'Deleting Club',
+                                success: 'Club deleted successfully!',
+                                error: (err) => err.toString()
+                            }
+                        ).then((response) => {
+                            console.log("response is: ", response);
+
+
+                            console.log(response.data);
+
+                            const newBookedClubs = response.data.alreadyBookedOn;
+
+                            setClubSelections(Object.values(newBookedClubs));
+                            setAvailableClubs(response.data.availableClubs);
+
+                            handleClose(true);
+                        }).catch((error) => {
+                            // Handle any error from postClub if needed
+                            console.error("Error booking club:", error);
+                        });
+                    }}
+                        data-tooltip-content="Delete"
+                        data-tooltip-id="icon-tooltip"
+                    >
+                        <FontAwesomeIcon icon={faTrashCan} />
+                    </button>
+                    <button onClick={() => console.log("Swap button clicked")} data-tooltip-content="Swap" data-tooltip-id="icon-tooltip">
+                        <FontAwesomeIcon icon={faCalendarDays} />
+                    </button>
+                    {club.is_paid ?
+                        <button onClick={() => console.log("Icon button clicked")}
+                            data-tooltip-content="This is a paid club, parental consent will be required after booking."
+                            data-tooltip-id="icon-tooltip"
+
+                        >
+                            <FontAwesomeIcon icon={faDollarSign}
+                                color='red'
+                                fontWeight={700} />
+                        </button>
+                        :
+                        <button>
+                            {
+                                /**
+                                 * Placeholder - need something to take the space.
+                                 */
+                            }
+                        </button>}
+                    <Tooltip id="icon-tooltip" effect="solid" />
+                    <Tooltip id="my-tooltip" />
+                </Box>
+            )}
+        </Card>
     );
 }
