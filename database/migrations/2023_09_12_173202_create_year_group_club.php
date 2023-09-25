@@ -22,7 +22,7 @@ return new class extends Migration
             $table->timestamps();
     
             // Composite primary key
-            $table->primary(['year', 'club_instance_id']);
+            // $table->primary(['year', 'club_instance_id']);
         });
     }
     
