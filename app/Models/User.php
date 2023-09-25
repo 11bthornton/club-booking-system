@@ -31,7 +31,7 @@ class User extends Authenticatable
      */
     protected $hidden = [
         'password',
-        'role'
+        // 'role'
         // 'remember_token',
     ];
 
@@ -60,6 +60,11 @@ class User extends Authenticatable
         return $this->belongsTo(YearGroup::class, 'year', 'year'); // Assuming 'year' is a foreign key in users table and primary/unique key in year_groups table
     }
 
+    public function getOrganizedByTermAttribute()
+    {
+        return $this->organizedByTerm();
+    }
+
     public function organizedByTerm()
     {
         $clubInstances = $this->bookedClubs()->get();
@@ -78,9 +83,13 @@ class User extends Authenticatable
             $term = $instance->half_term;
             $dayOfWeek = $instance->day_of_week;
 
+            $instance['club'] = Club::find($instance->club_id)->name;
+
             if (isset($organizedByTerm[$term]) && array_key_exists($dayOfWeek, $organizedByTerm[$term])) {
                 $organizedByTerm[$term][$dayOfWeek] = $instance;
             }
+
+
         }
 
         return $organizedByTerm;

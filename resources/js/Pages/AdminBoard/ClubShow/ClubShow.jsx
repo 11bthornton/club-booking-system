@@ -1,323 +1,404 @@
 import { useState } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import { Head } from '@inertiajs/react';
+
+import { DataGrid, GridToolbar } from '@mui/x-data-grid';
+import { Checkbox, Switch, Button, TextField, Tooltip } from '@mui/material';
+import { Divider } from '@mui/material';
+import Link from '@mui/material/Link';
+
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 import toast from 'react-hot-toast';
+import { faDownload, faEdit, faPlus, faQuestionCircle } from '@fortawesome/free-solid-svg-icons';
+
+const createYearColumn = (year, handleCheckboxClick) => {
+    return {
+        field: `year_${year}`,
+        headerName: `Year ${year}`,
+        width: 60,
+        renderCell: (params) => {
+            const instance = params.row;
+            const yearExists = instance.year_groups.some((group) => group.year === year.toString());
+            return (
+                <Checkbox
+                    checked={yearExists}
+                    onChange={() => handleCheckboxClick(instance.id, year, !yearExists)} // Invert the checked state
+                />
+            );
+        },
+    };
+};
+
+// import Tooltip from '@mui/material';
 
 export default function ClubShow({ auth, club, uniqueUsers }) {
 
-    async function handleEditInstances()  {
-
-        try {
-            const response = await fetch(`/admin/clubs/${club.id}/update`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                },
-                body: JSON.stringify(
-                    {   
-                        "club_id": JSON.stringify(club.id),
-                        "instances": currentInstances
-                    }
-                )
-            });
-            
-            console.log(currentInstances)
-            const responseData = await response.json();
-            console.log(responseData.message);
-
-            console.log("error", responseData.error);
-    
-            if (responseData.updatedInstances) {
-                console.log("handling response, ", responseData.message)
-                // setClubs((prev) => [...prev, responseData]);
-                toast('Club Successfully Added!', {
-                    icon: '👏',
-                });
-                // handleCloseModal();
-            }
-        } catch (error) {
-            console.error(error);
-            toast(responseData.message, {
-                icon: '❌'
-            });
-        }
-    };
-
     const [currentInstances, setCurrentInstances] = useState(club.club_instances);
+    const [currentClub, setCurrentClub] = useState(club);
 
-    const [bulkYearGroups, setBulkYearGroups] = useState({
-        7: false, 8: false, 9: false, 10: false, 11: false
-    });
-
-    const [bulkUpdateEnabled, setBulkUpdateEnabled] = useState(true);
-
-    const handleBulkYearGroupChange = (year) => {
-        setBulkYearGroups({
-            ...bulkYearGroups,
-            [year]: !bulkYearGroups[year]
-        });
+    const handleNameChange = (e) => {
+        const newName = e.target.value;
+        setCurrentClub(prevState => ({
+            ...prevState,
+            name: newName
+        }));
     };
 
-    const applyBulkUpdate = () => {
-
+    const handleDescriptionChange = (e) => {
+        const newDescription = e.target.value;
+        setCurrentClub(prevState => ({
+            ...prevState,
+            description: newDescription
+        }));
     };
 
-    const findInstance = (half_term, day) => {
-        return currentInstances.find(inst => inst.half_term === half_term && inst.day_of_week === day);
+    const handleRuleChange = (e) => {
+        const newRule = e.target.value;
+        setCurrentClub(prevState => ({
+            ...prevState,
+            rule: newRule
+        }));
     };
-
-    const handleInstanceUpdate = (id, updatedItem) => {
-        const newItems = currentInstances.map(item =>
-            item.id === id ? updatedItem : item
-        );
-        setCurrentInstances(newItems);
-    }
-
-    const handleInstanceAdd = (newInstance) => {
-
-        const newItems = [...currentInstances, newInstance];
-        setCurrentInstances(newItems);
-    }
-
-    const handleInstanceRemove = (day, half_term) => {
-        const newItems = currentInstances
-            .filter(instance => instance.day !== day)
-            .filter(instance => instance.half_term !== half_term);
-        setCurrentInstances(newItems);
-    }
 
     return (
         <AuthenticatedLayout
             user={auth.user}
-            header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">{club.name}</h2>}
+            header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Update Club - {currentClub.name}</h2>}
         >
-            <div className="p-8 bg-gray-100 min-h-screen">
-                <div className="bg-white p-6 rounded-lg shadow-lg">
 
-                    {/* Club Information */}
-                    <div className="flex justify-between items-center mb-6">
-                        <div>
-                            <h2 className="text-2xl font-semibold mb-4">{club.name}</h2>
-                            <p className="text-gray-600 mb-2">{club.description}</p>
-                            <p className="text-sm italic mb-2">{club.rule}</p>
-                        </div>
+            <Head title="Update Club Info" />
 
-                        <button className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600" onClick={handleEditInstances}>
-                            Save Changes
-                        </button>
+            <div className='container mx-auto p-6 bg-white mt-5 rounded-lg shadow-lg'>
+
+                <div className="flex justify-between items-baseline mb-4">
+                    <h2 className="font-semibold text-4xl text-gray-800 leading-tight">Update Club - {currentClub.name}</h2>
+
+                    <div className='mb-2 flex justify-end gap-2'>
+                        <Button
+                            variant="contained"
+                            color="primary"
+                            onClick={() => handleEditInstances(currentClub, setCurrentClub)}
+                            disabled={club == currentClub}
+                        >
+                            Update
+                        </Button>
+                        <Button color='error'>
+                            Delete
+                        </Button>
                     </div>
-
-
-                    <hr className="my-4" />
-
-                    {/* Bulk Year Group Update */}
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="col-span-2 flex justify-between">
-                            <h4 className="text-lg font-medium">Bulk Update Year Groups</h4>
-                            {bulkUpdateEnabled &&
-                                <button onClick={applyBulkUpdate} className="bg-blue-500 hover:bg-blue-600 text-white font-medium py-1 px-2 rounded">
-                                    Apply to All
-                                </button>
-                            }
-                        </div>
-
-                        {[7, 8, 9, 10, 11].map(year => (
-                            <div key={year} className="flex items-center">
-                                <input
-                                    type="checkbox"
-                                    checked={bulkYearGroups[year]}
-                                    onChange={() => handleBulkYearGroupChange(year)}
-                                    disabled={!bulkUpdateEnabled}
-                                    className='ml-10'
-                                />
-                                <label className="ml-2 mr-2">Year {year}</label>
-                            </div>
-                        ))}
-                    </div>
-
-                    {/* Club Instances */}
-                    <h3 className="text-xl font-medium mb-4 mt-4">Club Instances</h3>
-
-                    {[1, 2, 3, 4, 5, 6].map(half_term => (
-                        <div key={half_term} className="grid grid-cols-2 gap-4">
-                            {['Wednesday', 'Friday'].map(day => {
-                                const instance = findInstance(half_term, day);
-                                return (
-                                    <InstanceCard
-                                        instance={instance}
-                                        day={day}
-                                        half_term={half_term}
-                                        handleInstanceUpdate={handleInstanceUpdate}
-                                        handleInstanceAdd={handleInstanceAdd}
-                                        handleInstanceRemove={handleInstanceRemove}
-                                    // setBulkUpdateEnabled={setBulkUpdateEnabled}
-                                    />
-                                );
-                            })}
-                        </div>
-                    ))}
                 </div>
+
+                <div className="flex gap-10 mb-4">
+                    <div className="flex flex-col gap-5 mb-4 w-1/2">
+                        <TextField
+                            label="Name"
+                            variant="outlined"
+                            value={currentClub.name}
+                            onChange={handleNameChange}
+                            required={true}
+                            className='w-1/2'
+                        />
+
+                        <TextField
+                            label="Description"
+                            variant="outlined"
+                            value={currentClub.description}
+                            onChange={handleDescriptionChange}
+                            multiline
+                            rows={4}
+                            required={true}
+                            
+                        />
+
+                        <div className='flex items-center gap-3'>
+                        <select value={"selectedRule"} disabled>
+                            <option value="wholeYear">One instance per year</option>
+                            <option value="perTerm">One instance per term</option>
+                            <option value="any">As many instances as they'd like</option>
+                        </select>
+
+                        <Tooltip
+                            title="If you need to change this, delete and recreate club"
+                        >
+                            <FontAwesomeIcon
+                                icon={faQuestionCircle}
+                            />
+                        </Tooltip>
+                        
+                        </div>
+
+                        <TextField
+                            disabled
+                            minRows={4}
+                            label="Extra Rule Information"
+                            placeholder="Rule"
+                            value={currentClub.rule}
+                            onChange={handleRuleChange}
+                        />
+
+                    </div>
+
+                    <Divider orientation="vertical" flexItem style={{ margin: '0 10px' }} />
+
+                    <div>
+                        <h1 className='text-2xl font-semibold mb-2'>Quick Actions</h1>
+                        <Divider className='' />
+                        <div className="flex justify-between gap-4 mt-2 mb-2">
+                            <div className="flex gap-4">
+                                <Button
+                                    variant="outlined"
+
+                                >
+                                    <div className="flex gap-3 items-baseline">
+                                        <p>Export to CSV</p>
+                                        <FontAwesomeIcon icon={faDownload} />
+                                    </div>
+                                </Button>
+                                <Button
+                                    variant='outlined'
+                                    className='mt-2'
+                                    color='secondary'
+                                >
+                                    All Students
+                                </Button>
+                            </div>
+                            <Button
+                                // variant="outlined"
+                                color="secondary"
+                                className='mt-2'
+                            >
+                                Button 3
+                            </Button>
+                        </div>
+                        <Divider />
+
+                        <p className='mt-3'>
+                            Can't think of anymore quick actions but here's a nice big space for them!
+                        </p>
+
+                        <div className="mb-2">
+                            <Button
+                                size='extra-large'
+                                variant='outlined'
+                            >
+                                <div className='flex gap-2 justify-between items-center'>
+                                    <p>
+                                        Add Instance
+                                    </p>
+                                    <FontAwesomeIcon
+                                        icon={faPlus}
+                                    />
+                                </div>
+                            </Button>
+                        </div>
+                    </div>
+
+
+                </div>
+
+
+                <ClubInstanceDataGrid
+                    currentClub={currentClub}
+                    setCurrentClub={setCurrentClub}
+                />
             </div>
 
-            <div className="p-4">
-                {JSON.stringify(currentInstances)}
-                {JSON.stringify(uniqueUsers)}
+            {
+                JSON.stringify(currentClub)
+            }
 
-            </div>
         </AuthenticatedLayout>
     );
 }
 
-function InstanceCard({ instance, half_term, day, handleInstanceUpdate, handleInstanceAdd, handleInstanceRemove }) {
+const ClubInstanceDataGrid = ({ currentClub, setCurrentClub }) => {
 
-    const [currentInstance, setCurrentInstance] = useState(instance)
-
-    const renderYearGroupCheckboxes = (instance) => (
-        [7, 8, 9, 10, 11].map(year => (
-            <div key={year}>
-                <input
-                    type="checkbox"
-                    checked={instance && instance.year_groups.some(yg => yg.year === year.toString())}
-                    onChange={(e) => handleYearGroupChange(e, year)}
-                />
-                <label className="ml-2 mr-3">Year {year}</label>
-            </div>
-        ))
-    );
-
-    const handleYearGroupChange = (e, year) => {
-        const isChecked = e.target.checked;
-        let updatedYearGroups;
-
-        if (isChecked) {
-            // If checkbox is checked, add the year group to the array
-            const newYearGroup = {
-                year: year.toString(),
-                created_at: null,
-                updated_at: null,
-                pivot: {}
-            };
-            updatedYearGroups = [...currentInstance.year_groups, newYearGroup];
-        } else {
-            // If checkbox is unchecked, filter out the year group
-            updatedYearGroups = currentInstance.year_groups.filter(yg => yg.year !== year.toString());
-        }
-
-        const updatedInstance = {
-            ...currentInstance,
-            year_groups: updatedYearGroups
-        };
-
-        setCurrentInstance(updatedInstance);
-        console.log("here", updatedInstance.year_groups);
-
-        handleInstanceUpdate(updatedInstance.id, updatedInstance);
+    const handleDeleteRow = (instanceId) => {
+        console.log("Trying to delete", instanceId);
+        const updatedInstances = currentClub.club_instances.filter(instance => instance.id !== instanceId);
+        setCurrentClub({ ...currentClub, club_instances: updatedInstances });
     };
 
+    const handleCheckboxClick = (instanceId, year, isChecked) => {
 
-    const initialiseInstance = () => {
+        const updatedInstances = currentClub.club_instances.map(instance => {
+            if (instance.id === instanceId) {
+                if (isChecked) {
+                    instance.year_groups.push({ year: year.toString() });
+                } else {
+                    instance.year_groups = instance.year_groups.filter(group => group.year !== year.toString());
+                }
+            }
+            return instance;
+        });
 
-        const newInstance = {
-            day_of_week: day,
-            half_term: half_term,
-            capacity: 100,
-            year_groups: []
-        };
-
-        setCurrentInstance(newInstance);
-        handleInstanceAdd(newInstance);
-    }
-
-    const handleCapacityChange = (e) => {
-        const updatedInstance = {
-            ...instance,
-            capacity: e.target.value
-        }
-
-        setCurrentInstance(updatedInstance);
-        handleInstanceUpdate(updatedInstance.id, updatedInstance);
+        setCurrentClub({ ...currentClub, club_instances: updatedInstances });
     };
 
-    const handleRemoveInstance = (e) => {
-        handleInstanceRemove(currentInstance.day, currentInstance.half_term)
-        const newInstance = {}
-        setCurrentInstance(newInstance)
-    }
-
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const toggleModal = () => {
-        setIsModalOpen(!isModalOpen);
+    const deleteButtonColumn = {
+        field: 'action',
+        headerName: 'Actions',
+        width: 150,
+        renderCell: (params) => (
+            <Button
+                // variant="contained"
+                color="error"
+                size="small"
+                onClick={() => handleDeleteRow(params.row.id)}
+            >
+                Remove
+            </Button>
+        ),
     };
 
+    const columns = [
+        { field: 'id', headerName: 'ID', width: 70 },
+        // { field: 'club_id', headerName: 'Club ID', width: 100 },
+        { field: 'half_term', headerName: 'Term', width: 120 },
+        { field: 'day_of_week', headerName: 'Day of Week', width: 140 },
+        {
+            field: 'capacity',
+            headerName: 'Spaces Left',
+            width: 120,
+            renderCell: (params) => {
+                return (
+                    <>
+                        {params.row.capacity} / &nbsp; <strong>{params.row.capacity + params.row.users_count}</strong>
+                    </>
+                )
+            },
+
+        },
+        {
+            field: 'users_count',
+            headerName: '# Students',
+            width: 140,
+            renderCell: (params) => {
+                return (
+                    <>
+                        {
+                            params.row.users_count
+                        }
+
+                        &nbsp;
+
+                        {
+                            params.row.users_count > 0 ?
+                                <Link color="primary" underline="hover">
+                                    <div className="flex gap-2 items-center cursor-pointer">
+
+                                        (view)
+
+                                    </div>
+                                </Link>
+                                :
+                                <></>
+                        }
+                    </>
+                )
+            }
+        },
+        // Add year columns dynamically
+        createYearColumn(7, handleCheckboxClick),
+        createYearColumn(8, handleCheckboxClick),
+        createYearColumn(9, handleCheckboxClick),
+        createYearColumn(10, handleCheckboxClick),
+        createYearColumn(11, handleCheckboxClick),
+
+        {
+            field: 'openForBookings',
+            headerName: 'Open for Bookings',
+            headerAlign: 'center',  // you can set this to 'left', 'right', or 'center'
+            renderHeader: () => (
+                <span>Open for Bookings?</span>
+            ),
+            width: 180,
+            align: "center",
+            renderCell: (params) => {
+                return (
+                    <Switch
+                        checked={params.value}
+                        // onChange={() => handleToggle(params)}
+                        color="primary"
+                    />
+                );
+            }
+        },
+        {
+            field: "hasDependencies",
+            headerName: "Requires Commitment",
+            width: 190,
+            renderCell: (params) => {
+                return (
+                    <>
+                        {
+                            params.row.must_go_with_club_ids.length ?
+                                <div>Hey</div>
+                                :
+                                <div>No</div>
+                        }
+                    </>
+                );
+            }
+        },
+        deleteButtonColumn
+    ];
 
     return (
-        <div key={day} className="mb-4 p-4 border rounded shadow-sm bg-gray-50 relative">
-
-            {isModalOpen && (
-                <div className="fixed z-10 inset-0 overflow-y-auto flex items-center justify-center h-screen">
-                    <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-                        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
-                        <div className="bg-white rounded-lg px-4 pt-5 pb-4 overflow-hidden shadow-xl transform transition-all sm:w-full sm:max-w-lg sm:text-left">
-                            <div className="sm:flex sm:items-start">
-                                <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">Users in Current Instance</h3>
-                                <ul>
-                                    {currentInstance.users.map(user => (
-                                        <>
-                                            <li key={user.id} className="mb-2">{user.username}</li>
-                                            <li key={user.id} className="mb-2">{user.username}</li>
-                                        </>
-                                    ))}
-                                </ul>
-                                <button onClick={toggleModal} className="mt-4 bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-4 rounded">
-                                    Close
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-
-
-            {currentInstance ? (
-                <>
-                    <div
-                        className="absolute top-2 right-2 text-red-600 text-2xl cursor-pointer"
-                        onClick={handleRemoveInstance}
-                    >
-                        &times;
-                    </div>
-                    <h4 className="text-lg font-medium">{instance.day_of_week} Half Term: {instance.half_term}</h4>
-                    <button onClick={toggleModal} className="text-blue-500 underline mb-5">
-                        View Students
-                    </button>
-                    <label className="text-gray-600 mb-2 flex items-center">
-                        Capacity:
-                        <input
-                            type="number"
-                            value={currentInstance.capacity}
-                            onChange={handleCapacityChange}
-                            className="ml-2 border rounded w-20 text-gray-800"
-                        />
-                        <em className='ml-5 text-gray-800'>{currentInstance.users_count} students are already booked on this course!</em>
-                    </label>
-
-                    <h5 className="text-md font-semibold mb-2">Year Groups</h5>
-                    <div className="flex flex-wrap">
-                        {renderYearGroupCheckboxes(instance)}
-                    </div>
-                </>
-            ) : (
-                <>
-                    <h4 className="text-lg font-medium">{day} Half Term: {half_term}</h4>
-                    <p className="text-gray-500">No instance for Half Term {half_term} on {day}. </p>
-                    <button className="text-blue-500 underline" onClick={initialiseInstance}>Add</button>
-                </>
-            )}
+        <div style={{ width: '100%' }}>
+            <h1 className="text-2xl mb-2">
+                Current Instances
+            </h1>
+            <DataGrid
+                rows={currentClub.club_instances}
+                columns={columns}
+                pageSize={5}
+                rowsPerPageOptions={[5]}
+                components={{
+                    Toolbar: GridToolbar,
+                }}
+            />
         </div>
     );
+};
 
-}
+async function handleEditInstances(currentClub, setCurrentClub) {
+
+    try {
+        const response = await fetch(`/admin/clubs/${currentClub.id}/update`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: JSON.stringify(
+                {
+                    "club": currentClub,
+                    "instances": currentClub.club_instances
+                }
+            )
+        });
+
+        const responseData = await response.json();
+
+        setCurrentClub(responseData.data.club);
+        // setCurrentInstances(responseData.data.club.club_instances);
+
+        if (responseData.updatedInstances) {
+            console.log("handling response, ", responseData.message)
+            // setClubs((prev) => [...prev, responseData]);
+            toast('Club Successfully Updated!', {
+                icon: '👏',
+            });
+            // handleCloseModal();
+        }
+    } catch (error) {
+        console.error(error);
+        toast(responseData.message, {
+            icon: '❌'
+        });
+    }
+};

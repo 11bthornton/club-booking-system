@@ -85,7 +85,7 @@ export default function ClubCreate({ auth, clubs }) {
         const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
         try {
-            const response = await fetch('/club', {
+            const response = await fetch('/admin/clubs', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

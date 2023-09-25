@@ -13,7 +13,7 @@ import { Toaster } from 'react-hot-toast';
 export default function Authenticated({ user, header, children }) {
 
     const [
-        showingNavigationDropdown, 
+        showingNavigationDropdown,
         setShowingNavigationDropdown
     ] = useState(false);
 
@@ -24,7 +24,7 @@ export default function Authenticated({ user, header, children }) {
                 position="top-center"
                 reverseOrder={false}
             />
-            
+
             <nav className="bg-white border-b border-gray-100">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between h-16">
@@ -47,9 +47,18 @@ export default function Authenticated({ user, header, children }) {
                                     Club Market
                                 </NavLink>
 
-                                <NavLink href={route('admin-board')} active={route().current('admin-board')}>
-                                    Admin
-                                </NavLink>
+                                {
+                                    /**
+                                     * Only show this if the user is admin. Non-admins won't get access to this
+                                     * route (and related routes) regardless. But don't show regular user link
+                                     * if they're not supposed to access it anyway.
+                                     */
+                                    user.role === "1" && (
+                                        <NavLink href={route('admin-board')} active={route().current('admin-board')}>
+                                            Admin
+                                        </NavLink>
+                                    )
+                                }
 
                             </div>
                         </div>

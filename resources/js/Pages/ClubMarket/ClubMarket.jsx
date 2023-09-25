@@ -72,9 +72,6 @@ export default function ClubMarket({ auth, userAvailableClubs, alreadyBookedOn }
         Object.values(alreadyBookedOn)
     );
 
-
-    console.log("selecs", clubSelections)
-
     const isIncomplete = (step) => {
         return (
             !clubSelections[step].Wednesday || !clubSelections[step].Friday

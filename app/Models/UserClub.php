@@ -23,4 +23,24 @@ class UserClub extends Model
     {
         return $this->belongsTo(ClubInstance::class);
     }
+
+    /**
+     * This will delete the record of the booking but won't update the
+     * leftover capacity in the club_instances table.
+     */
+    public function delete()
+    {
+
+        $clubInstance = $this->clubInstance;
+
+        // die("hey!");
+
+        if (!is_null($clubInstance->capacity)) {
+
+            $clubInstance->increment('capacity');
+
+        }
+
+        return parent::delete();
+    }
 }

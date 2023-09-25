@@ -9,7 +9,16 @@ import Alert from "@mui/material/Alert";
 
 import { Avatar } from "@mui/material";
 
+
 export default function Dashboard({ auth }) {
+
+    const [selectedDate, setSelectedDate] = useState(new Date());
+
+    const handleDateTimeChange = (datetime) => {
+        // Process the datetime value
+        console.log("Selected DateTime: ", datetime);
+        setSelectedDate(datetime)
+    };
 
     return (
         <AuthenticatedLayout
@@ -35,6 +44,15 @@ export default function Dashboard({ auth }) {
                             <Alert severity="success" className="mb-4 mt-4">
                                 The system is currently <strong>open</strong> for bookings.
                             </Alert>
+                            <div className="mt-4">
+                                <label htmlFor="datetime">Schedule Next Open Time:</label>
+                                <input
+                                    type="datetime-local"
+                                    id="datetime"
+                                    name="datetime"
+                                    onChange={(e) => handleDateTimeChange(e.target.value)}
+                                />
+                            </div>
                             <p class="text-gray-600">Manage information about the system. Schedule system </p>
                             <div className="text-sm flex justify-between items-baseline mt-2">
                                 <strong>Next Scheduled Open Time:</strong>
@@ -77,7 +95,7 @@ export default function Dashboard({ auth }) {
                             <p class="text-gray-600">Manage information about students and their choices.</p>
                             <h3 class="text-l font-semibold mt-4">Quick Links</h3>
                             <ul class="">
-                                <li><a href="#" class="text-sm text-blue-600 hover:underline">View students</a></li>
+                                <li><a href="/admin/students" class="text-sm text-blue-600 hover:underline">View students</a></li>
                                 <li><a href="#" class="text-sm text-blue-600 hover:underline">Manage users</a></li>
                                 <li><a href="#" class="text-sm text-blue-600 hover:underline">Settings</a></li>
                                 <li><a href="#" class="text-sm text-blue-600 hover:underline">Reports</a></li>

@@ -149,18 +149,18 @@ public function store(Request $request)
     }
 
 
-    
-
-
     public function updateInstances(Request $request, $id)
     {
         try {
             $club = Club::findOrFail($id);
+
         } catch (ModelNotFoundException $e) {
+
             return response()->json([
                 'message' => 'Club not found!',
                 'error' => $e->getMessage()
             ], 404);
+
         }
 
         $items = $request->input('instances');
@@ -171,8 +171,23 @@ public function store(Request $request)
             // Begin transaction
             DB::beginTransaction();
 
+            $club->update($request->input('club'));
+
+
+            $requestInstanceIds = collect($items)->pluck('id')->filter()->all();
+
+            // Find existing instances in DB related to this club and delete those not in the request
+            $existingInstances = $club->clubInstances()->pluck('id')->all();
+
+            $instancesToDelete = array_diff($existingInstances, $requestInstanceIds);
+            ClubInstance::destroy($instancesToDelete);
+            $deletedInstances = array_values($instancesToDelete);
+            // Now can modify the club instances relationships;
+
             foreach ($items as $item) {
+
                 if (isset($item['id'])) {
+
                     $clubInstance = ClubInstance::find($item['id']);
 
                     if ($clubInstance) {
@@ -194,13 +209,9 @@ public function store(Request $request)
                         throw new \Exception("ClubInstance with ID {$item['id']} not found.");
                     }
                 } else {
+
                     // Create a new ClubInstance and associate with the given year groups
-                    $newClubInstance = new ClubInstance;
-                    $newClubInstance->club_id = $club->id;
-                    $newClubInstance->half_term = $item['half_term'];
-                    $newClubInstance->capacity = $item['capacity'];
-                    $newClubInstance->day_of_week = $item['day_of_week'];
-                    $newClubInstance->save();
+                    $newClubInstance = ClubInstance::create($item);
 
                     // Handle yearGroups association
                     if (isset($item['year_groups'])) {
@@ -215,10 +226,22 @@ public function store(Request $request)
             // Commit transaction
             DB::commit();
 
+            $club = Club::with([
+                'clubInstances' => function ($query) {
+                    $query->withCount('users'); // This will give a users_count property on each clubInstance
+                },
+                'clubInstances.yearGroups',
+                'clubInstances.users'
+            ])->findOrFail($club->id);
+    
             return response()->json([
                 'message' => 'Processed successfully!',
                 'updatedInstances' => $updatedInstances,
-                'createdInstances' => $createdInstances
+                'createdInstances' => $createdInstances,
+                'data' => [
+                    'club' => $club,
+                    'uniqueUsers' => $club->uniqueUsers
+                ]
             ]);
 
         } catch (\Exception $e) {
