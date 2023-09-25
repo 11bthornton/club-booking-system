@@ -12,6 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('year_group_club', function (Blueprint $table) {
+            $table->id();
             $table->string('year');
             $table->foreign('year')->references('year')->on('year_groups')->onDelete('cascade');
             

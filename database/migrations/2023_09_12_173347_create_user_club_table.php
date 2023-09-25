@@ -13,14 +13,14 @@ return new class extends Migration
     {
         Schema::create('user_club', function (Blueprint $table) {
             
-
+            $table->id();
             $table->unsignedBigInteger('user_id');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->unsignedBigInteger('club_instance_id');
             $table->foreign('club_instance_id')->references('id')->on('club_instances')->onDelete('cascade');
             $table->timestamps();
 
-            $table->primary(['user_id', 'club_instance_id']);
+            // $table->primary(['user_id', 'club_instance_id']);
 
             // // User can't book a club on the same day for a given half term:
             // // E
