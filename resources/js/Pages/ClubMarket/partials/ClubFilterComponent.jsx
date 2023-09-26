@@ -8,7 +8,14 @@ import { Divider } from '@mui/material';
 import { faCalendarDays } from '@fortawesome/free-solid-svg-icons';
 import { ClubCard } from './ClubCard';
 import { ClubModal } from "./ClubModal";
-import { findClubByInstanceID } from '../ClubMarket';
+
+
+
+function findClubByInstanceID(clubs, instanceID) {
+    return Object.values(clubs).find(club =>
+        club.club_instances.some(instance => instance.id === instanceID)
+    );
+}
 
 export function ClubFilterComponent({ availableClubs, setAvailableClubs, activeStep, clubSelections, setClubSelections, handleBack, handleNext, steps }) {
 
