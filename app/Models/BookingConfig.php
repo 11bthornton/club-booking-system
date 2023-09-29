@@ -4,8 +4,95 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
+use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+
+
+use App\Models\User;
+use App\Models\YearGroup;
+use App\Models\ClubInstance;
 
 class BookingConfig extends Model
 {
     use HasFactory;
+
+    protected $fillable = ['scheduled_at', 'ends_at'];
+
+    public static function bookingsAreOpen()
+    {
+        $latestConfig = self::latest('scheduled_at')->first();
+        return $latestConfig ? $latestConfig->is_open : false;
+    }
+
+    // public static function create(array $attributes = [])
+    // {
+    //     // $newScheduleStart = Carbon::parse($attributes['scheduled_at']);
+
+    //     // $overlappingConfigs = self::where(function (Builder $query) use ($newScheduleStart) {
+    //     //     $query->where('scheduled_at', '<=', $newScheduleStart)
+    //     //         ->where('scheduled_at', '>=', $newScheduleStart);
+    //     // })->get();
+
+    //     // if ($newScheduleStart->lt(Carbon::now())) {
+    //     //     // Handle the error, maybe throw an exception
+    //     //     return null;
+    //     // }
+
+    //     // return null;
+    //     return parent::create($attributes);
+    // }
+
+    public function canUserBook($user)
+    {
+        return $this->allowedUsers->contains($user->id);
+    }
+
+    public function canYearGroupBook($yearGroupId)
+    {
+        return $this->allowedYearGroups->contains($yearGroupId);
+    }
+
+    public function canClubInstanceBook($clubInstanceId)
+    {
+        return $this->allowedClubs->contains($clubInstanceId);
+    }
+
+    public function allowedUsers(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'allowed_users', 'booking_config_id', 'user_id');
+    }
+
+    public function allowedYearGroups(): BelongsToMany
+    {
+        return $this->belongsToMany(YearGroup::class, 'allowed_year_groups', 'booking_config_id', 'year');
+    }
+
+    // TODO:
+    // This might be wrong.
+    public function allowedClubs(): BelongsToMany
+    {
+        return $this->belongsToMany(ClubInstance::class, 'allowed_clubs', 'booking_config_id', 'club_id');
+    }
+
+
+    protected static function booted()
+    {
+        static::created(function ($bookingConfig) {
+            
+            // Associate with all Clubs
+            $allClubs = ClubInstance::all()->pluck('id');
+            $bookingConfig->allowedClubs()->attach($allClubs);
+
+            // Associate with all Users
+            $allUsers = User::all()->pluck('id');
+            $bookingConfig->allowedUsers()->attach($allUsers);
+
+            // Associate with all Year Groups
+            // $allYearGroups = YearGroup::all()->pluck('id');
+            // $bookingConfig->allowedYearGroups()->attach($allYearGroups);
+        });
+    }
+
+
 }

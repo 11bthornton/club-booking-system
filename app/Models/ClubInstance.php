@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
 
+use Carbon\Carbon;
+
 class ClubInstance extends Model
 {
     use HasFactory;
@@ -20,6 +22,22 @@ class ClubInstance extends Model
     public function club()
     {
         return $this->belongsTo(Club::class);
+    }
+
+    public function canBeBooked()
+    {
+        // Pull the latest relevant BookingConfig
+        $bookingConfig = BookingConfig::where('scheduled_at', '<=', Carbon::now())
+            ->where('ends_at', '>=', Carbon::now())
+            ->latest('scheduled_at')
+            ->first();
+
+        // If there's no current BookingConfig, the ClubInstance can't be booked
+        if (!$bookingConfig) {
+            return false;
+        }
+
+        return $bookingConfig->canClubBook($this->id);
     }
 
     public function yearGroups()

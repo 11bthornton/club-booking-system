@@ -13,6 +13,10 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule): void
     {
         // $schedule->command('inspire')->hourly();
+        $schedule
+            ->command('booking-config:delete-expired')
+            ->everyMinute()
+            ->emailOutputTo('11bthornton@gmail.com');
     }
 
     /**

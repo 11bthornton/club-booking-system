@@ -5,6 +5,7 @@ use App\Http\Controllers\BookingController;
 use App\Http\Controllers\ClubController;
 use App\Http\Controllers\ProfileController;
 
+use App\Models\BookingConfig;
 use App\Models\ClubInstance;
 use Illuminate\Foundation\Application;
 use Illuminate\Routing\Middleware\ThrottleRequests;
@@ -70,10 +71,9 @@ Route::get('/club-market', function () {
     return Inertia::render('ClubMarket/ClubMarket', [
         'userAvailableClubs' => $allClubs->keyBy('id'),
         'alreadyBookedOn' => $organizedByTerm,
-
     ]);
 
-})->middleware("auth")->middleware('checkbooking')->name('club-market');
+})->middleware(["auth", "canBookClubs"])->name('club-market');
 
 
 Route::get('/admin', function() {
@@ -84,6 +84,12 @@ Route::get('/admin', function() {
 })->name('admin-board');
 
 Route::get('/dashboard', function () {
+
+    BookingConfig::create([
+        'scheduled_at' => \Carbon\Carbon::now(),
+        'ends_at' => \Carbon\Carbon::now()
+    ]);
+
     $user = Auth::user();
 
     $bookedClubInstances = $user->bookedClubs()->with('club')->get();

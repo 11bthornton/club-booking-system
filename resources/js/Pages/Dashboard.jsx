@@ -1,4 +1,5 @@
 import { useState } from 'react';
+// import { useEffect } from 'react';
 
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head } from '@inertiajs/react';
@@ -10,17 +11,26 @@ import { Button } from '@mui/material';
 import CampaignIcon from '@mui/icons-material/Campaign';
 import ScheduleIcon from '@mui/icons-material/Schedule';
 
-export default function Dashboard({ auth, bookedClubInstances, clubInformation }) {
+export default function Dashboard({ auth, bookedClubInstances, clubInformation, error }) {
+
+    useEffect(() => {
+        if(error) {
+            toast.error(error);
+        }
+    }, [error]);
+
     const announcements = [
         { type: 'info', text: 'Lorem ipsum dolor sit amet.' },
         { type: 'warning', text: 'Lorem ipsum dolor sit amet.' },
     ];
+
     return (
         <AuthenticatedLayout
             user={auth.user}
             header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Home </h2>}
         >
             <Head title="Home" />
+
             <div className="max-w-7xl  mx-auto sm:px-6 lg:px-8 p-4">
 
                 {/* <div className="text-xl mb-4">
@@ -92,7 +102,9 @@ export default function Dashboard({ auth, bookedClubInstances, clubInformation }
                     <div className="p-4 bg-white rounded-lg shadow-md">
                         <span className="text-2xl font-bold">Your Clubs</span>
                         <p>
-
+                            {
+                                JSON.stringify(auth)
+                            }
                         </p>
                     </div>
                     

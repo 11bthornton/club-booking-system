@@ -8,6 +8,10 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
+use Carbon\Carbon;
+
+use App\Models\BookingConfig;
+
 class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
@@ -93,6 +97,67 @@ class User extends Authenticatable
         }
 
         return $organizedByTerm;
+    }
+
+    protected $appends = ['can_book_clubs', 'next_booking_time'];
+
+    public function canBookClubs()
+    {
+        return $this->checkIfUserCanBookClubs();
+    }
+
+    public function getCanBookClubsAttribute()
+    {
+        return $this->checkIfUserCanBookClubs();
+    }
+
+    public function getNextBookingTimeAttribute()
+    {
+        return $this->getNextBookingTime();
+    }
+
+    
+    private function checkIfUserCanBookClubs()
+    {
+
+        // Get the latest BookingConfig where the current time falls within the scheduled_at and ends_at range.
+        $currentBookingConfig = BookingConfig::where('scheduled_at', '<=', now())
+            ->where('ends_at', '>=', now())
+            ->latest()
+            ->first();
+
+        // If there's no active booking configuration, the user can't book.
+        if (!$currentBookingConfig) {
+            return false;
+        }
+
+        // Check if the user is allowed to book based on the AllowedUsers table.
+        if ($currentBookingConfig->allowedUsers->contains($this->id)) {
+            return true;
+        }
+
+        // Check if the user's year group is allowed to book based on the AllowedYearGroups table.
+        if ($currentBookingConfig->allowedYearGroups->contains($this->year)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    private function getNextBookingTime()
+    {
+        $bookingConfigs = BookingConfig::where('scheduled_at', '>', Carbon::now())
+            ->where('ends_at', '>', Carbon::now())
+            ->orderBy('scheduled_at', 'asc')
+            ->get();
+
+        foreach ($bookingConfigs as $config) {
+            if ($config->canUserBook($this) && $config->canYearGroupBook($this->year_group_id)) {
+                return $config->scheduled_at;
+            }
+        }
+
+        return null;
     }
 
 }

@@ -56,13 +56,12 @@ class Club extends Model
     })
     ->get();
 
-    // Attach only the changeInfo for each clubInstance
-    // $clubs->each(function ($club) use ($user) {
-    //     $club->clubInstances->each(function ($clubInstance) use ($user) {
-    //         $changeInfo = ClubInstance::getClubsToChangeIfBooked($user, $clubInstance);
-    //         $clubInstance->changeInfo = $changeInfo->getData(true); // Directly access the content without decoding
-    //     });
-    // });
+    $clubs->each(function ($club) use ($user) {
+        $club->clubInstances = $club->clubInstances->filter(function ($clubInstance) {
+            return $clubInstance->canBeBooked(); // Assuming canBeBooked() is a method in ClubInstance model
+        });
+    });
+
 
     return $clubs;
 }
