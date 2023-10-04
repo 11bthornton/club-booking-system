@@ -27,17 +27,18 @@ class ClubInstance extends Model
     public function canBeBooked()
     {
         // Pull the latest relevant BookingConfig
-        $bookingConfig = BookingConfig::where('scheduled_at', '<=', Carbon::now())
-            ->where('ends_at', '>=', Carbon::now())
-            ->latest('scheduled_at')
+        $bookingConfig = BookingConfig::all()
+
             ->first();
+
 
         // If there's no current BookingConfig, the ClubInstance can't be booked
         if (!$bookingConfig) {
+            // die("sdfsd");
             return false;
         }
 
-        return $bookingConfig->canClubBook($this->id);
+        return $bookingConfig->canClubInstanceBook($this->id);
     }
 
     public function yearGroups()

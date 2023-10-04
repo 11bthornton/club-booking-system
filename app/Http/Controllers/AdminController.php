@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 
 use App\Models\BookingConfig;
+use App\Models\UserClub;
 
 class AdminController extends Controller
 {
@@ -28,5 +29,21 @@ class AdminController extends Controller
             ->first();
 
         return response()->json($currentConfigs);
+    }
+
+    public function deleteBookingForUser(Request $request, $bookingId) {
+
+        $booking = UserClub::findOrFail($bookingId);
+        $booking->delete();
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Successfully deleted booking for User',
+            'data' => [
+                /**
+                 * 
+                 */
+            ]
+        ]);
     }
 }

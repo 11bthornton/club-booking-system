@@ -21,6 +21,7 @@ class Kernel extends HttpKernel
         \Illuminate\Foundation\Http\Middleware\ValidatePostSize::class,
         \App\Http\Middleware\TrimStrings::class,
         \Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull::class,
+        \App\Http\Middleware\AddCsrfToInertiaResponse::class,
     ];
 
     /**
@@ -70,7 +71,7 @@ class Kernel extends HttpKernel
 
     protected $routeMiddleware = [
         'is.admin' => \App\Http\Middleware\EnsureIsAdmin::class,
-        'checkbooking' => \App\Http\Middleware\CheckBookingStatus::class,
+        // 'checkbooking' => \App\Http\Middleware\CheckBookingStatus::class,
         'canBookClubs' => \App\Http\Middleware\CheckIfUserCanBookClubs::class,
 
     ];

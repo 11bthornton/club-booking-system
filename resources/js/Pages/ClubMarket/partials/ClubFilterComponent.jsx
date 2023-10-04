@@ -11,13 +11,23 @@ import { ClubModal } from "./ClubModal";
 
 
 
+
+
 function findClubByInstanceID(clubs, instanceID) {
-    return Object.values(clubs).find(club =>
-        club.club_instances.some(instance => instance.id === instanceID)
+
+
+
+    return Object.values(clubs).find(club => {
+        console.log(Object.values(club.club_instances))
+
+        return (Object.values(club.club_instances).some(instance => instance.id === instanceID))
+    }
     );
 }
 
 export function ClubFilterComponent({ availableClubs, setAvailableClubs, activeStep, clubSelections, setClubSelections, handleBack, handleNext, steps }) {
+
+    // console.log("HEREER", availableClubs);
 
     const [modalOpen, setModalOpen] = useState(false);
     const [selectedDay, setSelectedDay] = useState("Wednesday");
@@ -76,20 +86,20 @@ export function ClubFilterComponent({ availableClubs, setAvailableClubs, activeS
                 <div className="flex gap-4 items-baseline justify-center mt-4 mb-2">
                     <FontAwesomeIcon
                         icon={faCalendarDays}
-                        className='mb-4' 
+                        className='mb-4'
                     />
                     <em>Term dates: 1st September 2024 - 3rd October 2024</em>
                 </div>
 
                 <Divider style={{ margin: '10px 0' }} />
 
-                <Box 
-      display="flex" 
-      flexDirection={matches ? 'column' : 'row'} 
-      alignItems="center"
-      justifyContent="center"
-      gap={2}
-    >                    <ClubCard
+                <Box
+                    display="flex"
+                    flexDirection={matches ? 'column' : 'row'}
+                    alignItems="center"
+                    justifyContent="center"
+                    gap={2}
+                >                    <ClubCard
                         day="Wednesday"
                         isSelected={!!selectedClubWednesday}
                         instance={selectedClubWednesday?.id}
@@ -97,7 +107,7 @@ export function ClubFilterComponent({ availableClubs, setAvailableClubs, activeS
                         onChoose={handleModalOpen}
                         term={term}
                         setAvailableClubs={setAvailableClubs}
-                        setClubSelections={setClubSelections} 
+                        setClubSelections={setClubSelections}
                     />
                     <ClubCard
                         day="Friday"
@@ -107,7 +117,7 @@ export function ClubFilterComponent({ availableClubs, setAvailableClubs, activeS
                         onChoose={handleModalOpen}
                         term={term}
                         setClubSelections={setClubSelections}
-                        setAvailableClubs={setAvailableClubs} 
+                        setAvailableClubs={setAvailableClubs}
                     />
                 </Box>
 
@@ -119,7 +129,7 @@ export function ClubFilterComponent({ availableClubs, setAvailableClubs, activeS
                     availableClubs={availableClubs}
                     setAvailableClubs={setAvailableClubs}
                     clubSelections={clubSelections}
-                    setClubSelections={setClubSelections} 
+                    setClubSelections={setClubSelections}
                 />
 
             </Box>

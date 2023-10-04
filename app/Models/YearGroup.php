@@ -13,6 +13,18 @@ class YearGroup extends Model
     public $incrementing = false;
     protected $keyType = 'string';
 
+
+    public function activeBookingConfigs()
+    {
+        return $this->belongsToMany(
+            BookingConfig::class,
+            'allowed_year_groups',  // pivot table name
+            'year',  // foreign key on the pivot table related to YearGroup
+            'booking_config_id'  // foreign key on the pivot table related to BookingConfig
+        )
+        ->where('scheduled_at', '<=', now())
+        ->where('ends_at', '>', now());
+    }
     
 
 }

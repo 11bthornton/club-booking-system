@@ -36,35 +36,47 @@ class Club extends Model
         return self::with('clubInstances')->get();
     }
 
-    public static function getAllWithInstancesForUser(User $user)
-{
-    $year = $user->year;
 
-    // Fetch the clubs with their instances without unnecessary relationships
-    $clubs = self::with([
-        'clubInstances' => function ($query) use ($year) {
+
+    public static function getAllWithInstancesForUser(User $user)
+    {
+        $year = $user->year;
+
+        $activeBookingConfigs = $user->getAllActiveBookingConfigs();
+        // dd($activeBookingConfigs);
+        // Fetch the clubs with their instances without unnecessary relationships
+        $clubs = self::with([
+            'clubInstances' => function ($query) use ($year) {
+                $query->whereHas('yearGroups', function ($q) use ($year) {
+                    $q->where('year_group_club.year', $year);
+                })
+                ->select(['id', 'club_id', 'half_term', 'capacity', 'day_of_week', 'created_at', 'updated_at']); // Only select necessary columns
+            },
+        ])
+        ->whereHas('clubInstances', function ($query) use ($year) {
             $query->whereHas('yearGroups', function ($q) use ($year) {
                 $q->where('year_group_club.year', $year);
-            })
-            ->select(['id', 'club_id', 'half_term', 'capacity', 'day_of_week', 'created_at', 'updated_at']); // Only select necessary columns
-        },
-    ])
-    ->whereHas('clubInstances', function ($query) use ($year) {
-        $query->whereHas('yearGroups', function ($q) use ($year) {
-            $q->where('year_group_club.year', $year);
+            });
+        })
+        ->get();
+    
+        // Filter club instances based on the criteria
+        $clubs->each(function ($club) use ($user, $activeBookingConfigs) {
+            $filteredClubInstances = $club->clubInstances->filter(function ($clubInstance) use ($activeBookingConfigs) {
+                foreach ($activeBookingConfigs as $bookingConfig) {
+
+                    if ($bookingConfig->canClubInstanceBook($clubInstance->id)) {
+                        return true;
+                    }
+                }
+                return false;
+            });
+            $club->setRelation('clubInstances', $filteredClubInstances);
         });
-    })
-    ->get();
-
-    $clubs->each(function ($club) use ($user) {
-        $club->clubInstances = $club->clubInstances->filter(function ($clubInstance) {
-            return $clubInstance->canBeBooked(); // Assuming canBeBooked() is a method in ClubInstance model
-        });
-    });
-
-
-    return $clubs;
-}
+        
+        
+        return $clubs;
+    }
 
     
 

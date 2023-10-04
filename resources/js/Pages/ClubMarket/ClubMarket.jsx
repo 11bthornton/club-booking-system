@@ -21,13 +21,6 @@ import { ClubFilterComponent } from './partials/ClubFilterComponent';
 
 import "./ClubMarket.css";
 
-
-export function findClubByInstanceID(clubs, instanceID) {
-    return Object.values(clubs).find(club =>
-        club.club_instances.some(instance => instance.id === instanceID)
-    );
-}
-
 function getSteps() {
     return ['Term 1', 'Term 2', 'Term 3', 'Term 4', 'Term 5', 'Term 6', 'Finish'];
 }
@@ -132,6 +125,10 @@ export default function ClubMarket({ auth, userAvailableClubs, alreadyBookedOn }
             }
         >
          
+            {
+                JSON.stringify(userAvailableClubs)
+            }
+
             <Head title="Club Market" />
 
             <div className="container mx-auto p-6">

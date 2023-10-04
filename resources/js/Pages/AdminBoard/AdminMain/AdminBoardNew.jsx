@@ -2,16 +2,50 @@ import React, { useEffect, useState } from "react";
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 
 import { Head } from '@inertiajs/react';
-import { Inertia } from '@inertiajs/inertia';
-import toast from "react-hot-toast";
 
-import Alert from "@mui/material/Alert";
+import {
+    Card,
+    CardHeader,
+    CardBody,
+    CardFooter,
+    Typography,
+    Button,
+    ButtonGroup,
+    Chip
+} from "@material-tailwind/react";
+import {
+    Timeline,
+    TimelineItem,
+    TimelineConnector,
+    TimelineHeader,
+    TimelineIcon,
+    TimelineBody,
+    // Typography,
+} from "@material-tailwind/react";
 
-import { Avatar } from "@mui/material";
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
+export function ChipWithStatus() {
+    return (
+        <div className="flex gap-2">
+            <Chip
+                variant="ghost"
+                color="green"
+                size="sm"
+                value="System Live"
+                icon={
+                    <span className="mx-auto mt-1 block h-2 w-2 rounded-full bg-green-900 content-['']" />
+                }
+            />
 
-export default function Dashboard({ auth }) {
+        </div>
+    );
+}
+
+import SystemSchedulerCard from "./SystemSchedulerCard";
+
+import { StepProvider } from "./StepContext";
+
+export default function Dashboard({ auth, clubData }) {
 
     const [selectedDate, setSelectedDate] = useState(new Date());
 
@@ -24,93 +58,88 @@ export default function Dashboard({ auth }) {
             user={auth.user}
             header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Admin Dashboard</h2>}
         >
-            <Head title="Add New Club" />
-
+            <Head title="Admin Dashboard" />
             <div class="container mx-auto p-6">
-                <div className="flex mb-5">
-                    <Avatar>KT</Avatar>
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
-                    <div class="card">
-                        <div class="p-4 bg-white rounded-lg shadow-md">
-                            <div className="flex justify-between items-center">
-                                <h2 class="text-xl font-semibold mb-2">System</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+
+                    <StepProvider>
+
+                        <SystemSchedulerCard
+                            clubData={clubData}
+                        />
+
+                    </StepProvider>
+
+
+                    <Card className="w-full">
+
+                        <CardBody>
+                            <div className="flex justify-between items-start">
                                 <div>
-                                    <em className="text-bold">Bookings Open</em>
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="mb-4 w-12 h-12">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.59 14.37a6 6 0 01-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 006.16-12.12A14.98 14.98 0 009.631 8.41m5.96 5.96a14.926 14.926 0 01-5.841 2.58m-.119-8.54a6 6 0 00-7.381 5.84h4.8m2.581-5.84a14.927 14.927 0 00-2.58 5.84m2.699 2.7c-.103.021-.207.041-.311.06a15.09 15.09 0 01-2.448-2.448 14.9 14.9 0 01.06-.312m-2.24 2.39a4.493 4.493 0 00-1.757 4.306 4.493 4.493 0 004.306-1.758M16.5 9a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" />
+                                    </svg>
+
+                                    <Typography variant="h5" color="blue-gray" className="mb-2">
+                                        Clubs
+                                    </Typography>
+                                </div>
+                                <div className="flex flex-col justify-center items-center gap-2">
+                                    <div></div>
+                                    <div></div>
                                 </div>
                             </div>
-                            <Alert severity="success" className="mb-4 mt-4">
-                                The system is currently <strong>open</strong> for bookings.
-                            </Alert>
+                            <Typography>
+                                Schedule bookings to go live - globally or for specific year groups, users, or clubs.
 
-                            <div className="flex items-center gap-3 mb-4">
-                                <FontAwesomeIcon icon={faInfo} />
-                                <p class="text-gray-600">Manage information about the system. Schedule system to open at certain times. </p>
-                            </div>
-
-                            <div className="text-sm flex justify-between items-baseline mt-2">
-                                <strong>Next Scheduled Open Time:</strong>
-                                <p>3/4/12 12:00:00</p>
-                            </div>
-                            <div className="mt-2 flex justify-end">
-                                <Button onClick={() => setDialogOpen(true)} variant="outlined">
-                                    Schedule Next Open Time
-                                </Button>
-                            </div>
-                            <BookingScheduler
-                                open={isDialogOpen}
-                                onClose={() => setDialogOpen(false)}
-                            />
-                            <div className="p-2 mt-3 bg-gray-100 rounded-md">
-                                <h3 class="text-l font-semibold mt-2 ">Quick Links</h3>
-                                <ul class="">
-                                    <li><a href="#" class="text-sm text-blue-600 hover:underline">Open or schedule bookings</a></li>
-                                    <li><a href="#" class="text-sm text-blue-600 hover:underline">Logs</a></li>
-                                    <li><a href="#" class="text-sm text-blue-600 hover:underline">System settings</a></li>
-
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="card">
-                        <div class="p-4 bg-white rounded-lg shadow-md">
-                            <h2 class="text-xl font-semibold mb-2">Clubs</h2>
-                            <Alert severity="error" className="mb-4 mt-4">
-                                7 Clubs at Capacity
-                            </Alert>
-                            <p class="text-gray-600">Manage clubs and information about them.</p>
-                            <h3 class="text-l font-semibold mt-4">Quick Links</h3>
-                            <ul class="">
-                                <li><a href="admin/clubs" class="text-sm text-blue-600 hover:underline">View clubs</a></li>
-                                <li><a href="admin/clubs/new" class="text-sm text-blue-600 hover:underline">Add a new club</a></li>
-                            </ul>
-                        </div>
-                    </div>
-
-                    <div class="card">
-                        <div class="p-4 bg-white rounded-lg shadow-md">
-                            <h2 class="text-xl font-semibold mb-2">Students & Bookings</h2>
-                            <Alert severity="warning" className="mb-4 mt-4">
-                                <strong>7 students have not made a booking yet.</strong>
-                            </Alert>
-                            <p class="text-gray-600">Manage information about students and their choices.</p>
-                            <h3 class="text-l font-semibold mt-4">Quick Links</h3>
-                            <ul class="">
-                                <li><a href="/admin/students" class="text-sm text-blue-600 hover:underline">View students</a></li>
-                                <li><a href="#" class="text-sm text-blue-600 hover:underline">Manage users</a></li>
-                                <li><a href="#" class="text-sm text-blue-600 hover:underline">Settings</a></li>
-                                <li><a href="#" class="text-sm text-blue-600 hover:underline">Reports</a></li>
-                                <li><a href="#" class="text-sm text-blue-600 hover:underline">Logout</a></li>
-                            </ul>
-                        </div>
-
-                    </div>
-
+                            </Typography>
+                        </CardBody>
+                        <CardFooter className="pt-0">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <Button variant="text" className="flex lg:justify-center items-center gap-2" >
+                        <p>Open</p>
+                    </Button>
+                    <Button variant="text" className="flex lg:justify-center items-center gap-2">
+                        <p>View</p>
+                    </Button>
+                    <Button variant="text" className="flex lg:justify-center items-center gap-2">
+                        <p>Three</p>
+                    </Button>
                 </div>
-                <div className="card p-4 bg-white rounded-lg shadow-md mt-5">
-                    <h2 class="text-xl font-semibold mb-2">Overview</h2>
+                        </CardFooter>
+                    </Card>
+                    <Card className="w-full">
+                        <CardBody>
+                            <div className="flex justify-between items-start">
+                                <div>
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-12 h-12 mb-4">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M17.982 18.725A7.488 7.488 0 0012 15.75a7.488 7.488 0 00-5.982 2.975m11.963 0a9 9 0 10-11.963 0m11.963 0A8.966 8.966 0 0112 21a8.966 8.966 0 01-5.982-2.275M15 9.75a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    </svg>
+                                    <Typography variant="h5" color="blue-gray" className="mb-2">
+                                        Students
+                                    </Typography>
+                                </div>
+                                {/* <ChipWithStatus /> */}
+                            </div>
+                            <Typography>
+                                Manage information about students and edit their bookings.
+                            </Typography>
+                        </CardBody>
+                        <CardFooter className="pt-0">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <Button variant="text" className="flex lg:justify-center items-center gap-2">
+                        <p>Open</p>
+                    </Button>
+                    <Button variant="text" className="flex lg:justify-center items-center gap-2">
+                        <p>View</p>
+                    </Button>
+                    <Button variant="text" className="flex lg:justify-center items-center gap-2">
+                        <p>Three</p>
+                    </Button>
+                </div>
+                        </CardFooter>
+                    </Card>
                 </div>
             </div>
         </AuthenticatedLayout>
@@ -120,274 +149,3 @@ export default function Dashboard({ auth }) {
 
 
 
-
-// import React, { useState } from 'react';
-import { Stepper, Step, StepLabel, Button, Dialog, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
-
-// /import Stepper from "@mui/material";
-
-function BookingScheduler({ open, onClose }) {
-
-    const [activeStep, setActiveStep] = useState(0);
-    const [selectedTime, setSelectedTime] = useState(null);
-    const [selectedYearGroups, setSelectedYearGroups] = useState([]);
-    const [selectedUsers, setSelectedUsers] = useState([]);
-    const [selectedClubs, setSelectedClubs] = useState([]);
-    const [selectedAll, setSelectedAll] = useState(false);
-
-    const handleNext = () => {
-        setActiveStep((prevActiveStep) => prevActiveStep + 1);
-    };
-
-    const handleBack = () => {
-        setActiveStep((prevActiveStep) => prevActiveStep - 1);
-    };
-
-    const handleYearGroupChange = (year, isChecked) => {
-        if (isChecked) {
-            setSelectedYearGroups([...selectedYearGroups, year]);
-        } else {
-            setSelectedYearGroups(selectedYearGroups.filter(y => y !== year));
-        }
-    };
-
-    const handleSelectAll = (isChecked) => {
-        setSelectedAll(isChecked);
-        if (isChecked) {
-            setSelectedYearGroups([7, 8, 9, 10, 11]);
-        } else {
-            setSelectedYearGroups([]);
-        }
-    };
-
-    return (
-        <Dialog open={open} maxWidth="md" fullWidth onClose={onClose} PaperProps={{
-            sx: {
-                height: 800,
-                position: 'relative', // Add this line
-            }
-        }}>
-            <div className="p-4 h-4/5">
-                <div className="p-6">
-                    <Stepper activeStep={activeStep}>
-                        <Step><StepLabel>Select Time</StepLabel></Step>
-                        <Step><StepLabel>Select Year Groups</StepLabel></Step>
-                        <Step><StepLabel>Select Users</StepLabel></Step>
-                        <Step><StepLabel>Select Clubs</StepLabel></Step>
-                        <Step><StepLabel>Confirm</StepLabel></Step>
-                    </Stepper>
-                </div>
-
-                <div className="mt-6 mb-4 h-full">
-                    {activeStep === 0 && (
-                        <div style={{
-                            display: 'flex',
-                            flexDirection: 'row',
-                            alignItems: 'stretch',
-                            width: '100%',
-                            height: '100%'
-                        }}>
-                            {/* Left Section: Controls */}
-                            <div style={{
-                                flex: '0 0 60%', // This takes up 3/4 of the space
-                                padding: '20px',
-                                borderRight: '1px solid #ccc' // Vertical divider
-                            }}>
-                                <div style={{
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    height: '100%'
-                                }}
-                                // className="mt-10"
-                                >
-                                    <div style={{
-                                        marginBottom: '20px',
-                                        width: '100%',
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                        alignItems: 'center'
-                                    }}>
-                                        <label htmlFor="start-datetime" style={{ fontWeight: 'bold', marginBottom: '8px' }}>Start Time</label>
-                                        <input
-                                            type="datetime-local"
-                                            id="start-datetime"
-                                            name="start-datetime"
-                                            required
-                                            onChange={(e) => setSelectedStartTime(e.target.value)}
-                                            style={{ textAlign: 'center' }}
-                                        />
-                                    </div>
-                                    <div style={{
-                                        marginBottom: '20px',
-                                        width: '100%',
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                        alignItems: 'center'
-                                    }}>
-                                        <label htmlFor="end-datetime" style={{ fontWeight: 'bold', marginBottom: '8px' }}>End Time</label>
-                                        <input
-                                            type="datetime-local"
-                                            id="end-datetime"
-                                            name="end-datetime"
-                                            required
-                                            onChange={(e) => setSelectedEndTime(e.target.value)}
-                                            style={{ textAlign: 'center' }}
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Right Section: Info and Instructions */}
-                            <div style={{
-                                flex: '0 0 40%', // This takes up 1/4 of the space
-                                padding: '20px'
-                            }}>
-                                { /* Your info and instructions go here */}
-                            </div>
-                        </div>
-                    )}
-
-
-                    {activeStep === 1 && (
-                        <div style={{
-                            display: 'flex',
-                            flexDirection: 'row',
-                            alignItems: 'stretch',
-                            width: '100%',
-                            height: '100%'
-                        }}>
-                            {/* Left Section: Controls */}
-                            <div style={{
-                                flex: '0 0 60%', // This takes up 3/4 of the space
-                                padding: '20px',
-                                borderRight: '1px solid #ccc' // Vertical divider
-                            }}>
-                                <div style={{
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    height: '100%'
-                                }}
-                                // className="mt-10"
-                                >
-
-                                    <FormControl>
-                                        <FormGroup>
-                                            <FormControlLabel
-                                                control={
-                                                    <Checkbox
-                                                        checked={selectedYearGroups.length == 5}
-                                                        onChange={(e) => handleSelectAll(e.target.checked)}
-                                                    />
-                                                }
-                                                label="Select All"
-                                            />
-
-                                            <FormControlLabel
-                                                control={
-                                                    <Checkbox
-                                                        checked={selectedYearGroups.includes(7)}
-                                                        onChange={(e) => handleYearGroupChange(7, e.target.checked)}
-                                                    />
-                                                }
-                                                label="Year 7"
-                                            />
-
-                                            <FormControlLabel
-                                                control={
-                                                    <Checkbox
-                                                        checked={selectedYearGroups.includes(8)}
-                                                        onChange={(e) => handleYearGroupChange(8, e.target.checked)}
-                                                    />
-                                                }
-                                                label="Year 8"
-                                            />
-                                            <FormControlLabel
-                                                control={
-                                                    <Checkbox
-                                                        checked={selectedYearGroups.includes(9)}
-                                                        onChange={(e) => handleYearGroupChange(9, e.target.checked)}
-                                                    />
-                                                }
-                                                label="Year 9"
-                                            />
-                                            <FormControlLabel
-                                                control={
-                                                    <Checkbox
-                                                        checked={selectedYearGroups.includes(10)}
-                                                        onChange={(e) => handleYearGroupChange(10, e.target.checked)}
-                                                    />
-                                                }
-                                                label="Year 10"
-                                            />
-                                            <FormControlLabel
-                                                control={
-                                                    <Checkbox
-                                                        checked={selectedYearGroups.includes(11)}
-                                                        onChange={(e) => handleYearGroupChange(11, e.target.checked)}
-                                                    />
-                                                }
-                                                label="Year 11"
-                                            />
-
-                                            {/* Add more checkboxes for each year group */}
-                                        </FormGroup>
-                                    </FormControl>
-
-
-                                </div>
-                            </div>
-
-                            {/* Right Section: Info and Instructions */}
-                            <div style={{
-                                flex: '0 0 40%', // This takes up 1/4 of the space
-                                padding: '20px'
-                            }}>
-                                { /* Your info and instructions go here */}
-                            </div>
-                        </div>
-                    )}
-
-
-                    {activeStep === 2 && selectedYearGroups.length !== 5 && (
-                        <FormControl>
-                            <InputLabel>Users</InputLabel>
-                            <Select multiple value={selectedUsers} onChange={(e) => setSelectedUsers(e.target.value)}>
-                                {/* Add MenuItems for each user */}
-                            </Select>
-                        </FormControl>
-                    )}
-
-                    {activeStep === 3 && (
-                        <FormControl>
-                            <InputLabel>Clubs</InputLabel>
-                            <Select multiple value={selectedClubs} onChange={(e) => setSelectedClubs(e.target.value)}>
-                                {/* Add MenuItems for each club */}
-                            </Select>
-                        </FormControl>
-                    )}
-
-                    <div style={{
-                        position: 'absolute',
-                        bottom: '20px',
-                        right: '20px',
-                        display: 'flex',
-                        justifyContent: 'flex-end',
-                    }}>
-                        <Button disabled={activeStep === 0} onClick={handleBack}>Back</Button>
-                        <Button variant="contained" color="primary" onClick={handleNext}>
-                            {activeStep === 3 ? 'Finish' : 'Next'}
-                        </Button>
-                    </div>
-                </div>
-            </div>
-        </Dialog>
-    );
-}
-
-import { FormControlLabel } from "@mui/material";
-import { FormGroup, Checkbox } from "@mui/material";
-import { faInfo } from "@fortawesome/free-solid-svg-icons";

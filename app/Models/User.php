@@ -117,28 +117,32 @@ class User extends Authenticatable
     }
 
     
+    /**
+     * Eligible to book SOME clubs
+     */
     private function checkIfUserCanBookClubs()
     {
 
-        // Get the latest BookingConfig where the current time falls within the scheduled_at and ends_at range.
-        $currentBookingConfig = BookingConfig::where('scheduled_at', '<=', now())
+        // dd(BookingConfig::all());
+
+        // Get all BookingConfigs where the current time falls within the scheduled_at and ends_at range.
+        $currentBookingConfigs = BookingConfig::where('scheduled_at', '<=', now())
             ->where('ends_at', '>=', now())
-            ->latest()
-            ->first();
+            ->get();
+
+
+        // dd($currentBookingConfigs);
 
         // If there's no active booking configuration, the user can't book.
-        if (!$currentBookingConfig) {
+        if ($currentBookingConfigs->isEmpty()) {
             return false;
         }
 
-        // Check if the user is allowed to book based on the AllowedUsers table.
-        if ($currentBookingConfig->allowedUsers->contains($this->id)) {
-            return true;
-        }
-
-        // Check if the user's year group is allowed to book based on the AllowedYearGroups table.
-        if ($currentBookingConfig->allowedYearGroups->contains($this->year)) {
-            return true;
+        foreach ($currentBookingConfigs as $currentBookingConfig) {
+            // Use the relation method to check if the user is allowed to book
+            if ($currentBookingConfig->isUserAllowedToBook($this)) {
+                return true;
+            }
         }
 
         return false;
@@ -159,5 +163,43 @@ class User extends Authenticatable
 
         return null;
     }
+
+    public function activeBookingConfigs()
+{
+    return $this->belongsToMany(
+        BookingConfig::class,
+        'allowed_users', 
+        'user_id', 
+        'booking_config_id'
+    )->where('scheduled_at', '<=', now())
+    ->where('ends_at', '>', now());
+}
+
+public function getAllActiveBookingConfigs()
+{
+    // BookingConfigs related to the user
+    $userBookingConfigs = $this->activeBookingConfigs;
+
+    // BookingConfigs related to the user's year group
+    $yearGroup = $this->yearGroup;  // Assuming the relationship is called "yearGroup"
+    $yearGroupBookingConfigs = $yearGroup ? $yearGroup->activeBookingConfigs : collect();
+
+    // Combine and remove duplicates
+    $allBookingConfigs = $userBookingConfigs->concat($yearGroupBookingConfigs)->unique('id');
+
+    return $allBookingConfigs;
+}
+
+
+    public function bookingConfigs()
+{
+    return $this->belongsToMany(
+        BookingConfig::class,
+        'allowed_users',  // name of the pivot table
+        'user_id',  // foreign key on the pivot table that references this model's table
+        'booking_config_id'  // foreign key on the pivot table that references the related model's table
+    );
+}
+
 
 }

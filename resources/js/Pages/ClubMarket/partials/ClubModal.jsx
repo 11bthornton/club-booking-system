@@ -19,7 +19,7 @@ export function ClubModal({ open, handleClose, term, day, availableClubs, clubSe
     const [selectedInstanceToBook, setSelectedInstanceToBook] = useState(null);
 
     const filteredClubs = Object.values(availableClubs).filter(
-        club => club.club_instances
+        club => Object.values(club.club_instances)
             .some(instance => instance.half_term === term && instance.day_of_week === day)
     );
 
@@ -76,7 +76,7 @@ export function ClubModal({ open, handleClose, term, day, availableClubs, clubSe
                     >
                         {filteredClubs.map(club => {
 
-                            const instance = club.club_instances.filter(instance => instance.day_of_week == day && instance.half_term == term)[0];
+                            const instance = Object.values(club.club_instances).filter(instance => instance.day_of_week == day && instance.half_term == term)[0];
                             const isDisabled = alreadySelectedAsIds.some(id => instance.id === id);
 
                             return (

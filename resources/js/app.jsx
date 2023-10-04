@@ -5,16 +5,35 @@ import { createRoot } from 'react-dom/client';
 import { createInertiaApp } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 
-import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { SpinnerProvider } from "./LoadingContext";
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
-const theme = createTheme({
-    
-    typography: {
-      fontFamily: 'Inter, sans-serif',  // Assuming 'Inter' is the default font
-    },
-  });
+// import { ThemeProvider } from '@material-tailwind/react';
+
+import { Inertia } from '@inertiajs/inertia';
+
+// This will run globally for all Inertia responses
+Inertia.on('success', (event) => {
+    console.log('Event:', event.detail);
+
+    // If it exists, destructure the xhr object.
+    const { xhr } = event || {};
+
+    if (xhr) {
+        const newCsrfToken = xhr.getResponseHeader('X-CSRF-TOKEN');
+        if (newCsrfToken) {
+            document.querySelector('meta[name="csrf-token"]').setAttribute('content', newCsrfToken);
+        }
+    } else {
+        console.warn("xhr object not found in the event");
+    }
+});
+
+// Your createInertiaApp call or equivalent setup here
+
+
+import { ThemeProvider } from "@material-tailwind/react";
 
 createInertiaApp({
     title: (title) => `${title} - Bethany Club Booking`,
@@ -22,9 +41,11 @@ createInertiaApp({
     setup({ el, App, props }) {
         const root = createRoot(el);
         root.render(
-            <ThemeProvider theme={theme}>
-                <App {...props} />
-            </ThemeProvider>
+            <SpinnerProvider>
+                <ThemeProvider>
+                    <App {...props} />
+                </ThemeProvider>
+            </SpinnerProvider>
         );
     },
     progress: {

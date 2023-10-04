@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
+use Illuminate\Support\Facades\DB;
 
 use App\Models\User;
 use App\Models\YearGroup;
@@ -24,6 +25,51 @@ class BookingConfig extends Model
         $latestConfig = self::latest('scheduled_at')->first();
         return $latestConfig ? $latestConfig->is_open : false;
     }
+
+    public static function createFromJson($jsonPayload)
+{
+    // Decode the JSON payload
+
+    // die($data);
+
+    // Begin a database transaction to ensure all operations are atomic
+    // DB::beginTransaction();
+
+    try {
+
+        $d = Carbon::now();
+
+        // die($d);
+        // Log::info(Carbon::now());
+        // Create a new booking config
+        $bookingConfig = BookingConfig::create([
+                'scheduled_at' => Carbon::now(),
+                'ends_at' => Carbon::now()
+            ]);
+        die($bookingConfig);
+
+        // Attach Clubs if specified, else attach all
+        $clubs = $jsonPayload['clubs'] ?: ClubInstance::all()->pluck('id');
+        $bookingConfig->allowedClubs()->attach($clubs);
+
+        // Attach Year Groups
+        $yearGroups = $jsonPayload['year_groups'] ?: YearGroup::all()->pluck('id');
+        $bookingConfig->allowedYearGroups()->attach($yearGroups);
+
+        // Attach Users if specified, else attach all
+        $users = $jsonPayload['students'] ?: User::all()->pluck('id');
+        $bookingConfig->allowedUsers()->attach($users);
+
+        // Commit the transaction if everything is okay
+        // DB::commit();
+
+        return $bookingConfig;
+    } catch (\Exception $e) {
+        // Rollback the transaction in case of errors
+        DB::rollback();
+        throw $e;
+    }
+}
 
     // public static function create(array $attributes = [])
     // {
@@ -72,27 +118,31 @@ class BookingConfig extends Model
     // This might be wrong.
     public function allowedClubs(): BelongsToMany
     {
-        return $this->belongsToMany(ClubInstance::class, 'allowed_clubs', 'booking_config_id', 'club_id');
+        return $this->belongsToMany(ClubInstance::class, 'allowed_club_instances', 'booking_config_id', 'club_instance_id');
     }
 
-
-    protected static function booted()
+    public function isUserAllowedToBook($user)
     {
-        static::created(function ($bookingConfig) {
-            
-            // Associate with all Clubs
-            $allClubs = ClubInstance::all()->pluck('id');
-            $bookingConfig->allowedClubs()->attach($allClubs);
-
-            // Associate with all Users
-            $allUsers = User::all()->pluck('id');
-            $bookingConfig->allowedUsers()->attach($allUsers);
-
-            // Associate with all Year Groups
-            // $allYearGroups = YearGroup::all()->pluck('id');
-            // $bookingConfig->allowedYearGroups()->attach($allYearGroups);
-        });
+        return $this->allowedUsers->contains($user->id) || $this->allowedYearGroups->contains($user->year);
     }
+
+    // protected static function booted()
+    // {
+    //     static::created(function ($bookingConfig) {
+            
+    //         // Associate with all Clubs
+    //         $allClubs = ClubInstance::all()->pluck('id');
+    //         $bookingConfig->allowedClubs()->attach($allClubs);
+
+    //         // Associate with all Users
+    //         $allUsers = User::all()->pluck('id');
+    //         $bookingConfig->allowedUsers()->attach($allUsers);
+
+    //         // Associate with all Year Groups
+    //         $allYearGroups = YearGroup::all()->pluck('id');
+    //         $bookingConfig->allowedYearGroups()->attach($allYearGroups);
+    //     });
+    // }
 
 
 }

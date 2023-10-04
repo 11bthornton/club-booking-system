@@ -31,6 +31,7 @@ class UserClub extends Model
     public function delete()
     {
 
+        // die("hey");
         $clubInstance = $this->clubInstance;
 
         // die("hey!");
