@@ -13,7 +13,7 @@ import {
 
 import { Switch } from "@material-tailwind/react";
 
-import { ChipWithStatus } from "./AdminBoardNew";
+import { ChipWithStatus } from "./ChipWithStatus";
 
 import StepsDialog from "./StepsDialog";
 import {

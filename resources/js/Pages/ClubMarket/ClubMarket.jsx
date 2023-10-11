@@ -8,8 +8,6 @@ import { useAvailableClubs } from "@/ClubContext";
 import {
     Alert,
     Typography,
-    Chip,
-    Tooltip,
     Timeline,
     TimelineItem,
     TimelineConnector,
@@ -18,21 +16,7 @@ import {
     TimelineBody,
 } from "@material-tailwind/react";
 
-import { TermChoiceCard } from "../../Components/ClubMarket/TermChoiceCard";
-
-export function ChipWithStatus({ text, color, icon, tooltipContent }) {
-    return (
-        <Tooltip content={tooltipContent}>
-            <Chip
-                variant="ghost"
-                color={color}
-                size="sm"
-                value={text}
-                icon={icon}
-            />
-        </Tooltip>
-    );
-}
+import { TermChoiceCard } from "@/Components/ClubMarket/TermChoiceCard";
 
 export default function ClubMarket({
     auth,

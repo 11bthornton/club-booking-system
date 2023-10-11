@@ -8,14 +8,7 @@ export function TermChoiceCard({ term }) {
                 {["Wednesday", "Friday"].map((day) => (
                     <ClubChoiceCard term={term} day={day} />
                 ))}
-                {/* <Card color='transparent' className='shadow-none '>
-                <CardBody>
-                    <div className='flex flex-col items-center justify-center h-full'>
-                        <LoadingCircle />
-                    </div>
-
-                </CardBody>
-            </Card> */}
+                
             </div>
         </div>
     );

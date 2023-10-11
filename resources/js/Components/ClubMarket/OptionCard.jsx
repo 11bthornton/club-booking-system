@@ -12,7 +12,7 @@ import {
 } from "@material-tailwind/react";
 import { useSpinner } from "@/LoadingContext";
 import findClubChanges from "../../Pages/ClubMarket/scripts/SimulateBooking";
-import { ChipWithStatus } from "../../Pages/ClubMarket/ClubMarket";
+import { ChipWithStatus } from "./ChipWithStatus";
 import { ChangeConfirmationDialogue } from "@/Components/ClubMarket/ChangeConfirmationDialogue";
 
 export function OptionCard({
@@ -126,7 +126,7 @@ export function OptionCard({
                         </div>
 
                         <Typography className="max-h-[100px] h-[100px] min-h-[100px] overflow-hidden">
-                            {currentClubInfo.description} - Play with knives.
+                            {currentClubInfo.description}.
                         </Typography>
                     </div>
 

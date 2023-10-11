@@ -9,7 +9,8 @@ import {
     Typography,
     Tooltip,
 } from "@material-tailwind/react";
-import { ChipWithStatus } from "../../Pages/ClubMarket/ClubMarket";
+
+import { ChipWithStatus } from "./ChipWithStatus";
 import { FindClubModal } from "@/Components/ClubMarket/FindClubModal";
 
 export function EmptyChoiceCard({ term, day }) {
@@ -24,7 +25,7 @@ export function EmptyChoiceCard({ term, day }) {
                 term={term}
                 day={day}
             />
-            <Card className="mt-2 w-96 border border-4 border-dashed bg-gray-50 shadow-none">
+            <Card className="mt-2 w-96 border-4 border-dashed bg-gray-50 shadow-none">
                 <CardHeader
                     // variant="gradient"
                     color="transparent"

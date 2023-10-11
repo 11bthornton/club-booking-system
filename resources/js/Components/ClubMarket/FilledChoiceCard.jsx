@@ -9,7 +9,7 @@ import {
     Typography,
     Tooltip,
 } from "@material-tailwind/react";
-import { ChipWithStatus } from "../../Pages/ClubMarket/ClubMarket";
+import { ChipWithStatus } from "./ChipWithStatus";
 import { ConfirmDeleteDialog } from "@/Components/ClubMarket/ConfirmDeleteDialog";
 import { FindClubModal } from "@/Components/ClubMarket/FindClubModal";
 
@@ -119,7 +119,7 @@ export function FilledChoiceCard({
                         </div>
 
                         <Typography className="max-h-[100px] h-[100px] min-h-[100px] overflow-hidden">
-                            {currentClubInfo.description} - Play with knives.
+                            {currentClubInfo.description}.
                         </Typography>
                     </div>
 
