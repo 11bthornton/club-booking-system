@@ -1,16 +1,17 @@
 export default async function deleteClub(clubId) {
-
     // Retrieve CSRF token from meta tag
-    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    const csrfToken = document
+        .querySelector('meta[name="csrf-token"]')
+        .getAttribute("content");
 
     try {
         const response = await fetch(`/club/${clubId}`, {
-            method: 'DELETE',
+            method: "DELETE",
             headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest',
-                'X-CSRF-TOKEN': csrfToken
+                "Content-Type": "application/json",
+                Accept: "application/json",
+                "X-Requested-With": "XMLHttpRequest",
+                "X-CSRF-TOKEN": csrfToken,
             },
         });
 
@@ -21,12 +22,10 @@ export default async function deleteClub(clubId) {
             // console.log(data); // Successfully booked the club.
             return data;
         } else {
-
             throw new Error(data.message);
         }
-
     } catch (error) {
-        console.error('There was an error:', error);
+        console.error("There was an error:", error);
         throw error;
     }
 }

@@ -1,5 +1,5 @@
-import React from 'react';
-import { useStep } from './StepContext';
+import React from "react";
+import { useStep } from "./StepContext";
 
 import {
     Checkbox,
@@ -13,10 +13,10 @@ export default function StepYear() {
     const { formData, setFormData } = useStep();
 
     const toggleYear = (year) => {
-        let newYearGroups = [...formData.year_groups || []]; // Ensure it's an array
+        let newYearGroups = [...(formData.year_groups || [])]; // Ensure it's an array
         if (newYearGroups.includes(year)) {
             // Remove year if it's already in the array
-            newYearGroups = newYearGroups.filter(y => y !== year);
+            newYearGroups = newYearGroups.filter((y) => y !== year);
         } else {
             // Add year to array if not included
             newYearGroups.push(year);
@@ -30,10 +30,11 @@ export default function StepYear() {
                 Which year groups should this apply to?
             </Typography>
             <p>
-                You'll have the option to add / remove individual students later, but you can bulk-include year groups here.
+                You'll have the option to add / remove individual students
+                later, but you can bulk-include year groups here.
             </p>
             <List>
-                {[7, 8, 9, 10, 11].map(year => (
+                {[7, 8, 9, 10, 11].map((year) => (
                     <ListItem key={year} className="p-0">
                         <label className="flex w-full cursor-pointer items-center px-3 py-2">
                             <ListItemPrefix className="mr-3">
@@ -44,11 +45,20 @@ export default function StepYear() {
                                     containerProps={{
                                         className: "p-0",
                                     }}
-                                    checked={formData.year_groups ? formData.year_groups.includes(year) : false}
+                                    checked={
+                                        formData.year_groups
+                                            ? formData.year_groups.includes(
+                                                  year,
+                                              )
+                                            : false
+                                    }
                                     onChange={() => toggleYear(year)}
                                 />
                             </ListItemPrefix>
-                            <Typography color="blue-gray" className="font-medium">
+                            <Typography
+                                color="blue-gray"
+                                className="font-medium"
+                            >
                                 {`Year ${year}`}
                             </Typography>
                         </label>

@@ -11,6 +11,8 @@ use Illuminate\Support\Facades\Redirect;
 use Inertia\Inertia;
 use Inertia\Response;
 
+use App\Models\User;
+
 class ProfileController extends Controller
 {
     /**
@@ -29,15 +31,12 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $request->user()->fill($request->validated());
-
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
-        }
-
-        $request->user()->save();
-
-        return Redirect::route('profile.edit');
+        $user = User::findOrFail($request->id)->fill($request->validated());
+        $user->save();
+     
+        return Redirect::route('admin.students.show', [
+            'id' => $user->id
+        ]);
     }
 
     /**

@@ -15,6 +15,8 @@ use Illuminate\Support\Facades\Route;
 
 use App\Models\Club;
 use App\Models\User;
+
+use Carbon\Carbon;
 use Inertia\Inertia;
 
 /*
@@ -82,15 +84,7 @@ Route::get('/club-market', function () {
 })->middleware(["auth"])->name('club-market');
 
 
-Route::get('/admin', function() {
-    
-    $clubs = Club::getAllWithInstances();
 
-    return Inertia::render('AdminBoard/AdminMain/AdminBoard', [
-        'clubs' => $clubs
-    ]);
-
-})->name('admin-board');
 
 Route::get('/dashboard', function () {
 
@@ -133,7 +127,7 @@ Route::delete('/dashboard/bookings/{clubInstanceID}', [BookingController::class,
 /**
  * Routes for admins of the application.
  */
-Route::middleware('is.admin')->group(function() {
+Route::middleware(['auth', 'is.admin'])->group(function() {
 
     /**
      * Renders the main admin dashboard home view.
@@ -141,10 +135,23 @@ Route::middleware('is.admin')->group(function() {
     Route::get('/admin', function() {
 
         $clubs = Club::getAllWithInstances();
+        $bookingConfigs = BookingConfig::all();
+
+        $bookingConfigs->map(function ($config) {
+            $now = Carbon::now();
+            $scheduledAt = Carbon::parse($config->scheduled_at);
+            $endsAt = Carbon::parse($config->ends_at);
+    
+            $config->isLive = $now->between($scheduledAt, $endsAt);
+            return $config;
+        });
+
+
         return Inertia::render(
             'AdminBoard/AdminMain/AdminBoardNew',
             [
-                'clubData' => $clubs
+                'clubData' => $clubs,
+                'scheduleData' => $bookingConfigs
             ]
         );
     })->name('admin-board');
@@ -173,6 +180,22 @@ Route::middleware('is.admin')->group(function() {
         ]);
     });
 
+    Route::get('/admin/students/{id}', function($id) {
+
+        $student = User::findOrFail($id);
+        $availableClubs = Club::getAllWithInstancesForUser($student);
+        $organizedByTerm = $student->organizedByTerm();
+
+        return Inertia::render('AdminBoard/Students/Student', [
+            'student' => $student,
+            'availableClubs' => $availableClubs,
+            'organizedByTerm' => $organizedByTerm
+        ]);
+    })->name('admin.students.show');
+
+
+    Route::post("/admin/club/{id}", [AdminController::class, 'bookForUser'])->name('admin.clubs.book');
+   
     /**
      * Route handles insertion of new club.
      */
@@ -213,7 +236,6 @@ Route::middleware('is.admin')->group(function() {
 
 
 });
-
 
 
 Route::middleware('auth')->group(function() {
