@@ -23,11 +23,13 @@ export function FindClubModal({ open, term, day, handleOpen, adminMode = {flag: 
         <Dialog
             open={open}
             handler={handleOpen}
-            animate={{
-                mount: { scale: 1, y: 0 },
-                unmount: { scale: 0.9, y: -100 },
-            }}
-            className="h-[80vh] overflow-y-scroll w-full"
+            
+            className="h-[80vh] overflow-y-scroll"
+            style={
+                {
+                    width: "100%"
+                }
+            }
         >
             <DialogHeader>
                 <div className="flex justify-between w-full items-baseline">

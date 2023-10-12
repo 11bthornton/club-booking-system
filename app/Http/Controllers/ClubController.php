@@ -9,6 +9,7 @@ use App\Models\Club;
 use App\Models\ClubInstance;
 use App\Models\YearGroupClub;
 use App\Models\IncompatibleClub;
+use App\Models\RequiredClub;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\DB;
 
@@ -78,15 +79,21 @@ public function store(Request $request)
             $counter = 1; // Manual counter for enumeration
 
             foreach ($data['instances'] as $instance) {
-                $createdInstance = ClubInstance::create([
-                    'club_id' => $club->id,
-                    'half_term' => $instance['term_no'],
-                    // 'capacity' => $instance['capacity'],
-                    'capacity' => 500,
-                    'day_of_week' => $instance['day']
-                ]);
+                
 
                 if (isset($instance['yearGroups']) && !empty($instance['yearGroups'])) {
+
+                    $createdInstance = ClubInstance::create([
+                        'club_id' => $club->id,
+                        'half_term' => $instance['term_no'],
+                        // 'capacity' => $instance['capacity'],
+                        'capacity' => 500,
+                        'day_of_week' => $instance['day']
+                    ]);
+
+                $tempToActualIdMap[$counter] = $createdInstance->id;
+
+
                     foreach ($instance['yearGroups'] as $year) {
                         YearGroupClub::create([
                             'year' => $year,
@@ -96,19 +103,34 @@ public function store(Request $request)
                 }
 
                 // Store reference of temp ID and actual ID
-                $tempToActualIdMap[$counter] = $createdInstance->id;
                 $counter++;
             }
 
+
             if (isset($data['compatibilities']['in']) && is_array($data['compatibilities']['in'])) {
-                foreach ($data['compatibilities']['in'] as $tempId1 => $incompatibilities) {
-                    $actualId1 = $tempToActualIdMap[$tempId1];
-            
-                    foreach ($incompatibilities as $tempId2) {
-                        $actualId2 = $tempToActualIdMap[$tempId2];
-            
-                        // Now, store this pair as an incompatible pair
+                
+                foreach ($data['compatibilities']['in'] as $pair) {
+                
+                    if (isset($tempToActualIdMap[$pair[0]]) && isset($tempToActualIdMap[$pair[1]])) {
+                        $actualId1 = $tempToActualIdMap[$pair[0]];
+                        $actualId2 = $tempToActualIdMap[$pair[1]];
+                    
                         IncompatibleClub::create([
+                            'club_instance_id_1' => $actualId1,
+                            'club_instance_id_2' => $actualId2,
+                        ]);
+                    }
+                }
+            }
+
+            if (isset($data['compatibilities']['must']) && is_array($data['compatibilities']['must'])) {
+                
+                foreach ($data['compatibilities']['must'] as $pair) {
+                    if (isset($tempToActualIdMap[$pair[0]]) && isset($tempToActualIdMap[$pair[1]])) {
+                        $actualId1 = $tempToActualIdMap[$pair[0]];
+                        $actualId2 = $tempToActualIdMap[$pair[1]];
+            
+                        RequiredClub::create([
                             'club_instance_id_1' => $actualId1,
                             'club_instance_id_2' => $actualId2,
                         ]);
@@ -121,7 +143,9 @@ public function store(Request $request)
             return response()->json([
                 'message' => 'Data received and stored successfully!',
             ]);
+            
         } catch (\Exception $e) {
+            throw $e;
             // Return the error message as a JSON response with a 400 status code
             return response()->json(['error' => $e->getMessage()], 400);
         }

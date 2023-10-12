@@ -11,6 +11,8 @@ class RequiredClub extends Model
 
     protected $table = 'must_go_with_clubs';
 
+    public $timestamps = false;
+
     protected $fillable = [
         'club_instance_id_1',
         'club_instance_id_2',

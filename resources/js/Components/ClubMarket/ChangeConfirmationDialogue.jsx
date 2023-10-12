@@ -130,6 +130,9 @@ export function ChangeConfirmationDialogue({
                                         availableClubs,
                                         clubInstanceId,
                                     );
+                                    
+                                    console.log("Club is ", availableClubs)
+
                                     const clubInstance = Object.values(
                                         club.club_instances,
                                     ).filter(

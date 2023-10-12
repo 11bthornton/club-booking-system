@@ -2,16 +2,30 @@ import React, { useEffect, useState } from "react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 
 import { Head } from "@inertiajs/react";
-import { Inertia } from "@inertiajs/inertia";
-import toast from "react-hot-toast";
+
+import { useForm } from "@inertiajs/react";
+import { Button, Checkbox, Option, Select, Switch, Textarea, Typography, Input } from "@material-tailwind/react";
+
+import TextInput from "@/Components/TextInput";
+import InputLabel from "@/Components/InputLabel";
 
 export default function ClubCreate({ auth, clubs }) {
-    const [selectedRule, setSelectedRule] = useState("wholeYear");
 
-    const [formData, setFormData] = useState({
+    const [defaultCapacity, setDefaultCapacity] = useState(20);
+
+    const {
+        data,
+        setData,
+        errors,
+        post,
+        reset,
+        processing,
+        recentlySuccessful,
+    } = useForm({
         clubTitle: "",
         clubDescription: "",
         clubRules: "",
+        ruleChoice: "",
         instances: Array(12)
             .fill()
             .map((_, i) => ({
@@ -20,95 +34,76 @@ export default function ClubCreate({ auth, clubs }) {
                 yearGroups: [7, 8, 9, 10, 11],
                 capacity: null, // null means unlimited
             })),
-        compatibilities: {},
-    });
+        compatibilities: {
+            "in": [],
+            "must": []
+        },
+    })
 
-    function cartesianProduct(arr1, arr2) {
-        const product = [];
-
-        for (let i = 0; i < arr1.length; i++) {
-            for (let j = 0; j < arr2.length; j++) {
-                if (arr1[i] < arr2[j]) {
-                    // Ensure i is always smaller than j
-                    product.push([arr1[i], arr2[j]]);
-                }
+    function cartesianProduct() {
+        const numbers = [...Array(12).keys()].map(i => i + 1); // Generate numbers from 1 to 12
+        const result = [];
+    
+        for (let i = 0; i < numbers.length; i++) {
+            for (let j = i + 1; j < numbers.length; j++) {
+                result.push([numbers[i], numbers[j]]);
             }
         }
-
-        return product;
-    }
+    
+        return result;
+    }    
 
     useEffect(() => {
-        const allTempIds = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
 
-        let newIncompatible = {};
-        let newMustGoWith = [];
-
-        switch (selectedRule) {
-            case "wholeYear":
-                const allIncompatiblePairs = cartesianProduct(
-                    allTempIds,
-                    allTempIds,
-                );
-                allIncompatiblePairs.forEach(([id1, id2]) => {
-                    if (!newIncompatible[id1]) {
-                        newIncompatible[id1] = [];
+        switch (data.ruleChoice) {
+            case 'NoRestrictions':
+                setData(
+                    "compatibilities",
+                    {
+                        "in" : [],
+                        "must": []
                     }
-                    newIncompatible[id1].push(id2);
-                });
+                )
                 break;
 
-            case "perTerm":
-                for (let i = 1; i <= allTempIds.length; i += 2) {
-                    const id1 = i;
-                    const id2 = i + 1;
-
-                    if (!newIncompatible[id1]) {
-                        newIncompatible[id1] = [];
+            case 'OncePerYear':
+                setData(
+                    "compatibilities",
+                    {
+                        "in" : cartesianProduct(),
+                        "must": []
                     }
-                    newIncompatible[id1].push(id2);
-                }
+                )
                 break;
-            case "any":
-                // No special handling for this rule.
+
+            case 'OncePerTerm':
+                setData(
+                    "compatibilities",
+                    {
+                        "in" : [[1, 2], [3, 4], [5, 6], [7, 8], [9, 10], [11, 12]],
+                        "must": []
+                    }
+                )
+                break;
+
+            case 'MustDoAll':
+                setData(
+                    "compatibilities",
+                    {
+                        "in" : [],
+                        "must": cartesianProduct(),
+                    }
+                )
+                break;
+
+            default:
+                // Code to execute if none of the options match
                 break;
         }
 
-        setFormData((prevState) => ({
-            ...prevState,
-            compatibilities: {
-                in: newIncompatible,
-                must: newMustGoWith,
-            },
-        }));
-    }, [selectedRule]);
+    
+    }, [data.ruleChoice]);
 
-    async function submitClubData() {
-        const csrfToken = document
-            .querySelector('meta[name="csrf-token"]')
-            .getAttribute("content");
-
-        try {
-            const response = await fetch("/admin/clubs", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-CSRF-TOKEN": csrfToken,
-                },
-                body: JSON.stringify(formData),
-            });
-
-            const data = await response.json();
-
-            if (data.message) {
-                console.log(data.message);
-            } else {
-                throw new Error(data.error);
-            }
-        } catch (error) {
-            throw new Error(error);
-        }
-    }
 
     return (
         <AuthenticatedLayout
@@ -121,347 +116,258 @@ export default function ClubCreate({ auth, clubs }) {
         >
             <Head title="Add New Club" />
 
-            <div className="flex justify-center mt-5">
-                <div className="bg-white p-8 rounded-lg shadow-md  w-5/6">
-                    <form
-                        action=""
-                        onSubmit={(e) => {
-                            e.preventDefault();
+            <form>
+                <div className="container mx-auto flex-col gap-4">
+                    <div className="bg-white mt-4 p-6 rounded-lg shadow-sm">
+                        {
+                            JSON.stringify(data)
+                        }
+                        <Typography
+                            variant="h2"
+                            className="mb-2"
+                        >
+                            Add a New Club
+                        </Typography>
+                        <div>
+                            <InputLabel
+                                htmlFor="name"
+                                value="Club Name"
+                            />
 
-                            toast.promise(submitClubData(), {
-                                loading: "Submitting your request..",
-                                success: "Successfully added your club!",
-                                error: (err) => `${err.toString()} `,
-                            });
-                        }}
-                    >
-                        <div className="mb-4">
-                            <label
-                                className="block text-gray-700 text-sm font-bold mb-2"
-                                htmlFor="club-title"
-                            >
-                                Club Title
-                            </label>
-                            <input
-                                value={formData.clubTitle}
-                                className="shadow appearance-none border rounded w-1/2 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                                id="club-title"
-                                type="text"
-                                placeholder="Enter club title"
+                            <TextInput
+                                id="name"
+                                className="w-2/5 mb-4"
+                                value={data.clubTitle}
                                 onChange={(e) =>
-                                    setFormData((prevState) => ({
-                                        ...prevState,
-                                        clubTitle: e.target.value,
-                                    }))
+                                    setData("clubTitle", e.target.value)
+                                }
+                                aria-required
+                            />
+                        </div>
+                        <div>
+                            <Textarea
+                                id="description"
+                                label="Club Description"
+                                className="w-2/5"
+                                value={data.clubDescription}
+                                onChange={(e) =>
+                                    setData("clubDescription", e.target.value)
+                                }
+                                aria-required
+                            />
+                        </div>
+                        <div>
+                            <Textarea
+                                id="rules"
+                                label="Rule Description"
+                                className="w-2/5"
+                                value={data.clubRules}
+                                onChange={(e) =>
+                                    setData("clubRules", e.target.value)
                                 }
                             />
                         </div>
-
-                        <div className="mb-4">
-                            <label
-                                className="block text-gray-700 text-sm font-bold mb-2"
-                                htmlFor="club-description"
-                            >
-                                Club Description
-                            </label>
-                            <textarea
-                                value={formData.clubDescription}
-                                className="shadow appearance-none border rounded w-3/4 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                                id="club-description"
-                                placeholder="Enter club description"
+                        <div className="mt-2">
+                            <Select
+                                value={data.ruleChoice}
+                                label="Select Ruleset"
+                                // onChange={(e) => 
+                                //     setData("ruleChoice", e.target.value)
+                                // }
                                 onChange={(e) =>
-                                    setFormData((prevState) => ({
-                                        ...prevState,
-                                        clubDescription: e.target.value,
-                                    }))
+                                    setData("ruleChoice", e)
                                 }
-                                rows="3"
-                                required
-                            ></textarea>
+                                aria-required
+                            >
+                                <Option value="NoRestrictions" >No restrictions</Option>
+                                <Option value="OncePerYear">Only once per year</Option>
+                                <Option value="OncePerTerm">Only once per term</Option>
+                                <Option value="MustDoAll">Must do all</Option>
+                            </Select>
                         </div>
 
-                        <div className="mb-6">
-                            <label
-                                className="block text-gray-700 text-sm font-bold mb-2"
-                                htmlFor="club-rules"
-                            >
-                                Club Rules
-                            </label>
-                            <textarea
-                                value={formData.clubRules}
-                                className="shadow appearance-none border rounded w-3/4 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                                id="club-rules"
-                                placeholder="Enter club rules description"
-                                onChange={(e) =>
-                                    setFormData((prevState) => ({
-                                        ...prevState,
-                                        clubRules: e.target.value,
-                                    }))
-                                }
-                                rows="3"
-                                required
-                            ></textarea>
-                        </div>
-
-                        <div>
-                            <select
-                                value={selectedRule}
-                                onChange={(e) =>
-                                    setSelectedRule(e.target.value)
-                                }
-                            >
-                                <option value="wholeYear">
-                                    One instance per year
-                                </option>
-                                <option value="perTerm">
-                                    One instance per term
-                                </option>
-                                <option value="any">
-                                    As many instances as they'd like
-                                </option>
-                            </select>
-                        </div>
-
-                        <button
-                            className="bg-blue-500 hover:bg-blue-700 text-white mt-5 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                            type="submit"
+                    </div>
+                    <div className="bg-white rounded-lg shadow-sm mt-4 p-4 flex flex-col gap-5">
+                        <Typography
+                            variant="h4"
                         >
-                            Add Club
-                        </button>
+                            Set capacity for all clubs:
+                        </Typography>
 
-                        <div className="grid grid-cols-2 gap-8 p-8">
-                            {Array.from({ length: 6 }, (_, i) => {
-                                const wednesdayInstance =
-                                    formData.instances[2 * i];
-                                const fridayInstance =
-                                    formData.instances[2 * i + 1];
+                        <Input
+                            type="number"
+                            className="focus:outline-none"
+                            label="Capacity - (blank for unlimited)"
+                            value={defaultCapacity}
+                            onChange={(e) => {
+                                const valueToPut = e.target.value == "" ? null : e.target.value;
+                                setDefaultCapacity(valueToPut);
+                                
+                            }}
+                        />
 
-                                // Check if both Wednesday and Friday instances have no checked year groups
-                                const noCheckedYearGroups =
-                                    wednesdayInstance.yearGroups.length === 0 &&
-                                    fridayInstance.yearGroups.length === 0;
+                        <Button
+                            color="blue"
+                            variant="outlined"
+                            size="lg"
+                            className="w-1/5"
+                            onClick={() => {
+                                const updatedInstances = data.instances.map((instance) => {
 
-                                return (
-                                    <div
-                                        key={i}
-                                        className={`bg-white p-6 rounded-lg shadow ${
-                                            noCheckedYearGroups
-                                                ? "border-2 border-red-500"
-                                                : ""
-                                        }`}
-                                    >
-                                        <div className="flex justify-between font-bold w-full items-baseline">
-                                            <h3 className="text-xl font-semibold">
-                                                Term {i + 1}
-                                            </h3>
-                                            {noCheckedYearGroups ? (
-                                                <em className="text-red-500 mb-4">
-                                                    This club will not run this
-                                                    term
-                                                </em>
-                                            ) : (
-                                                <></>
-                                            )}
+                                    return {
+                                        ...instance,
+                                        capacity: defaultCapacity
+                                    };
+
+                                });
+                                setData({ ...data, instances: updatedInstances });
+                            }}
+                        >
+                            Set
+                        </Button>
+                    </div>
+                    <div className="mt-4">
+                        <div class="grid grid-cols-2 grid-rows-3 gap-4">
+                            {
+                                [1, 2, 3, 4, 5, 6].map(term => (
+                                    <div className="bg-white p-4 rounded-lg shadow-sm">
+                                        <div className="flex justify-between items-center">
+                                            <Typography variant="h4">
+                                                Term {term}
+                                            </Typography>
                                         </div>
+                                        <div className="flex flex-col gap-5">
+                                            {
+                                                ["Wednesday", "Friday"].map(day => {
 
-                                        {["Wednesday", "Friday"].map(
-                                            (day, k) => {
-                                                const index = 2 * i + k; // This maps term and day to the correct instance
-                                                const instance =
-                                                    formData.instances[index];
+                                                    const clubInstance = data.instances.filter(
+                                                        instance => instance.term_no == term && instance.day == day
+                                                    )[0]
 
-                                                return (
-                                                    <div
-                                                        key={day}
-                                                        className="mb-4"
-                                                    >
-                                                        <h4 className="text-lg font-medium mb-2">
-                                                            {day}
-                                                        </h4>
+                                                    return (
+                                                        <div className="">
+                                                            <Typography variant="h5" className="mb-2">
+                                                                {day}
+                                                            </Typography>
 
-                                                        <div className="flex items-center space-x-4 mb-2">
-                                                            {Array.from(
-                                                                { length: 5 },
-                                                                (_, j) => (
-                                                                    <div
-                                                                        key={j}
-                                                                        className="flex items-center"
-                                                                    >
-                                                                        <input
-                                                                            type="checkbox"
-                                                                            checked={instance.yearGroups.includes(
-                                                                                j +
-                                                                                    7,
-                                                                            )}
-                                                                            onChange={(
-                                                                                e,
-                                                                            ) => {
-                                                                                let updatedInstances =
-                                                                                    [
-                                                                                        ...formData.instances,
-                                                                                    ];
-                                                                                if (
-                                                                                    e
-                                                                                        .target
-                                                                                        .checked
-                                                                                ) {
-                                                                                    updatedInstances[
-                                                                                        index
-                                                                                    ].yearGroups.push(
-                                                                                        j +
-                                                                                            7,
-                                                                                    );
-                                                                                } else {
-                                                                                    updatedInstances[
-                                                                                        index
-                                                                                    ].yearGroups =
-                                                                                        updatedInstances[
-                                                                                            index
-                                                                                        ].yearGroups.filter(
-                                                                                            (
-                                                                                                year,
-                                                                                            ) =>
-                                                                                                year !==
-                                                                                                j +
-                                                                                                    7,
-                                                                                        );
-                                                                                }
-                                                                                setFormData(
-                                                                                    (
-                                                                                        prevState,
-                                                                                    ) => ({
-                                                                                        ...prevState,
-                                                                                        instances:
-                                                                                            updatedInstances,
-                                                                                    }),
-                                                                                );
-                                                                            }}
-                                                                            id={`instance-${index}`}
-                                                                            defaultChecked
-                                                                            className="mr-2"
-                                                                        />
-                                                                        <label
-                                                                            htmlFor={`instance-${index}`}
-                                                                        >
-                                                                            Year{" "}
-                                                                            {j +
-                                                                                7}
-                                                                        </label>
-                                                                    </div>
-                                                                ),
-                                                            )}
-                                                        </div>
+                                                            <Input
+                                                                type="number"
+                                                                className="focus:outline-none"
+                                                                label="Capacity - (blank for unlimited)"
+                                                                value={clubInstance.capacity === null ? "" : clubInstance.capacity}
+                                                                onChange={(e) => {
+                                                                    const updatedInstances = data.instances.map((instance) => {
+                                                                        if (instance.term_no === term && instance.day === day) {
 
-                                                        <div className="flex items-center mt-2">
-                                                            <label
-                                                                className="mr-2"
-                                                                htmlFor={`instance-${index}-capacity`}
-                                                            >
-                                                                Capacity:
-                                                            </label>
-                                                            <input
-                                                                type="text"
-                                                                value={
-                                                                    instance.capacity ===
-                                                                    null
-                                                                        ? "Unlimited"
-                                                                        : instance.capacity.toString()
-                                                                }
-                                                                onBlur={(e) => {
-                                                                    if (
-                                                                        isNaN(
-                                                                            e
-                                                                                .target
-                                                                                .value,
-                                                                        )
-                                                                    ) {
-                                                                        e.target.value =
-                                                                            "Unlimited";
-                                                                    }
+                                                                            const valueToPut = e.target.value == "" ? null : e.target.value
 
-                                                                    if (
-                                                                        !e
-                                                                            .target
-                                                                            .value
-                                                                    ) {
-                                                                        let updatedInstances =
-                                                                            [
-                                                                                ...formData.instances,
-                                                                            ];
-                                                                        updatedInstances[
-                                                                            index
-                                                                        ].capacity =
-                                                                            null;
-                                                                        setFormData(
-                                                                            (
-                                                                                prevState,
-                                                                            ) => ({
-                                                                                ...prevState,
-                                                                                instances:
-                                                                                    updatedInstances,
-                                                                            }),
-                                                                        );
-                                                                    }
+                                                                            return {
+                                                                                ...instance,
+                                                                                capacity: valueToPut
+                                                                            };
+                                                                        }
+                                                                        return instance;
+                                                                    });
+                                                                    setData({ ...data, instances: updatedInstances });
                                                                 }}
-                                                                onChange={(
-                                                                    e,
-                                                                ) => {
-                                                                    if (
-                                                                        isNaN(
-                                                                            e
-                                                                                .target
-                                                                                .value,
-                                                                        )
-                                                                    ) {
-                                                                        e.target.value =
-                                                                            "Unlimited";
-                                                                    }
-
-                                                                    let updatedInstances =
-                                                                        [
-                                                                            ...formData.instances,
-                                                                        ];
-                                                                    updatedInstances[
-                                                                        index
-                                                                    ].capacity =
-                                                                        e.target
-                                                                            .value ===
-                                                                        "Unlimited"
-                                                                            ? null
-                                                                            : parseInt(
-                                                                                  e
-                                                                                      .target
-                                                                                      .value,
-                                                                                  10,
-                                                                              );
-                                                                    setFormData(
-                                                                        (
-                                                                            prevState,
-                                                                        ) => ({
-                                                                            ...prevState,
-                                                                            instances:
-                                                                                updatedInstances,
-                                                                        }),
-                                                                    );
-                                                                }}
-                                                                defaultValue="Unlimited"
-                                                                className="border rounded px-2 py-1"
-                                                                id={`instance-${index}-capacity`}
                                                             />
-                                                        </div>
-                                                    </div>
-                                                );
-                                            },
-                                        )}
-                                    </div>
-                                );
-                            })}
 
-                            <div className="flex items-center justify-between"></div>
+                                                            <p className="mt-3">Eligible to:</p>
+
+                                                            <div className="flex justify-between">
+                                                                <div className="flex gap-2 items-center">
+                                                                    <Checkbox
+                                                                        checked={clubInstance.yearGroups.length == 5}
+                                                                        onChange={() => {
+                                                                            const updatedInstances = data.instances.map((instance) => {
+                                                                                if (instance.term_no === term && instance.day === day) {
+                                                                                    return {
+                                                                                        ...instance,
+                                                                                        yearGroups: [7, 8, 9, 10, 11],
+                                                                                    };
+                                                                                }
+                                                                                return instance;
+                                                                            });
+                                                                            setData({ ...data, instances: updatedInstances });
+                                                                        }}
+                                                                    />
+                                                                    <p>All Year Groups</p>
+                                                                </div>
+                                                                <Button
+                                                                    color="red"
+                                                                    variant="text"
+                                                                    onClick={() => {
+                                                                        const updatedInstances = data.instances.map((instance) => {
+                                                                            if (instance.term_no === term && instance.day === day) {
+                                                                                return {
+                                                                                    ...instance,
+                                                                                    yearGroups: [],
+                                                                                };
+                                                                            }
+                                                                            return instance;
+                                                                        });
+                                                                        setData({ ...data, instances: updatedInstances });
+                                                                    }}
+                                                                >
+                                                                    Clear Day
+                                                                </Button>
+                                                            </div>
+
+                                                            <div className="flex items-center gap-4">
+                                                                {
+                                                                    [7, 8, 9, 10, 11].map(yearGroup => (
+
+                                                                        <div className="flex items-center">
+                                                                            <Checkbox
+                                                                                checked={clubInstance.yearGroups.includes(yearGroup)}
+                                                                                onChange={() => {
+                                                                                    const updatedInstances = data.instances.map((instance) => {
+                                                                                        if (instance.term_no === term && instance.day === day) {
+                                                                                            if (instance.yearGroups.includes(yearGroup)) {
+                                                                                                return {
+                                                                                                    ...instance,
+                                                                                                    yearGroups: instance.yearGroups.filter(yg => yg !== yearGroup),
+                                                                                                };
+                                                                                            } else {
+                                                                                                return {
+                                                                                                    ...instance,
+                                                                                                    yearGroups: [...instance.yearGroups, yearGroup],
+                                                                                                };
+                                                                                            }
+                                                                                        }
+                                                                                        return instance;
+                                                                                    });
+                                                                                    setData({ ...data, instances: updatedInstances });
+                                                                                }}
+                                                                            />
+                                                                            {yearGroup}
+                                                                        </div>
+                                                                    ))
+                                                                }
+                                                            </div>
+
+                                                        </div>
+                                                    )
+
+                                                })
+                                            }
+                                        </div>
+                                    </div>
+                                ))
+                            }
                         </div>
-                    </form>
+                    </div>
+                    <Button className="mt-4 mb-4" color="blue" onClick={() => {
+                        post(route("admin.clubs.create"), {
+                            onSuccess: () => reset(),
+                            onEror: () => {
+                                alert("erroror fuck!")
+                            }
+                        })
+                    }}> Add Club </Button>
                 </div>
-            </div>
+            </form>
+
         </AuthenticatedLayout>
     );
 }

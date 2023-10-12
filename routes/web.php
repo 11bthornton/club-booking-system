@@ -199,7 +199,7 @@ Route::middleware(['auth', 'is.admin'])->group(function() {
     /**
      * Route handles insertion of new club.
      */
-    Route::post("/admin/clubs", [ClubController::class, 'store']);
+    Route::post("/admin/clubs", [ClubController::class, 'store'])->name("admin.clubs.create");
 
     /**
      * Route renders new Club Creation Form.

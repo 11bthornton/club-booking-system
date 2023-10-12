@@ -128,6 +128,7 @@ export function OptionCard({
                         <Typography className="max-h-[100px] h-[100px] min-h-[100px] overflow-hidden">
                             {currentClubInfo.description}.
                         </Typography>
+                        {currentClubInstance.id}
                     </div>
 
                     <Alert

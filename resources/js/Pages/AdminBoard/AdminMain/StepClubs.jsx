@@ -2,16 +2,9 @@ import React, { useState } from "react";
 import { useStep } from "./StepContext";
 import {
     Checkbox,
-    Switch,
-    List,
-    ListItem,
-    ListItemPrefix,
     Typography,
     Button,
-    // Table,
-    // Th,
-    // Tr,
-    // Td
+
 } from "@material-tailwind/react";
 import { Check } from "@mui/icons-material";
 
@@ -224,7 +217,7 @@ export default function StepClubs({ clubData }) {
                                                 />
                                             </Typography>
                                         </td>
-                                    ) : null;
+                                    ) : <td>X</td>;
                                 }),
                             )}
                         </tr>
