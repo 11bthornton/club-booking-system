@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Redirect;
 
 use Illuminate\Http\Request;
 use App\Mail\TestEmail;
@@ -140,9 +141,7 @@ public function store(Request $request)
             
             // Continue with processing the rest of the data
 
-            return response()->json([
-                'message' => 'Data received and stored successfully!',
-            ]);
+            return Redirect::route("admin.clubs.new");
             
         } catch (\Exception $e) {
             throw $e;

@@ -13,9 +13,10 @@ import {
 import { useSpinner } from "@/LoadingContext";
 import findClubChanges from "../../Pages/ClubMarket/scripts/SimulateBooking";
 import { ChipWithStatus } from "./ChipWithStatus";
-import { ChangeConfirmationDialogue } from "@/Components/ClubMarket/ChangeConfirmationDialogue";
 
+import { ChangeConfirmationDialogue } from "./ChangeConfirmationDialogue";
 export function OptionCard({
+    csrf,
     day,
     currentClubInfo,
     currentClubInstance,
@@ -38,7 +39,7 @@ export function OptionCard({
         ]?.id == currentClubInstance.id;
 
     return (
-        <div className="flex justify-center">
+        <div className="flex justify-center" key={currentClubInstance.id}>
             <ChangeConfirmationDialogue
                 open={showConfirmationDialogue}
                 handleOpen={handleShowConfDialogue}
@@ -46,6 +47,7 @@ export function OptionCard({
                 clubIdToBook={currentClubInstance.id}
                 handleOriginalFindDialog={handleOpenFind}
                 adminMode={adminMode}
+                csrf={csrf}
             />
 
             <Card className="mt-6 w-96 border">

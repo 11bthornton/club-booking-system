@@ -43,7 +43,8 @@ export default function Dashboard({ auth, clubData, scheduleData }) {
             <Head title="Admin Dashboard" />
             <div class="container mx-auto p-6">
                 <div className="w-full bg-white shadow-md rounded-lg p-5 mb-7">
-                    <Typography variant="h2">Academic Year 23/24</Typography>
+                    <Typography variant="h3" >Academic Year 23/24</Typography>
+                    <p>jesdf</p>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -76,54 +77,49 @@ export default function Dashboard({ auth, clubData, scheduleData }) {
                                     <Typography
                                         variant="h5"
                                         color="blue-gray"
-                                        className="mb-2"
+                                        className="mb-2 min-h-[60px]"
                                     >
                                         Clubs
                                     </Typography>
                                 </div>
-                                <div className="flex flex-col justify-center items-center gap-2">
-                                    <div></div>
-                                    <div></div>
-                                </div>
+                                
                             </div>
-                            <Typography>
-                                Schedule bookings to go live - globally or for
-                                specific year groups, users, or clubs.
+                            <Typography
+                                className="min-h-[100px] overflow-hidden"
+                            >
+                                View clubs, export information and add new ones
                             </Typography>
                         </CardBody>
                         <CardFooter className="pt-0">
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                <a
-                                    href="/admin/clubs"
-                                    className="flex lg:justify-center items-center gap-2"
+                            <div className="flex justify-between items-center">
+                                <Link
+                                    href={route("admin.clubs")}
                                 >
                                     <Button
-                                        variant="outlined"
+                                        variant="text"
                                         className="flex lg:justify-center items-center gap-2"
                                     >
-                                        <p>View All</p>
+                                        View All
                                     </Button>
-                                </a>
-                                <a
-                                    href="/admin/clubs/new"
-                                    className="flex lg:justify-center items-center gap-2"
+                                </Link>
+                                <Link
+                                    href={route("admin.clubs.new")}
                                 >
+
                                     <Button
                                         variant="text"
                                         className="flex lg:justify-center items-center gap-2"
                                     >
                                         <p>New</p>
                                     </Button>
-                                </a>
-                                {/* <Button variant="text" className="flex lg:justify-center items-center gap-2">
-                                    <p>Three</p>
-                                </Button> */}
+                                </Link>
+
                             </div>
                         </CardFooter>
                     </Card>
-                    <Card className="w-full">
+                    <Card className="w-full flex flex-col">
                         <CardBody>
-                            <div className="flex justify-between items-start">
+                            <div className="flex-grow ">
                                 <div>
                                     <svg
                                         xmlns="http://www.w3.org/2000/svg"
@@ -142,37 +138,43 @@ export default function Dashboard({ auth, clubData, scheduleData }) {
                                     <Typography
                                         variant="h5"
                                         color="blue-gray"
-                                        className="mb-2"
+                                        className="mb-2 min-h-[60px]"
                                     >
                                         Students
                                     </Typography>
                                 </div>
                                 {/* <ChipWithStatus /> */}
                             </div>
-                            <Typography>
+                            <Typography
+                                className="min-h-[100px]"
+                            >
                                 Manage information about students and edit their
                                 bookings.
                             </Typography>
                         </CardBody>
                         <CardFooter className="pt-0">
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                <a
-                                    href="/admin/students"
+                            <div className="flex justify-between items-center">
+                                <Link
+                                    href={route("admin.students")}
                                     className="flex lg:justify-center items-center gap-2"
                                 >
                                     <Button
-                                        variant="outlined"
+                                        variant="text"
+                                        className=""
+                                    >
+                                        view all
+                                    </Button>
+                                </Link>
+                                <Link
+                                    href={route("admin.students.new")}
+                                >
+                                    <Button
+                                        variant="text"
                                         className="flex lg:justify-center items-center gap-2"
                                     >
-                                        <p>View All</p>
+                                        New
                                     </Button>
-                                </a>
-                                <Button
-                                    variant="text"
-                                    className="flex lg:justify-center items-center gap-2"
-                                >
-                                    <p>New</p>
-                                </Button>
+                                </Link>
                                 <Button
                                     variant="text"
                                     className="flex lg:justify-center items-center gap-2"
@@ -187,3 +189,4 @@ export default function Dashboard({ auth, clubData, scheduleData }) {
         </AuthenticatedLayout>
     );
 }
+import { Link } from "@inertiajs/react";

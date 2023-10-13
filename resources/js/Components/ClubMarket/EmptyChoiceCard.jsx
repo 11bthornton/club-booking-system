@@ -13,17 +13,18 @@ import {
 import { ChipWithStatus } from "./ChipWithStatus";
 import { FindClubModal } from "@/Components/ClubMarket/FindClubModal";
 
-export function EmptyChoiceCard({ term, day }) {
+export function EmptyChoiceCard({ csrf, term, day }) {
     const [open, setOpen] = useState(false);
     const handleOpen = () => setOpen(!open);
 
     return (
-        <div className="flex justify-center">
+        <div className="flex justify-center" key={1}>
             <FindClubModal
                 open={open}
                 handleOpen={handleOpen}
                 term={term}
                 day={day}
+                csrf={csrf}
             />
             <Card className="mt-2 w-96 border-4 border-dashed bg-gray-50 shadow-none">
                 <CardHeader
@@ -32,6 +33,7 @@ export function EmptyChoiceCard({ term, day }) {
                     className="mb-4 grid h-28 place-items-center shadow-none "
                 >
                     <Typography variant="h3" color="white">
+                        
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
                             fill="none"
@@ -73,7 +75,7 @@ export function EmptyChoiceCard({ term, day }) {
                                     None Selected
                                 </Typography>
 
-                                <Typography className="mb-2 min-h-[30px] h-[30px] max-h-[30px] mt-7"></Typography>
+                                <Typography className="mb-2 min-h-[30px] h-[30px] max-h-[30px] mt-7">&nbsp;</Typography>
                             </div>
                         </div>
                         <div>

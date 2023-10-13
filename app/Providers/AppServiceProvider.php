@@ -20,9 +20,13 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        Inertia::share('error', function () {
-            // Your logic to fetch the error.
-            return session('error', null);
-        });
+        Inertia::share([
+            'error' => function () {
+                return session('error', null);
+            },
+            'csrf' => function () {
+                return csrf_token();
+            }
+        ]);
     }
 }

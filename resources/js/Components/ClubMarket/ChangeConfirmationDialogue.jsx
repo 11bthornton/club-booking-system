@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useAvailableClubs, findClubByInstanceID } from "@/ClubContext";
 import {
     Alert,
@@ -8,8 +8,11 @@ import {
     DialogBody,
     DialogFooter,
 } from "@material-tailwind/react";
+
 import postClub from "../../Pages/ClubMarket/scripts/BookClub";
 import { useSpinner } from "@/LoadingContext";
+
+import { useForm, Inertia  } from "@inertiajs/inertia-react";
 
 export function ChangeConfirmationDialogue({
     open,
@@ -18,10 +21,27 @@ export function ChangeConfirmationDialogue({
     clubIdToBook,
     handleOriginalFindDialog,
     adminMode,
+    csrf
 }) {
+
+
     const { setShowSpinner } = useSpinner();
     const { availableClubs, setAlreadyBooked, setAvailableClubs } =
         useAvailableClubs();
+
+    const {
+        setData,
+        put,
+        reset,
+        processing,
+        recentlySuccessful
+    } = useForm({
+        id: clubIdToBook
+    });
+
+    // useEffect(() => {
+    //     setShowSpinner(processing)
+    // }, [processing])
 
     return open ? (
         <Dialog open={open}>
@@ -175,7 +195,7 @@ export function ChangeConfirmationDialogue({
                          * happened
                          */
                         setTimeout(async () => {
-                            const data = await postClub(clubIdToBook);
+                            const data = await postClub(clubIdToBook, csrf);
 
                             /**
                              * Need some error handling here, but otherwise this is

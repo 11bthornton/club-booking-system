@@ -9,6 +9,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Auth;
 
+use Inertia\Inertia;
+use Illuminate\Support\Facades\Redirect;
+
+
 class BookingController extends Controller
 {
     /**
@@ -144,15 +148,16 @@ class BookingController extends Controller
     }
 
 
-    public function book($id, Request $request)
+    public function book(Request $request)
     {
 
         DB::beginTransaction();
 
         try {
             $user = $request->user();
+            
 
-            $clubInstance = ClubInstance::find($id);
+            $clubInstance = ClubInstance::find($request->id);
 
             if (!$clubInstance) {
                 throw new \Exception("Club Not Found");
@@ -223,8 +228,6 @@ class BookingController extends Controller
                 }
             }
 
-            $organizedByTerm = $user->organizedByTerm();
-
             DB::commit();
 
             // Then return the newly updated set of booked clubs
@@ -234,10 +237,12 @@ class BookingController extends Controller
                 'status' => 'success',
                 'message' => 'Successfully booked the club.',
                 'data' => [
-                    'alreadyBookedOn' => $organizedByTerm,
+                    'alreadyBookedOn' => $user->organizedByTerm(),
                     'availableClubs' => \App\Models\Club::getAllWithInstancesForUser($user)
                 ]
             ], 200);
+
+            // return Redirect::route('club.market');
 
         } catch (\Exception $e) {
 
@@ -247,6 +252,7 @@ class BookingController extends Controller
                 'status' => 'error',
                 'message' => $e->getMessage()
             ], 500);
+
         }
     }
 

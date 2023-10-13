@@ -69,7 +69,7 @@ export default function SystemSchedulerCard({ clubData, scheduleData }) {
                             <Typography
                                 variant="h5"
                                 color="blue-gray"
-                                className=""
+                                className="min-h-[60px] overflow-hidden"
                             >
                                 System Scheduling
                             </Typography>
@@ -77,15 +77,15 @@ export default function SystemSchedulerCard({ clubData, scheduleData }) {
                     </div>
                     <ChipWithStatus />
                 </div>
-                <Typography>
+                <Typography className="min-h-[100px]">
                     Schedule bookings to go live - globally or for specific year
                     groups, users, or clubs.
                 </Typography>
             </CardBody>
             <CardFooter className="pt-0">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="flex justify-between items-center">
                     <Button
-                        variant="outlined"
+                        variant="text"
                         className="flex lg:justify-center items-center gap-2"
                         onClick={handleCreateDialogue}
                     >

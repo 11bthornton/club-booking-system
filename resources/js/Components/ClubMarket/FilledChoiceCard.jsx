@@ -18,6 +18,7 @@ export function FilledChoiceCard({
     day,
     currentClubInfo,
     currentClubInstance,
+    csrf
 }) {
     const [openFind, setOpenFind] = useState(false);
     const handleOpenFind = () => setOpenFind(!openFind);
@@ -34,12 +35,13 @@ export function FilledChoiceCard({
     };
 
     return (
-        <div className="flex justify-center">
+        <div className="flex justify-center" key={currentClubInstance.id}>
             <FindClubModal
                 open={openFind}
                 handleOpen={handleOpenFind}
                 term={term}
                 day={day}
+                csrf={csrf}
             />
 
             <ConfirmDeleteDialog
@@ -47,6 +49,7 @@ export function FilledChoiceCard({
                 handleOpen={handleOpenDeleteConfirmation}
                 currentClubInfo={currentClubInfo}
                 currentClubInstance={currentClubInstance}
+                csrf={csrf}
             />
 
             <Card className="mt-2 w-96 border shadow-2xl">

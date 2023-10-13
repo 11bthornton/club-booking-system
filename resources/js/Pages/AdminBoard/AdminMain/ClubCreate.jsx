@@ -4,10 +4,15 @@ import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head } from "@inertiajs/react";
 
 import { useForm } from "@inertiajs/react";
-import { Button, Checkbox, Option, Select, Switch, Textarea, Typography, Input } from "@material-tailwind/react";
+import { Alert, Button, Checkbox, Option, Select, Textarea, Typography, Input } from "@material-tailwind/react";
 
 import TextInput from "@/Components/TextInput";
 import InputLabel from "@/Components/InputLabel";
+
+
+import { Transition } from "@headlessui/react";
+
+
 
 export default function ClubCreate({ auth, clubs }) {
 
@@ -119,9 +124,23 @@ export default function ClubCreate({ auth, clubs }) {
             <form>
                 <div className="container mx-auto flex-col gap-4">
                     <div className="bg-white mt-4 p-6 rounded-lg shadow-sm">
-                        {
-                            JSON.stringify(data)
-                        }
+                        
+                        <Transition
+                            show={recentlySuccessful}
+                            enter="transition ease-in-out"
+                            enterFrom="opacity-0"
+                            leave="transition ease-in-out"
+                            leaveTo="opacity-0"
+                        >
+                            <Alert
+                                variant="ghost"
+                                color="green"
+                                className="mb-2"
+                            >
+                                Club successfully saved!
+                            </Alert>
+                        </Transition>
+
                         <Typography
                             variant="h2"
                             className="mb-2"

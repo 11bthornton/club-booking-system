@@ -46,60 +46,17 @@ Route::get('/club-market', function () {
 
     $allClubs = Club::getAllWithInstancesForUser($user);
 
-    // $allClubs->each(function ($club) {
-    //     $club->makeHidden(['club_instances']);
-    // });
-
-    $clubInstances = $user->bookedClubs()
-        ->get();
-
-    $organizedByTerm = [];
-    $daysOfWeek = ['Wednesday', 'Friday'];
-    $maxTerms = 6;
-    
-    // Initialize the structure first
-    for ($term = 1; $term <= $maxTerms; $term++) {
-        foreach ($daysOfWeek as $day) {
-            $organizedByTerm[$term][$day] = null;
-        }
-    }
-    
-    // Then populate with actual data
-    foreach ($clubInstances as $instance) {
-        $term = $instance->half_term;
-        $dayOfWeek = ($instance->day_of_week);
-        
-        if (isset($organizedByTerm[$term]) && array_key_exists($dayOfWeek, $organizedByTerm[$term])) {
-            $organizedByTerm[$term][$dayOfWeek] = $instance;
-        }
-    }
-
-    // dd($allClubs->keyBy('id')->toJson());
-
     return Inertia::render('ClubMarket/ClubMarket', [
         'userAvailableClubs' => $allClubs->keyBy('id'),
-        'alreadyBookedOn' => $organizedByTerm,
+        'alreadyBookedOn' => $user->organizedByTerm(),
     ]);
 
-})->middleware(["auth"])->name('club-market');
-
-
+})->middleware('auth')->name('club.market');
 
 
 Route::get('/dashboard', function () {
 
-    // BookingConfig::create([
-    //     'scheduled_at' => \Carbon\Carbon::now(),
-    //     'ends_at' => \Carbon\Carbon::now()
-    // ]);
-
-    $user = Auth::user();
-
-    $bookedClubInstances = $user->bookedClubs()->with('club')->get();
-
-    return Inertia::render('Dashboard', [
-        'bookedClubInstances' => $bookedClubInstances,
-    ]);
+    return Inertia::render('Dashboard', [    ]);
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
@@ -166,7 +123,7 @@ Route::middleware(['auth', 'is.admin'])->group(function() {
         return Inertia::render('AdminBoard/AdminMain/ClubsView', [
             'clubs' => $clubs
         ]);
-    });
+    })->name("admin.clubs");
 
     /**
      * Renders a view to manage the students. 
@@ -178,7 +135,7 @@ Route::middleware(['auth', 'is.admin'])->group(function() {
         return Inertia::render('AdminBoard/Students/Students', [
             'students' => $students
         ]);
-    });
+    })->name('admin.students');
 
     Route::get('/admin/students/{id}', function($id) {
 
@@ -210,7 +167,7 @@ Route::middleware(['auth', 'is.admin'])->group(function() {
         return Inertia::render('AdminBoard/AdminMain/ClubCreate', [
             'clubs' => $clubs
         ]);
-    });
+    })->name('admin.clubs.new');
 
     /**
      * Routes for globally allowing bookings.
@@ -235,12 +192,18 @@ Route::middleware(['auth', 'is.admin'])->group(function() {
     Route::post('admin/booking-configs/create', [BookingConfigController::class, 'create']);
 
 
+    Route::get("admin/placeholder", function() {
+
+    })->name("admin.students.new");
+
 });
 
 
 Route::middleware('auth')->group(function() {
 
-    Route::post('/club/{id}', [BookingController::class, 'book']);
+
+    Route::post('/club-market', [BookingController::class, 'book'])->name("clubs.book");
+
     Route::delete('/club/{id}', [BookingController::class, 'deleteBooking']);
     
     /**

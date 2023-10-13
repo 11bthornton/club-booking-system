@@ -1,11 +1,10 @@
-export default async function postClub(clubId) {
-    const csrfToken = document
-        .querySelector('meta[name="csrf-token"]')
-        .getAttribute("content");
-    console.log(csrfToken);
+export default async function postClub(clubId, csrfToken) {
+
+
+    console.log("CSRF TOKEN is", csrfToken);
 
     try {
-        const response = await fetch(`/club/${clubId}`, {
+        const response = await fetch(`/club-market`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -13,8 +12,14 @@ export default async function postClub(clubId) {
                 "X-Requested-With": "XMLHttpRequest",
                 "X-CSRF-TOKEN": csrfToken,
             },
+            body: JSON.stringify(
+                {
+                    id: clubId
+                }
+            )
         });
 
+        // console.log("response text", await response.text());
         const data = await response.json();
 
         if (response.ok) {

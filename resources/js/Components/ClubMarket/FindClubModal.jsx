@@ -8,7 +8,7 @@ import {
 } from "@material-tailwind/react";
 import { OptionCard } from "@/Components/ClubMarket/OptionCard";
 
-export function FindClubModal({ open, term, day, handleOpen, adminMode = {flag: false, id: -1} }) {
+export function FindClubModal({ csrf, open, term, day, handleOpen, adminMode = { flag: false, id: -1 } }) {
     const { availableClubs } = useAvailableClubs();
 
     const filteredClubs = Object.values(availableClubs)
@@ -43,23 +43,23 @@ export function FindClubModal({ open, term, day, handleOpen, adminMode = {flag: 
                 </div>
             </DialogHeader>
             <DialogBody className="  overflow-x-hidden pb-6 overflow-y-auto h-[80vh]">
-                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 mt-2">
+                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 mt-2" >
                     {filteredClubs.map((clubInstance) => {
                         const club = findClubByInstanceID(
                             availableClubs,
                             clubInstance.id,
                         );
                         return (
-                            <>
-                                <OptionCard
-                                    currentClubInstance={clubInstance}
-                                    currentClubInfo={club}
-                                    term={term}
-                                    day={day}
-                                    handleOpenFind={handleOpen}
-                                    adminMode={adminMode}
-                                />
-                            </>
+                            <OptionCard
+                                currentClubInstance={clubInstance}
+                                currentClubInfo={club}
+                                term={term}
+                                day={day}
+                                handleOpenFind={handleOpen}
+                                adminMode={adminMode}
+                                key={clubInstance.id}
+                                csrf={csrf}
+                            />
                         );
                     })}
                 </div>

@@ -1,8 +1,4 @@
-export default async function deleteClub(clubId) {
-    // Retrieve CSRF token from meta tag
-    const csrfToken = document
-        .querySelector('meta[name="csrf-token"]')
-        .getAttribute("content");
+export default async function deleteClub(clubId, csrfToken) {
 
     try {
         const response = await fetch(`/club/${clubId}`, {

@@ -33,7 +33,8 @@ class ProfileController extends Controller
     {
         $user = User::findOrFail($request->id)->fill($request->validated());
         $user->save();
-     
+        
+
         return Redirect::route('admin.students.show', [
             'id' => $user->id
         ]);

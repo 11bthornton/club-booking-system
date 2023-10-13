@@ -39,8 +39,8 @@ export default function Authenticated({ user, header, children }) {
                                 </NavLink>
 
                                 <NavLink
-                                    href={route("club-market")}
-                                    active={route().current("club-market")}
+                                    href={route("club.market")}
+                                    active={route().current("club.market")}
                                 >
                                     Club Market
                                 </NavLink>

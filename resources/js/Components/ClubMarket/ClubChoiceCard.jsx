@@ -7,7 +7,7 @@ import {
 import { EmptyChoiceCard } from "@/Components/ClubMarket/EmptyChoiceCard";
 import { FilledChoiceCard } from "@/Components/ClubMarket/FilledChoiceCard";
 
-export function ClubChoiceCard({ term, day }) {
+export function ClubChoiceCard({ csrf, term, day }) {
     const { availableClubs, alreadyBooked } = useAvailableClubs();
 
     const currentClubInstance = findClubInstanceFromTermDay(
@@ -26,8 +26,9 @@ export function ClubChoiceCard({ term, day }) {
             day={day}
             currentClubInfo={currentClubInfo}
             currentClubInstance={currentClubInstance}
+            csrf={csrf}
         />
     ) : (
-        <EmptyChoiceCard term={term} day={day} />
+        <EmptyChoiceCard term={term} day={day} csrf={csrf} />
     );
 }
