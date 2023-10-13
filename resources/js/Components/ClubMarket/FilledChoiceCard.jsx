@@ -26,6 +26,13 @@ export function FilledChoiceCard({
     const handleOpenDeleteConfirmation = () =>
         setOpenDeleteConfirmation(!openDeleteConfirmation);
 
+    const truncateText = (text, length = 15) => {
+        if (text.length > length) {
+            return `${text.substring(0, length)}...`;
+        }
+        return text;
+    };
+
     return (
         <div className="flex justify-center">
             <FindClubModal
@@ -86,15 +93,29 @@ export function FilledChoiceCard({
                                     tooltipContent="This club is free to join"
                                 />
                             )}
-                            {true ? (
+                            {currentClubInstance.must_go_with_club_ids.length > 0  ? (
                                 <ChipWithStatus
-                                    text="recurring"
+                                    text={<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor" className="w-3 h-3">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+                                    </svg>
+                                    }
                                     color="purple"
                                     tooltipContent="This club requires a commitment over one or more terms."
                                 />
                             ) : (
                                 <></>
                             )}
+                            <ChipWithStatus
+                                text={currentClubInstance.capacity}
+                                color={
+                                    currentClubInstance.capacity <= 5
+                                        ? "red"
+                                        : currentClubInstance.capacity <= 10
+                                            ? "amber"
+                                            : "green"
+                                }
+                                tooltipContent={`${currentClubInstance.capacity} spaces left`}
+                            />
                         </div>
                     </div>
                     <div className="flex-col flex ">
@@ -102,24 +123,25 @@ export function FilledChoiceCard({
                             <Typography
                                 variant="h3"
                                 className="mb-2 min-h-[40px] h-[40px] max-h-[40px]"
+                                style={{
+                                    whiteSpace: "nowrap",
+                                    overflow: "hidden",
+                                    textOverflow: "ellipsis"
+                                }}
                             >
-                                {currentClubInfo.name}
+                                {truncateText(currentClubInfo.name, 15)}
                             </Typography>
 
-                            <ChipWithStatus
-                                text={`${currentClubInstance.capacity} spaces left`}
-                                color={
-                                    currentClubInstance.capacity <= 5
-                                        ? "red"
-                                        : currentClubInstance.capacity <= 10
-                                        ? "amber"
-                                        : "green"
-                                }
-                            />
+
                         </div>
 
-                        <Typography className="max-h-[100px] h-[100px] min-h-[100px] overflow-hidden">
-                            {currentClubInfo.description}.
+
+                        <Typography
+                            className="max-h-[100px] h-[100px] min-h-[100px] overflow-hidden"
+
+                        >
+                            {currentClubInfo.description}
+                            
                         </Typography>
                     </div>
 

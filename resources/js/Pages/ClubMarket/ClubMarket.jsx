@@ -17,7 +17,7 @@ import {
 } from "@material-tailwind/react";
 
 import { TermChoiceCard } from "@/Components/ClubMarket/TermChoiceCard";
-
+import { ChipWithStatus } from "@/Components/ClubMarket/ChipWithStatus";
 export default function ClubMarket({
     auth,
     userAvailableClubs,
@@ -61,23 +61,30 @@ export default function ClubMarket({
                         {[1, 2, 3, 4, 5, 6].map((term) => (
                             <TimelineItem>
                                 <TimelineConnector />
-                                <TimelineHeader className="h-3 pt-4 pb-5">
-                                    <TimelineIcon>
+                                <div className="flex gap-5 items-center">
+                                    <TimelineHeader className="h-3 pt-4 pb-5">
+                                        <TimelineIcon>
+                                            <Typography
+                                                variant="h3"
+                                                className="w-10 h-10 text-center"
+                                            >
+                                                {term}
+                                            </Typography>
+                                        </TimelineIcon>
                                         <Typography
                                             variant="h3"
-                                            className="w-10 h-10 text-center"
+                                            color="blue-gray"
+                                            className="leading-none uppercase tracking-widest"
                                         >
-                                            {term}
+                                            Term {term}
                                         </Typography>
-                                    </TimelineIcon>
-                                    <Typography
-                                        variant="h3"
-                                        color="blue-gray"
-                                        className="leading-none uppercase tracking-widest"
-                                    >
-                                        Term {term}.
-                                    </Typography>
-                                </TimelineHeader>
+                                    </TimelineHeader>
+                                    <ChipWithStatus
+                                        color="green"
+                                        text="live"
+                                        tooltipContent="You are currently able to book clubs for this term"
+                                    />
+                                </div>
                                 <TimelineBody>
                                     <Typography className="text-2xl">
                                         This term runs from _ to _

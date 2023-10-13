@@ -78,7 +78,7 @@ export function EmptyChoiceCard({ term, day }) {
                         </div>
                         <div>
                             <Alert
-                                className="max-h-[100px] h-[100px] min-h-[100px] overflow-hidden"
+                                className="max-h-[100px] h-[100px] min-h-[100px] mt-[6px] overflow-hidden"
                                 variant="ghost"
                                 color="orange"
                                 icon={
@@ -100,7 +100,7 @@ export function EmptyChoiceCard({ term, day }) {
                             >
                                 Press <strong>FIND</strong> to select a club for
                                 this day, or <strong>"Home"</strong> will be
-                                automatically allocated.
+                                 chosen for you.
                             </Alert>
                         </div>
                     </div>

@@ -23,13 +23,13 @@ export function FindClubModal({ open, term, day, handleOpen, adminMode = {flag: 
         <Dialog
             open={open}
             handler={handleOpen}
-            
-            className="h-[80vh] overflow-y-scroll"
+            size="xl"
             style={
                 {
                     width: "100%"
                 }
             }
+            className="bg-gray-100"
         >
             <DialogHeader>
                 <div className="flex justify-between w-full items-baseline">
@@ -42,8 +42,8 @@ export function FindClubModal({ open, term, day, handleOpen, adminMode = {flag: 
                     </Typography>
                 </div>
             </DialogHeader>
-            <DialogBody className="overflow-y-auto p-6 overflow-x-hidden">
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-10">
+            <DialogBody className="  overflow-x-hidden pb-6 overflow-y-auto h-[80vh]">
+                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 mt-2">
                     {filteredClubs.map((clubInstance) => {
                         const club = findClubByInstanceID(
                             availableClubs,

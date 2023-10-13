@@ -87,7 +87,7 @@ public function store(Request $request)
                         'club_id' => $club->id,
                         'half_term' => $instance['term_no'],
                         // 'capacity' => $instance['capacity'],
-                        'capacity' => 500,
+                        'capacity' => $instance['capacity'],
                         'day_of_week' => $instance['day']
                     ]);
 
