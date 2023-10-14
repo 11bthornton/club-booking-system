@@ -52,8 +52,7 @@ export default function ClubMarket({
 
 
             <div className="container mx-auto flex flex-col   mt-5">
-                <Typography variant="h2" className="mb-4">
-                    Select your clubs
+                
                 <Typography variant="h2" className="mb-7">
                     Select your clubs
                 </Typography>
