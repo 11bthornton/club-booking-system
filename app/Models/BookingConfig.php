@@ -20,6 +20,8 @@ class BookingConfig extends Model
 
     protected $fillable = ['scheduled_at', 'ends_at'];
 
+    // protected $hidden = ["allowedClubs", "pivot"];
+
     public static function bookingsAreOpen()
     {
         $latestConfig = self::latest('scheduled_at')->first();
@@ -143,6 +145,28 @@ class BookingConfig extends Model
     //         $bookingConfig->allowedYearGroups()->attach($allYearGroups);
     //     });
     // }
+    public function toArray()
+    {
+        $data = parent::toArray();
 
+        if (isset($data['allowed_clubs'])) {
+            // Ensure 'allowed_clubs' is an array
+            $allowedClubs = is_array($data['allowed_clubs']) ? $data['allowed_clubs'] : [];
+
+            // Extract 'half_term' values from the array
+            $halfTermValues = array_column($allowedClubs, 'half_term');
+
+            // Get unique 'half_term' values
+            $uniqueHalfTermValues = array_unique($halfTermValues);
+
+            // Rename 'allowed_clubs' to 'associated_terms' and update with unique values as a list
+            $data['associated_terms'] = array_values($uniqueHalfTermValues);
+
+            // Remove the 'allowed_clubs' column
+            unset($data['allowed_clubs']);
+        }
+
+        return $data;
+    }
 
 }

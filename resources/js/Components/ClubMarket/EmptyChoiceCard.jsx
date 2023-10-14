@@ -13,9 +13,13 @@ import {
 import { ChipWithStatus } from "./ChipWithStatus";
 import { FindClubModal } from "@/Components/ClubMarket/FindClubModal";
 
+import { useAvailableClubs } from "@/ClubContext";
+
 export function EmptyChoiceCard({ csrf, term, day }) {
     const [open, setOpen] = useState(false);
     const handleOpen = () => setOpen(!open);
+
+    const { availableClubs } = useAvailableClubs();
 
     return (
         <div className="flex justify-center" key={1}>
@@ -33,7 +37,7 @@ export function EmptyChoiceCard({ csrf, term, day }) {
                     className="mb-4 grid h-28 place-items-center shadow-none "
                 >
                     <Typography variant="h3" color="white">
-                        
+
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
                             fill="none"
@@ -60,11 +64,11 @@ export function EmptyChoiceCard({ csrf, term, day }) {
                                 >
                                     {day}
                                 </Typography>
-                                <ChipWithStatus
+                                {/* <ChipWithStatus
                                     text="None Selected"
                                     color="orange"
                                     tooltipContent="Please select a club for this day."
-                                />
+                                /> */}
                             </div>
 
                             <div className="flex-col flex">
@@ -100,41 +104,71 @@ export function EmptyChoiceCard({ csrf, term, day }) {
                                     </svg>
                                 }
                             >
-                                Press <strong>FIND</strong> to select a club for
-                                this day, or <strong>"Home"</strong> will be
-                                 chosen for you.
+                                {
+                                    Object.values(availableClubs).length ?
+                                        <>
+                                            Press <strong>FIND</strong> to select a club for
+                                            this day, or <strong>"Home"</strong> will be
+                                            chosen for you.
+                                        </>
+                                    :
+                                        <>
+                                            Bookings for this day and term are not open right now.
+                                            Check again later.
+                                        </>
+
+                                }
                             </Alert>
                         </div>
                     </div>
                 </CardBody>
                 <CardFooter className="pt-0">
-                    <div className="flex justify-between mt-2">
-                        <Tooltip content="Find a club">
-                            <Button
-                                variant="filled"
-                                color="blue"
-                                icon={<svg></svg>}
-                                className="flex items-center gap-3"
-                                onClick={handleOpen}
-                            >
-                                Find
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke-width="1.5"
-                                    stroke="currentColor"
-                                    class="w-6 h-6"
+                    <div className="flex justify-between mt-2 items-center">
+                        {
+                            Object.values(availableClubs).length ?
+                                <Tooltip content="Find a club">
+                                    <Button
+                                        variant="filled"
+                                        color="blue"
+                                        icon={<svg></svg>}
+                                        className="flex items-center gap-3"
+                                        onClick={handleOpen}
+
+
+                                    >
+                                        Find
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                            stroke-width="1.5"
+                                            stroke="currentColor"
+                                            class="w-6 h-6"
+                                        >
+                                            <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
+                                            />
+                                        </svg>
+                                    </Button>
+                                </Tooltip>
+                                :
+                                <Button
+                                    variant="filled"
+                                    color="blue"
+                                    icon={<svg></svg>}
+                                    className="flex items-center gap-3"
+                                    onClick={handleOpen}
+                                    disabled={true}
+
                                 >
-                                    <path
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
-                                    />
-                                </svg>
-                            </Button>
-                        </Tooltip>
+                                    Check back later
+                                </Button>
+                        }
+
                     </div>
+
                 </CardFooter>
             </Card>
         </div>
