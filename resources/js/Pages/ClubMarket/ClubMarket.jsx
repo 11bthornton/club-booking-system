@@ -24,7 +24,7 @@ export default function ClubMarket({
     alreadyBookedOn,
     csrf
 }) {
-    const { alreadyBooked, setAvailableClubs, setAlreadyBooked } =
+    const { availableClubs, alreadyBooked, setAvailableClubs, setAlreadyBooked } =
         useAvailableClubs();
 
     useEffect(() => {
@@ -43,24 +43,48 @@ export default function ClubMarket({
     const handlePrev = () => !isFirstStep && setActiveStep((cur) => cur - 1);
 
     return (
-        <AuthenticatedLayout user={auth.user}header={
+        <AuthenticatedLayout user={auth.user} header={
             <h2 className="font-semibold text-xl text-gray-800 leading-tight">
                 Club Market
             </h2>
         }>
             <Head title="Club Market" />
             <div className="container mx-auto flex flex-col   mt-5">
-                <Typography variant="h2" className="mb-7">
-                    Select your clubs 
+                <Typography variant="h2" className="mb-4">
+                    Select your clubs
                 </Typography>
 
-                <Alert className="mb-12" color="blue" variant="ghost">
-                    <Typography variant="h6" className="font-medium">
-                        You can select and change your clubs as many times as
-                        you want up until the deadline.
-                        {/* {{csrf()}} */}
-                    </Typography>
-                </Alert>
+                {
+                    auth.user.bookingConfigs.length ?
+                        <Alert className="mb-12" color="blue" variant="ghost">
+                            <Typography variant="h6" className="font-medium">
+                                You can select and change your clubs as many times as
+                                you want up until the deadline.
+
+                            </Typography>
+                        </Alert>
+                        :
+                        <>
+                            <Alert color="red" className="mb-12" variant="ghost">
+
+                                <Typography variant="h4" className="font-medium">
+                                    The booking system is currently <strong>offline</strong> for you.
+                                </Typography>
+                                <Typography variant="h6" className="font-medium">
+                                    {
+                                        auth.user.futureBookingConfigs.length ?
+                                            <>Check back at <strong>{auth.user.futureBookingConfigs[0].scheduled_at}</strong>, when you will be able to alter or change some or all of your bookings.</>
+                                        :
+                                            <>There are currently no times scheduled for you to book your clubs. Check back at a later date.</>
+                                    }
+                                </Typography>
+                                <p className="mt-3">
+                                    In the meantime, you can still view your current selections.
+                                </p>
+                            </Alert>
+                        </>
+                }
+
 
                 <div className="flex flex-col justify-between items-center w-full">
                     <Timeline>
@@ -85,11 +109,33 @@ export default function ClubMarket({
                                             Term {term}
                                         </Typography>
                                     </TimelineHeader>
-                                    <ChipWithStatus
-                                        color="green"
-                                        text="live"
-                                        tooltipContent="You are currently able to book clubs for this term"
-                                    />
+                                    {
+                                        /**
+                                         * Need to do some filtering.
+                                         */
+                                        auth.user.bookingConfigs.flatMap(bC => bC.associated_terms).includes(term) ?
+                                            <>
+                                                <ChipWithStatus
+                                                    color="green"
+                                                    text="Bookings Open"
+                                                    tooltipContent="You are currently able to book clubs for this term"
+                                                />
+                                                <p className="font-bold text-red-500">
+                                                </p>
+                                            </>
+                                            :
+                                            <>
+                                                <ChipWithStatus
+                                                    color="red"
+                                                    text="Bookings Closed"
+                                                    tooltipContent="Bookings are currently closed for this term"
+                                                />
+                                                <p className="font-bold text-red-500">
+                                                    Bookings for this term next opens at: { }
+                                                </p>
+                                            </>
+                                    }
+
                                 </div>
                                 <TimelineBody>
                                     <Typography className="text-2xl">

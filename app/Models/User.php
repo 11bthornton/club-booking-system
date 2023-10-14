@@ -37,6 +37,8 @@ class User extends Authenticatable
         'password',
         // 'role'
         // 'remember_token',
+        'activeBookingConfigs',
+        'userFutureBookingConfigs'
     ];
 
     /**
@@ -99,7 +101,7 @@ class User extends Authenticatable
         return $organizedByTerm;
     }
 
-    protected $appends = ['can_book_clubs', 'next_booking_time'];
+    // protected $appends = ['can_book_clubs', 'next_booking_time'];
 
     public function canBookClubs()
     {
@@ -175,17 +177,38 @@ class User extends Authenticatable
     ->where('ends_at', '>', now());
 }
 
+public function userFutureBookingConfigs()
+{
+    return $this->belongsToMany(
+        BookingConfig::class,
+        'allowed_users',
+        'user_id',
+        'booking_config_id'
+    )->where('scheduled_at', '>', now())
+    ->where('ends_at', '>', now());
+}
+
 public function getAllActiveBookingConfigs()
 {
     // BookingConfigs related to the user
-    $userBookingConfigs = $this->activeBookingConfigs;
+    $userBookingConfigs = $this->activeBookingConfigs->sortByDesc('ends_at');
+    $userFutureBookingConfigs = $this->userFutureBookingConfigs->sortBy('scheduled_at');
+    // die($userBookingConfigs);
 
     // BookingConfigs related to the user's year group
     $yearGroup = $this->yearGroup;  // Assuming the relationship is called "yearGroup"
-    $yearGroupBookingConfigs = $yearGroup ? $yearGroup->activeBookingConfigs : collect();
+    $yearGroupBookingConfigs = $yearGroup ? $yearGroup->activeBookingConfigs->sortByDesc('ends_at') : collect();
+    $yearGroupFutureBookingConfigs = $yearGroup ? $yearGroup->futureBookingConfigs->sortBy('scheduled_at') : collect();
+
+
+    // die()
 
     // Combine and remove duplicates
     $allBookingConfigs = $userBookingConfigs->concat($yearGroupBookingConfigs)->unique('id');
+    $allFutureConfigs = $userFutureBookingConfigs->concat($yearGroupFutureBookingConfigs)->unique('id');
+
+    $this->bookingConfigs = $allBookingConfigs;
+    $this->futureBookingConfigs = $allFutureConfigs;
 
     return $allBookingConfigs;
 }
@@ -201,5 +224,37 @@ public function getAllActiveBookingConfigs()
     );
 }
 
+public function toArray()
+    {
+        $data = parent::toArray();
 
+        // Customize the 'bookingConfigs' attribute
+        if (isset($data['bookingConfigs'])) {
+            foreach ($data['bookingConfigs'] as &$bookingConfig) {
+                // Keep only the desired fields in 'bookingConfigs'
+                $bookingConfig = [
+                    'id' => $bookingConfig['id'],
+                    'scheduled_at' => $bookingConfig['scheduled_at'],
+                    'created_at' => $bookingConfig['created_at'],
+                    'updated_at' => $bookingConfig['updated_at'],
+                    'ends_at' => $bookingConfig['ends_at'],
+                ];
+            }
+        }
+
+        if (isset($data['futureBookingConfigs'])) {
+            foreach ($data['futureBookingConfigs'] as &$bookingConfig) {
+                // Keep only the desired fields in 'bookingConfigs'
+                $bookingConfig = [
+                    'id' => $bookingConfig['id'],
+                    'scheduled_at' => $bookingConfig['scheduled_at'],
+                    'created_at' => $bookingConfig['created_at'],
+                    'updated_at' => $bookingConfig['updated_at'],
+                    'ends_at' => $bookingConfig['ends_at'],
+                ];
+            }
+        }
+
+        return $data;
+    }
 }

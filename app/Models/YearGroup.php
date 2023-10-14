@@ -13,6 +13,7 @@ class YearGroup extends Model
     public $incrementing = false;
     protected $keyType = 'string';
 
+    protected $hidden = ["activeBookingConfigs", "futureBookingConfigs"];
 
     public function activeBookingConfigs()
     {
@@ -26,5 +27,17 @@ class YearGroup extends Model
         ->where('ends_at', '>', now());
     }
     
+
+    public function futureBookingConfigs()
+{
+    return $this->belongsToMany(
+        BookingConfig::class,
+        'allowed_year_groups',
+        'year',
+        'booking_config_id'
+    )->where('scheduled_at', '>', now())
+    ->where('ends_at', '>', now());
+}
+
 
 }
