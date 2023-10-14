@@ -38,6 +38,13 @@ export function OptionCard({
             currentClubInstance.day_of_week
         ]?.id == currentClubInstance.id;
 
+        const truncateText = (text, length = 15) => {
+            if (text.length > length) {
+                return `${text.substring(0, length)}...`;
+            }
+            return text;
+        };
+    
     return (
         <div className="flex justify-center" key={currentClubInstance.id}>
             <ChangeConfirmationDialogue
@@ -122,11 +129,16 @@ export function OptionCard({
                     </div>
                     <div className="flex-col flex ">
                         <div className="flex items-center justify-between">
-                            <Typography
+                        <Typography
                                 variant="h3"
                                 className="mb-2 min-h-[40px] h-[40px] max-h-[40px]"
+                                style={{
+                                    whiteSpace: "nowrap",
+                                    overflow: "hidden",
+                                    textOverflow: "ellipsis"
+                                }}
                             >
-                                {currentClubInfo.name}
+                                {truncateText(currentClubInfo.name, 15)}
                             </Typography>
 
                            </div>
@@ -173,6 +185,7 @@ export function OptionCard({
                                     setTimeout(async () => {
                                         const data = await findClubChanges(
                                             currentClubInstance.id,
+                                            csrf
                                         );
                                         setDataForConfirmation(data);
                                         setShowSpinner(false);

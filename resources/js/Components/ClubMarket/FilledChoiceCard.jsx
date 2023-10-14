@@ -12,7 +12,7 @@ import {
 import { ChipWithStatus } from "./ChipWithStatus";
 import { ConfirmDeleteDialog } from "@/Components/ClubMarket/ConfirmDeleteDialog";
 import { FindClubModal } from "@/Components/ClubMarket/FindClubModal";
-
+import { useAvailableClubs } from "@/ClubContext";
 export function FilledChoiceCard({
     term,
     day,
@@ -33,7 +33,10 @@ export function FilledChoiceCard({
         }
         return text;
     };
+    const { availableClubs } = useAvailableClubs();
 
+    const filteredClubs = Object.values(availableClubs).flatMap(c => Object.values(c.club_instances)).filter(c => c.half_term == term && c.day_of_week == day);
+    
     return (
         <div className="flex justify-center" key={currentClubInstance.id}>
             <FindClubModal
@@ -179,6 +182,8 @@ export function FilledChoiceCard({
                                 variant="outlined"
                                 className="flex items-center gap-3"
                                 onClick={handleOpenFind}
+                                disabled={!filteredClubs.length}
+
                             >
                                 Swap
                                 <svg

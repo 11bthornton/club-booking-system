@@ -1,8 +1,4 @@
-export default async function findClubChanges(clubId) {
-    const csrfToken = document
-        .querySelector('meta[name="csrf-token"]')
-        .getAttribute("content");
-    console.log(csrfToken);
+export default async function findClubChanges(clubId, csrfToken) {
 
     try {
         const response = await fetch(`/simulate-book/${clubId}/`, {
@@ -15,6 +11,7 @@ export default async function findClubChanges(clubId) {
             },
         });
 
+        // console.log(await response.text());
         const data = await response.json();
 
         if (response.ok) {

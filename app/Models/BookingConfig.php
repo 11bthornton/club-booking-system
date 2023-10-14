@@ -73,23 +73,6 @@ class BookingConfig extends Model
     }
 }
 
-    // public static function create(array $attributes = [])
-    // {
-    //     // $newScheduleStart = Carbon::parse($attributes['scheduled_at']);
-
-    //     // $overlappingConfigs = self::where(function (Builder $query) use ($newScheduleStart) {
-    //     //     $query->where('scheduled_at', '<=', $newScheduleStart)
-    //     //         ->where('scheduled_at', '>=', $newScheduleStart);
-    //     // })->get();
-
-    //     // if ($newScheduleStart->lt(Carbon::now())) {
-    //     //     // Handle the error, maybe throw an exception
-    //     //     return null;
-    //     // }
-
-    //     // return null;
-    //     return parent::create($attributes);
-    // }
 
     public function canUserBook($user)
     {
@@ -146,27 +129,25 @@ class BookingConfig extends Model
     //     });
     // }
     public function toArray()
-    {
-        $data = parent::toArray();
+{
 
-        if (isset($data['allowed_clubs'])) {
-            // Ensure 'allowed_clubs' is an array
-            $allowedClubs = is_array($data['allowed_clubs']) ? $data['allowed_clubs'] : [];
+    $data = parent::toArray();
 
-            // Extract 'half_term' values from the array
-            $halfTermValues = array_column($allowedClubs, 'half_term');
+    if ($this->allowedClubs) {
+        // Extract 'half_term' values from the relationship
+        $halfTermValues = $this->allowedClubs->pluck('half_term')->toArray();
 
-            // Get unique 'half_term' values
-            $uniqueHalfTermValues = array_unique($halfTermValues);
+        // Get unique 'half_term' values
+        $uniqueHalfTermValues = array_unique($halfTermValues);
 
-            // Rename 'allowed_clubs' to 'associated_terms' and update with unique values as a list
-            $data['associated_terms'] = array_values($uniqueHalfTermValues);
+        // Rename 'allowed_clubs' to 'associated_terms' and update with unique values as a list
+        $data['associated_terms'] = array_values($uniqueHalfTermValues);
 
-            // Remove the 'allowed_clubs' column
-            unset($data['allowed_clubs']);
-        }
-
-        return $data;
+        // Remove the 'allowed_clubs' column
+        unset($data['allowed_clubs']);
     }
+
+    return $data;
+}
 
 }

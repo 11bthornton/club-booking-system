@@ -13,20 +13,14 @@ import {
     ButtonGroup,
 } from "@material-tailwind/react";
 import {
-    Timeline,
-    TimelineItem,
-    TimelineConnector,
-    TimelineHeader,
-    TimelineIcon,
-    TimelineBody,
-    // Typography,
+    Tooltip
 } from "@material-tailwind/react";
 
 import SystemSchedulerCard from "./SystemSchedulerCard";
 
 import { StepProvider } from "./StepContext";
 
-export default function Dashboard({ auth, clubData, scheduleData }) {
+export default function Dashboard({ auth, clubData, scheduleData, year }) {
     const [selectedDate, setSelectedDate] = useState(new Date());
 
     const [isDialogOpen, setDialogOpen] = useState(false);
@@ -43,8 +37,25 @@ export default function Dashboard({ auth, clubData, scheduleData }) {
             <Head title="Admin Dashboard" />
             <div class="container mx-auto p-6">
                 <div className="w-full bg-white shadow-md rounded-lg p-5 mb-7">
-                    <Typography variant="h3" >Academic Year 23/24</Typography>
-                    <p>jesdf</p>
+                    <Typography variant="h3" className="mb-4">Academic Year 20{year.year_start} - 20{year.year_end}</Typography>
+                    <div className="flex gap-4 items-center">
+                    <Tooltip
+                        content="Switch the system to a new academic year"
+                    >
+                        <Button size="sm" variant="outlined">Configure New Academic Year</Button>
+                    </Tooltip>
+                    <Tooltip
+                        content="Place the system into maintenance mode, restricting access to students to the site whatsoever."
+                    >
+                        <Button
+                            variant="text"
+                            color="red"
+                            size="sm"
+                        >
+                            Maintenance Mode
+                        </Button>
+                    </Tooltip>
+                    </div>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

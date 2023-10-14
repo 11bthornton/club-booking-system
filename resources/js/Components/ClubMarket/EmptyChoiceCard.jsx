@@ -21,8 +21,10 @@ export function EmptyChoiceCard({ csrf, term, day }) {
 
     const { availableClubs } = useAvailableClubs();
 
+    const filteredClubs = Object.values(availableClubs).flatMap(c => Object.values(c.club_instances)).filter(c => c.half_term == term && c.day_of_week == day);
+
     return (
-        <div className="flex justify-center" key={1}>
+        <div className={`flex justify-center ${filteredClubs.length ? '': 'opacity-50'}`} key={1}>
             <FindClubModal
                 open={open}
                 handleOpen={handleOpen}
@@ -37,7 +39,6 @@ export function EmptyChoiceCard({ csrf, term, day }) {
                     className="mb-4 grid h-28 place-items-center shadow-none "
                 >
                     <Typography variant="h3" color="white">
-
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
                             fill="none"
@@ -105,13 +106,13 @@ export function EmptyChoiceCard({ csrf, term, day }) {
                                 }
                             >
                                 {
-                                    Object.values(availableClubs).length ?
+                                    filteredClubs.length ?
                                         <>
                                             Press <strong>FIND</strong> to select a club for
                                             this day, or <strong>"Home"</strong> will be
                                             chosen for you.
                                         </>
-                                    :
+                                        :
                                         <>
                                             Bookings for this day and term are not open right now.
                                             Check again later.
@@ -125,7 +126,7 @@ export function EmptyChoiceCard({ csrf, term, day }) {
                 <CardFooter className="pt-0">
                     <div className="flex justify-between mt-2 items-center">
                         {
-                            Object.values(availableClubs).length ?
+                            filteredClubs.length ?
                                 <Tooltip content="Find a club">
                                     <Button
                                         variant="filled"

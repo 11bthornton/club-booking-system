@@ -3,6 +3,8 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
+
 
 return new class extends Migration
 {
@@ -19,8 +21,16 @@ return new class extends Migration
             $table->string('year');
             $table->string('role');
             $table->foreign('year')->references('year')->on('year_groups');
-
         });
+
+        DB::table('users')->insert([
+            'username' => 'testuser',
+            'password' => Hash::make('testing123'),
+            'year' => "7", // replace this with the appropriate year value
+            'role' => "1", // replace this with the appropriate role value
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
     }
 
     /**

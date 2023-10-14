@@ -15,11 +15,11 @@ export function ClubChoiceCard({ csrf, term, day }) {
         term,
         day,
     );
-    const currentClubInfo = findClubByInstanceID(
-        availableClubs,
-        currentClubInstance?.id,
-    );
 
+    const currentClubInfo = currentClubInstance ? currentClubInstance.club : null;
+    
+    // currentClubInfo = typeof currentClubInfo == "undefined" ? currentClubInstance.club : currentClubInfo;
+    
     return currentClubInfo ? (
         <FilledChoiceCard
             term={term}

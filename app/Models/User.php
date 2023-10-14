@@ -89,7 +89,7 @@ class User extends Authenticatable
             $term = $instance->half_term;
             $dayOfWeek = $instance->day_of_week;
 
-            $instance['club'] = Club::find($instance->club_id)->name;
+            $instance['club'] = Club::find($instance->club_id);
 
             if (isset($organizedByTerm[$term]) && array_key_exists($dayOfWeek, $organizedByTerm[$term])) {
                 $organizedByTerm[$term][$dayOfWeek] = $instance;
@@ -227,7 +227,6 @@ public function getAllActiveBookingConfigs()
 public function toArray()
     {
         $data = parent::toArray();
-
         // Customize the 'bookingConfigs' attribute
         if (isset($data['bookingConfigs'])) {
             foreach ($data['bookingConfigs'] as &$bookingConfig) {

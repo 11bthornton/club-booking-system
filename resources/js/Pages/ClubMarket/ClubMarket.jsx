@@ -22,7 +22,8 @@ export default function ClubMarket({
     auth,
     userAvailableClubs,
     alreadyBookedOn,
-    csrf
+    csrf,
+    year
 }) {
     const { availableClubs, alreadyBooked, setAvailableClubs, setAlreadyBooked } =
         useAvailableClubs();
@@ -52,9 +53,12 @@ export default function ClubMarket({
 
 
             <div className="container mx-auto flex flex-col   mt-5">
-                
-                <Typography variant="h2" className="mb-7">
+
+                <Typography variant="h2" className="mb-1">
                     Select your clubs
+                </Typography>
+                <Typography variant="h5" className="mb-7">
+                    For the academic year 20{year.year_start} - 20{year.year_end}
                 </Typography>
 
                 {
@@ -77,7 +81,7 @@ export default function ClubMarket({
                                     {
                                         auth.user.futureBookingConfigs.length ?
                                             <>Check back at <strong>{auth.user.futureBookingConfigs[0].scheduled_at}</strong>, when you will be able to alter or change some or all of your bookings.</>
-                                        :
+                                            :
                                             <>There are currently no times scheduled for you to book your clubs. Check back at a later date.</>
                                     }
                                 </Typography>
@@ -95,8 +99,12 @@ export default function ClubMarket({
                             <TimelineItem key={term}>
                                 <TimelineConnector />
                                 <div className="flex gap-5 items-center">
-                                    <TimelineHeader className="h-3 pt-4 pb-5">
-                                        <TimelineIcon color="green" className="shadow-xl">
+                                    <TimelineHeader className="">
+                                        <TimelineIcon
+                                            color={auth.user.bookingConfigs.flatMap(bC => bC.associated_terms).includes(term) ? "green" : "red"}
+                                            className="shadow-xl"
+                                            variant="ghost"
+                                        >
                                             <Typography
                                                 variant="h3"
                                                 className="w-10 h-10 text-center"
@@ -122,8 +130,16 @@ export default function ClubMarket({
                                                     color="green"
                                                     text="Bookings Open"
                                                     tooltipContent="You are currently able to book clubs for this term"
+                                                    className=""
                                                 />
-                                                <p className="font-bold text-red-500">
+                                                <p className="font-bold text-500 ">
+                                                    Bookings for this term ends at <strong>
+                                                        {
+                                                            [...auth.user.bookingConfigs.filter(cBc =>
+                                                                cBc.associated_terms.includes(term)
+                                                            )].reverse()[0].ends_at
+                                                        }
+                                                    </strong> at the latest.
                                                 </p>
                                             </>
                                             :
@@ -134,7 +150,13 @@ export default function ClubMarket({
                                                     tooltipContent="Bookings are currently closed for this term"
                                                 />
                                                 <p className="font-bold text-red-500">
-                                                    Bookings for this term next opens at: { }
+                                                    {
+                                                        auth.user.futureBookingConfigs.filter(fBc =>
+                                                            fBc.associated_terms.includes(term)
+                                                        ).map(fBc => (
+                                                            <>Bookings for this term next opens at {fBc.scheduled_at}</>
+                                                        ))
+                                                    }
                                                 </p>
                                             </>
                                     }
@@ -145,7 +167,7 @@ export default function ClubMarket({
                                         This term runs from _ to _
                                     </Typography>
                                     <TermChoiceCard term={term} csrf={csrf} />
-                                    
+
                                 </TimelineBody>
                             </TimelineItem>
                         ))}
