@@ -17,7 +17,7 @@ return new class extends Migration
             $table->unsignedBigInteger('capacity')->nullable()->change();
 
             // Add check constraint to ensure capacity is either NULL or positive
-            DB::statement('ALTER TABLE club_instances ADD CONSTRAINT chk_positive_capacity CHECK (capacity IS NULL OR capacity > 0)');
+            DB::statement('ALTER TABLE club_instances ADD CONSTRAINT chk_positive_capacity CHECK (capacity IS NULL OR capacity >= 0)');
         });
     }
 

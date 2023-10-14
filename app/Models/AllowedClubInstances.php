@@ -8,4 +8,8 @@ use Illuminate\Database\Eloquent\Model;
 class AllowedClubInstances extends Model
 {
     use HasFactory;
+
+    protected $hidden = [
+        
+    ];
 }

@@ -73,7 +73,7 @@ class Club extends Model
             });
             $club->setRelation('clubInstances', $filteredClubInstances);
         });
-        
+
         
         return $clubs;
     }

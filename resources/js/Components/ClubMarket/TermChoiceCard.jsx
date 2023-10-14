@@ -13,3 +13,5 @@ export function TermChoiceCard({ csrf, term }) {
         </div>
     );
 }
+
+

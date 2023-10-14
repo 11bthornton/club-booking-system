@@ -4,14 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\ClubInstance;
 use App\Models\UserClub;
+use App\Models\Club;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Auth;
-
-use Inertia\Inertia;
-use Illuminate\Support\Facades\Redirect;
-
 
 class BookingController extends Controller
 {
@@ -167,6 +163,18 @@ class BookingController extends Controller
             $allClubsToBook = $clubInstance->mustGoWithForward->concat($clubInstance->mustGoWithReverse);
             $allClubsToBook[] = $clubInstance;
 
+            $allClubsToBookIds = $allClubsToBook->pluck('id');
+            // Asser that the clubs are actually currently allowed to be booked. 
+            $availableClubs = Club::getAllWithInstancesForUser($user)
+                ->pluck('clubInstances')->flatten(1)->pluck('id');
+
+
+            $allClubsToBookIds->each(function($clubId) use ($availableClubs) {
+                if (!$availableClubs->contains($clubId)) {
+                   throw new \Exception("ID {$clubId} not found in required clubs to book");
+                }
+            });
+
             // Lock each of the rows for update.
             foreach ($allClubsToBook as $clubToBook) {
                 $clubToBook->lockForUpdate();
@@ -238,7 +246,7 @@ class BookingController extends Controller
                 'message' => 'Successfully booked the club.',
                 'data' => [
                     'alreadyBookedOn' => $user->organizedByTerm(),
-                    'availableClubs' => \App\Models\Club::getAllWithInstancesForUser($user)
+                    'availableClubs' => Club::getAllWithInstancesForUser($user)
                 ]
             ], 200);
 
@@ -284,8 +292,7 @@ class BookingController extends Controller
                 'data' => [
                     // Return the clubInstance object here
                     'alreadyBookedOn' => $organizedByTerm,
-                    'availableClubs' => \App\Models\Club::getAllWithInstancesForUser($user)
-
+                    'availableClubs' => Club::getAllWithInstancesForUser($user)
                 ]
             ], 200);
 
