@@ -18,7 +18,7 @@ class Club extends Model
         'name',
         'description',
         'rule',
-        // any other attributes you want to make mass-assignable
+        'academic_year_id'
     ];
 
     public function clubInstances()
@@ -43,8 +43,9 @@ class Club extends Model
         $year = $user->year;
 
         $activeBookingConfigs = $user->getAllActiveBookingConfigs();
-        // dd($activeBookingConfigs);
-        // Fetch the clubs with their instances without unnecessary relationships
+        
+        $currentAcademcicYearId = CurrentAcademicYear::first()->academic_year_id;
+
         $clubs = self::with([
             'clubInstances' => function ($query) use ($year) {
                 $query->whereHas('yearGroups', function ($q) use ($year) {
@@ -53,6 +54,7 @@ class Club extends Model
                 ->select(['id', 'club_id', 'half_term', 'capacity', 'day_of_week', 'created_at', 'updated_at']); // Only select necessary columns
             },
         ])
+        ->where('academic_year_id', $currentAcademcicYearId) // Filtering based on the academic_year_id
         ->whereHas('clubInstances', function ($query) use ($year) {
             $query->whereHas('yearGroups', function ($q) use ($year) {
                 $q->where('year_group_club.year', $year);

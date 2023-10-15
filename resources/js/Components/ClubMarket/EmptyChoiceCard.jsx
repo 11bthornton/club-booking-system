@@ -114,8 +114,7 @@ export function EmptyChoiceCard({ csrf, term, day }) {
                                         </>
                                         :
                                         <>
-                                            Bookings for this day and term are not open right now.
-                                            Check again later.
+                                            There are no clubs available for you to book for this day. 
                                         </>
 
                                 }

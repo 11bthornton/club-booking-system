@@ -11,6 +11,7 @@ use App\Models\ClubInstance;
 use App\Models\YearGroupClub;
 use App\Models\IncompatibleClub;
 use App\Models\RequiredClub;
+use App\Models\CurrentAcademicYear;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\DB;
 
@@ -48,6 +49,8 @@ class ClubController extends Controller
 
 public function store(Request $request)
 {
+
+
     return DB::transaction(function () use ($request) {
         try {
 
@@ -68,11 +71,13 @@ public function store(Request $request)
                 'compatibilities.must' => 'array',
             ]);
 
+
             // Create a new club
             $club = Club::create([
                 'name' => $data['clubTitle'],
                 'description' => $data['clubDescription'],
                 'rule' => $data['clubRules'],
+                'academic_year_id' => CurrentAcademicYear::first()->academic_year_id,
             ]);
 
             // Enumerate through instances

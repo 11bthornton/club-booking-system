@@ -137,6 +137,11 @@ Route::middleware(['auth', 'is.admin'])->group(function() {
         ]);
     })->name('admin.students');
 
+    Route::get('/admin/configure-year', function() {
+        
+        return Inertia::render('AdminBoard/YearConfigure/YearConfigure');
+    })->name('admin.year.configure');
+
     Route::get('/admin/students/{id}', function($id) {
 
         $student = User::findOrFail($id);

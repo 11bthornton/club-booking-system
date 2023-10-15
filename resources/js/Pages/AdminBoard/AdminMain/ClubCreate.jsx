@@ -95,8 +95,8 @@ export default function ClubCreate({ auth, clubs }) {
                 setData(
                     "compatibilities",
                     {
-                        "in" : [],
-                        "must": cartesianProduct(),
+                        "in"   : [],
+                        "must" : cartesianProduct(),
                     }
                 )
                 break;

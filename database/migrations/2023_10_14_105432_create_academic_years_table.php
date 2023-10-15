@@ -24,6 +24,8 @@ return new class extends Migration
             $table->date('term5_start');
             $table->date('term6_start');
 
+            $table->unique(['year_start', 'year_end']);
+
             $table->timestamps();
         });
     }
