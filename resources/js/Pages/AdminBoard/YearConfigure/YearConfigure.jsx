@@ -33,6 +33,21 @@ export default function YearConfigure({ auth }) {
     useEffect(() => {
         setShowSpinner(processing);
     }, [processing]);
+    
+    const [selectedFile, setSelectedFile] = useState(null);
+    const [message, setMessage] = useState('');
+
+    const handleFileChange = (e) => {
+        const file = e.target.files[0];
+
+        if (file) {
+            setSelectedFile(file);
+            setMessage(`Selected file: ${file.name}`);
+        } else {
+            setSelectedFile(null);
+            setMessage('');
+        }
+    };
 
     const [transferUsers, setTransferUsers] = useState(false);
     const yearEndInput = useRef();
@@ -191,13 +206,22 @@ export default function YearConfigure({ auth }) {
                                     </span>
                             }
                             <br />
-                            <br />
                             <a href="" className="text-blue-400 hover:underline">What format should this data be supplied in?</a>
                         </p>
-
-                        <Button variant="outlined" size="sm">
-                            Upload
-                        </Button>
+                        <br />
+                        <div>
+                            <label htmlFor="file-upload" className="relative cursor-pointer bg-blue-500 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md">
+                                <span>Choose a File</span>
+                                <input
+                                    id="file-upload"
+                                    name="file"
+                                    type="file"
+                                    className="hidden"
+                                    onChange={handleFileChange}
+                                />
+                            </label>
+                            {message && <p className="mt-2 text-gray-600">{message}</p>}
+                        </div>
 
                         <p className="mt-4  text-sm text-red-600 font-bold">
                             Users in Year 11 already in the system from previous academic year(s) will be deleted.
