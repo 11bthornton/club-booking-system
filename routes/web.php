@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AcademicYearController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\ClubController;
@@ -137,10 +138,10 @@ Route::middleware(['auth', 'is.admin'])->group(function() {
         ]);
     })->name('admin.students');
 
-    Route::get('/admin/configure-year', function() {
-        
-        return Inertia::render('AdminBoard/YearConfigure/YearConfigure');
-    })->name('admin.year.configure');
+    
+    Route::get('/admin/configure-year', [AcademicYearController::class, 'index'])->name('admin.academic-year.index');
+    Route::post('/admin/configure-year', [AcademicYearController::class, 'store'])->name('admin.academic-year.store');
+
 
     Route::get('/admin/students/{id}', function($id) {
 
