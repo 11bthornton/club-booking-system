@@ -17,7 +17,7 @@ import StepYear from "./StepYear";
 import StepClubs from "./StepClubs";
 import StepConfirm from "./StepConfirm";
 
-export default function StepsDialog({ clubData, handleOpen, isDialogOpen }) {
+export default function StepsDialog({ clubData, handleOpen, isDialogOpen, availableDays}) {
     const {
         activeStep,
         setActiveStep,
@@ -32,7 +32,7 @@ export default function StepsDialog({ clubData, handleOpen, isDialogOpen }) {
     const steps = [
         <StepDate />,
         <StepYear />,
-        <StepClubs clubData={clubData} />,
+        <StepClubs clubData={clubData} availableDays={availableDays}/>,
         <StepConfirm />,
     ];
 

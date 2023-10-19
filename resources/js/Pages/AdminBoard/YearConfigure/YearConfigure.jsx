@@ -5,15 +5,26 @@ import React, { useEffect, useRef } from "react";
 
 import TextInput from "@/Components/TextInput";
 import InputLabel from "@/Components/InputLabel";
-import { Alert, Button, Checkbox, Radio } from '@material-tailwind/react'
+import { Alert, Button, Checkbox, Radio, Typography, } from '@material-tailwind/react'
 
 import { useForm } from "@inertiajs/react";
 import { useState } from "react";
 import { useSpinner } from "@/LoadingContext";
 
-import { Transition } from "@headlessui/react";
+import {
+    Transition,
 
-export default function YearConfigure({ auth }) {
+} from "@headlessui/react";
+import {
+    Select, Option, List,
+    ListItem,
+    ListItemPrefix,
+} from '@material-tailwind/react';
+
+export default function YearConfigure({ auth, year, clubs }) {
+
+
+    const [file, setFile] = useState({});
 
     const {
         data,
@@ -24,8 +35,18 @@ export default function YearConfigure({ auth }) {
         errors,
         recentlySuccessful
     } = useForm({
-        yearStart: "23",
-        yearEnd: "24",
+        yearStart: year.year_start + 1,
+        yearEnd: year.year_end + 1,
+        usersFile: file,
+        keepClubs: [],
+        transferStudents: false,
+        days: [7, 8, 9, 10, 11].map((year) => {
+            return {
+                year: year,
+                day_1: "Wednesday",
+                day_2: "Friday"
+            };
+        })
     });
 
     const { setShowSpinner } = useSpinner();
@@ -33,9 +54,17 @@ export default function YearConfigure({ auth }) {
     useEffect(() => {
         setShowSpinner(processing);
     }, [processing]);
-    
+
+    useEffect(() => {
+        setData("yearEnd", Number(data.yearStart) + 1)
+    }, [data.yearStart])
+
+    useEffect(() => {
+        setData("yearStart", Number(data.yearEnd) - 1)
+    }, [data.yearEnd])
+
     const [selectedFile, setSelectedFile] = useState(null);
-    const [message, setMessage] = useState('');
+    const [selectedFileMessage, setSelectedFileMessage] = useState('');
 
     const handleFileChange = (e) => {
         const file = e.target.files[0];
@@ -61,8 +90,16 @@ export default function YearConfigure({ auth }) {
             <Head title="Configure Year" />
 
             <div className="py-12 sm:p-4">
+
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
 
+                    {
+                        JSON.stringify(data)
+                    }
+
+                    {
+                        JSON.stringify(errors)
+                    }
                     <Transition
                         show={recentlySuccessful}
                         enter="transition ease-in-out"
@@ -70,18 +107,28 @@ export default function YearConfigure({ auth }) {
                         leave="transition ease-in-out"
                         leaveTo="opacity-0"
                     >
-                        <div className=" bg-green-500 shadow sm:rounded-lg">
+                        <div className=" shadow sm:rounded-lg">
 
                             <Alert
                                 color="green"
                                 variant="ghost"
                             >
-                                <p className="text-white">
-                                    Successfully saved configuration.
-                                </p>
+                                Successfully saved configuration.
                             </Alert>
                         </div>
                     </Transition>
+
+                    {
+                        JSON.stringify(errors) == "{}" ? <></> : <div className=" shadow sm:rounded-lg">
+
+                            <Alert
+                                color="red"
+                                variant="ghost"
+                            >
+                                There were errors. Please see below.
+                            </Alert>
+                        </div>
+                    }
 
                     <div className="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
                         <h2 className="text-lg font-medium text-gray-900">
@@ -126,13 +173,11 @@ export default function YearConfigure({ auth }) {
                             aria-required
                         />
                         {
-                            errors.yearEnd ?  
-                                <p className="mt-1 text-sm text-red-600 mb-4 font-bold">
-                                    {errors.yearEnd}
-                                </p> 
-                            :   
-                                <>
-                                </>
+                            errors.yearStart && <Alert color="red" variant="ghost" className="mt-1">{errors.yearStart}</Alert>
+                        }
+
+                        {
+                            errors.yearEnd && <Alert color="red" variant="ghost" className="mt-1">{errors.yearEnd}</Alert>
                         }
 
                         <p className="mt-1 text-sm text-gray-600 mb-2">
@@ -170,6 +215,9 @@ export default function YearConfigure({ auth }) {
                         <h2 className="text-lg font-medium text-gray-900">
                             Students
                         </h2>
+                        <p className="mb-3 text-sm text-black-600 font-bold">
+                            Users in Year 11 already in the system from previous academic year(s) will be deleted.
+                        </p>
                         <p className="mt-1 mb-4 text-sm text-gray-600">
                             You can opt to transfer across (current) years 7-10 through to the next academic year,
                             with each student retaining the same login information. Or, instead, you can upload
@@ -178,54 +226,165 @@ export default function YearConfigure({ auth }) {
                             the system is run.
                         </p>
                         <InputLabel
-                            value="Transfer across from academic year _?"
+                            value={`Transfer across from the current academic year, ${year.year_start}/${year.year_end}?`}
                             check
                         />
                         <div className="flex gap-3">
                             <Radio
                                 name="type"
                                 label="No"
+                                onChange={() => setData("transferStudents", !data.transferStudents)}
+                                defaultChecked={!data.transferStudents}
                             />
                             <Radio
                                 name="type"
                                 label="Yes"
-                                defaultChecked
+                                onChange={() => setData("transferStudents", !data.transferStudents)}
+                                defaultChecked={data.transferStudents}
                             />
                         </div>
 
-                        <p className="mt-4 mb-4 text-sm text-gray-600 min-">
-                            {
-                                transferUsers ?
-                                    <span>
-                                        Upload file with any new users you have to add. Users in Years 7-10 from the previous academic year, _, will move
-                                        up a year and retain the same login information.
-                                    </span>
-                                    :
-                                    <span>
-                                        Upload file with all new users.
-                                    </span>
-                            }
-                            <br />
+                        <div className="p-4 bg-gray-50 mt-3 rounded-sm">
+                            <Typography
+                                variant="h6"
+                            >
+                                Upload
+                            </Typography>
+                            <p className=" text-sm text-gray-600 mb-4 min-h-[40px]">
+                                {
+                                    data.transferStudents ?
+                                        <span>
+                                            Upload file with any new users you have to add. Users in Years 7-10 from the previous academic year, _, will move
+                                            up a year and retain the same login information.
+                                        </span>
+                                        :
+                                        <span >
+                                            Upload file with all new users.
+                                        </span>
+                                }
+                                <br />
+                            </p>
+
                             <a href="" className="text-blue-400 hover:underline">What format should this data be supplied in?</a>
-                        </p>
-                        <br />
-                        <div>
-                            <label htmlFor="file-upload" className="relative cursor-pointer bg-blue-500 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md">
-                                <span>Choose a File</span>
+                            <div className="mt-2">
+
                                 <input
                                     id="file-upload"
                                     name="file"
                                     type="file"
-                                    className="hidden"
-                                    onChange={handleFileChange}
+                                    // className="hidden"
+                                    onChange={e => {
+                                        setFile(e.target.files[0])
+                                        setData("usersFile", e.target.files[0])
+                                    }}
                                 />
-                            </label>
-                            {message && <p className="mt-2 text-gray-600">{message}</p>}
-                        </div>
 
-                        <p className="mt-4  text-sm text-red-600 font-bold">
-                            Users in Year 11 already in the system from previous academic year(s) will be deleted.
+                            </div>
+                            {
+                                errors.usersFile &&
+                                <Alert className="mt-2" color="red" variant="ghost">
+                                    <div>{errors.usersFile}</div>
+                                    Please check your file and only include new users.
+                                </Alert>
+                            }
+                        </div>
+                    </div>
+                    <div className="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
+                        <h2 className="text-lg font-medium text-gray-900">
+                            Days
+                        </h2>
+
+                        <p className="mt-1 text-sm text-gray-600 mb-4">
+                            On what days of the week do each year group partake in their clubs? This has defaulted to
+                            Wednesday and Friday for all year groups.
                         </p>
+
+                        {
+                            data.days.map((yearGroupDays) => (
+                                <div key={yearGroupDays.year} className="mb-4">
+                                    <p className="text-lg font-medium mb-2">Year {yearGroupDays.year}</p>
+                                    <div className="flex space-x-4">
+                                        <Select
+                                            value={yearGroupDays.day_1}
+                                            label="Day 1"
+                                            onChange={(event) => {
+                                                const updatedData = [...data.days]; // Create a copy of the data array
+                                                const yearIndex = updatedData.findIndex(
+                                                    (item) => item.year === yearGroupDays.year
+                                                );
+
+                                                if (yearIndex !== -1) {
+                                                    if (event === yearGroupDays.day_2) {
+                                                        // Prevent day_1 and day_2 from being the same
+                                                        alert("Day 1 and Day 2 cannot be the same.");
+                                                    } else {
+                                                        updatedData[yearIndex].day_1 = event; // Update day_1
+                                                        setData("days", updatedData); // Set the updated data
+                                                    }
+                                                }
+                                            }}
+                                        >
+                                            {[
+                                                "Monday",
+                                                "Tuesday",
+                                                "Wednesday",
+                                                "Thursday",
+                                                "Friday",
+                                                "Saturday",
+                                                "Sunday",
+                                            ].map((day) => (
+                                                <Option 
+                                                    key={day} value={day} className="p-3"
+                                                    disabled={yearGroupDays.day_2 == day}    
+                                                >
+                                                    {day}
+                                                </Option>
+                                            ))}
+                                        </Select>
+                                        <Select
+                                            label="Day 2"
+                                            value={yearGroupDays.day_2}
+
+                                            onChange={(event) => {
+                                                const updatedData = [...data.days]; // Create a copy of the data array
+                                                const yearIndex = updatedData.findIndex(
+                                                    (item) => item.year === yearGroupDays.year
+                                                );
+
+                                                if (yearIndex !== -1) {
+                                                    if (event === yearGroupDays.day_1) {
+                                                        // Prevent day_1 and day_2 from being the same
+                                                        alert("Day 1 and Day 2 cannot be the same.");
+                                                    } else {
+                                                        updatedData[yearIndex].day_2 = event; // Update day_2
+                                                        setData("days", updatedData); // Set the updated data
+                                                    }
+                                                }
+                                            }}
+                                        >
+                                            {[
+                                                "Monday",
+                                                "Tuesday",
+                                                "Wednesday",
+                                                "Thursday",
+                                                "Friday",
+                                                "Saturday",
+                                                "Sunday",
+                                            ].map((day) => (
+                                                <Option 
+                                                    key={day} value={day} className="p-3"
+                                                    disabled={yearGroupDays.day_1 == day}    
+                                                >
+                                                    {day}
+                                                </Option>
+                                            ))}
+                                        </Select>
+                                    </div>
+
+                                </div>
+                            ))
+                        }
+
                     </div>
 
                     <div className="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
@@ -233,23 +392,82 @@ export default function YearConfigure({ auth }) {
                             Clubs
                         </h2>
 
-                        <p className="mt-1 text-sm text-gray-600">
-                            Similarly, opt to use the same clubs
+                        <p className="mt-1 text-sm text-gray-600 mb-4">
+                            Similarly, opt to use the same clubs. If you need to change a club, <strong>don't</strong> select
+                            it here. Instead, recreate and reconfigure it after you submit this form.
                         </p>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 justify-center">
+                            {Array.from({ length: 1 }, () => clubs).flat().map((club) => (
+                                <ListItem key={club.id} className="p-0">
+                                    <label className="flex w-full cursor-pointer items-center px-3 py-2">
+                                        <ListItemPrefix className="mr-3">
+                                            <Checkbox
+                                                id={`club-${club.id}`}
+                                                ripple={false}
+                                                className="hover:before:opacity-0"
+                                                checked={data.keepClubs.includes(club.id)}
+                                                onChange={() => {
+                                                    // Clone the keepClubs array to avoid mutating the state directly
+                                                    const updatedKeepClubs = [...data.keepClubs];
+                                                    console.log("curr", club);
+
+                                                    if (updatedKeepClubs.includes(club.id)) {
+                                                        // If club.id is already in keepClubs, remove it
+                                                        const index = updatedKeepClubs.indexOf(club.id);
+                                                        if (index !== -1) {
+                                                            updatedKeepClubs.splice(index, 1);
+                                                        }
+                                                    } else {
+                                                        // If club.id is not in keepClubs, add it
+                                                        updatedKeepClubs.push(club.id);
+                                                    }
+
+                                                    // Update the state with the new keepClubs array
+                                                    setData("keepClubs", updatedKeepClubs); // Assuming you have a setter function for keepClubs
+                                                }}
+
+                                            />
+                                        </ListItemPrefix>
+                                        <Typography
+                                            color="blue-gray"
+                                            className="font-medium"
+                                        >
+                                            {club.name}
+                                        </Typography>
+                                    </label>
+                                </ListItem>
+                            ))}
+
+                        </div>
+                        {
+                            Object.keys(errors).filter(key => key.startsWith('keepClubs')).map(key =>
+                                <Alert className="mt-2" color="red" variant="ghost">
+                                    You're trying to transfer a club which doesn't exist (it's probably been very recently deleted.)
+                                    Refresh the page and try again.
+                                </Alert>
+                            )
+                        }
                     </div>
                     <div className="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
                         <h2 className="text-lg font-medium text-gray-900">
                             Submit
                         </h2>
 
-                        <p className="mt-1 text-sm text-gray-600 mb-4">
+                        <p className="mt-1 text-sm text-gray-600 ">
                             Check over your settings and press submit.
+                        </p>
+                        <p className="mt-2 mb-4
+                             text-red-600 text-sm font-bold ">
+                            Pressing submit will swap the system over to this academic year. Export all data
+                            now, before it will be deleted. This action <strong className="font-black">cannot</strong> be
+                            undone.
                         </p>
                         <Button
                             size="md"
                             onClick={() => {
                                 post(route('admin.academic-year.store'), {
-
+                                    onSuccess: () => reset(),
                                 })
                             }}
                         >

@@ -4,6 +4,7 @@ use App\Http\Controllers\AcademicYearController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\ClubController;
+use App\Http\Controllers\DataExportController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\BookingConfigController;
 
@@ -16,6 +17,8 @@ use Illuminate\Support\Facades\Route;
 
 use App\Models\Club;
 use App\Models\User;
+use App\Models\YearGroupDays;
+
 
 use Carbon\Carbon;
 use Inertia\Inertia;
@@ -57,7 +60,7 @@ Route::get('/club-market', function () {
 
 Route::get('/dashboard', function () {
 
-    return Inertia::render('Dashboard', [    ]);
+    return Inertia::render('Dashboard', []);
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
@@ -66,9 +69,9 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-Route::get('/booking/{id}/changes', function($id) {
+Route::get('/booking/{id}/changes', function ($id) {
     $user = Auth::user();
-    
+
     $result = ClubInstance::getClubsToChangeIfBooked($user, ClubInstance::findOrFail($id));
 
     return response()->json($result);
@@ -85,12 +88,12 @@ Route::delete('/dashboard/bookings/{clubInstanceID}', [BookingController::class,
 /**
  * Routes for admins of the application.
  */
-Route::middleware(['auth', 'is.admin'])->group(function() {
+Route::middleware(['auth', 'is.admin'])->group(function () {
 
     /**
      * Renders the main admin dashboard home view.
      */
-    Route::get('/admin', function() {
+    Route::get('/admin', function () {
 
         $clubs = Club::getAllWithInstances();
         $bookingConfigs = BookingConfig::all();
@@ -99,7 +102,7 @@ Route::middleware(['auth', 'is.admin'])->group(function() {
             $now = Carbon::now();
             $scheduledAt = Carbon::parse($config->scheduled_at);
             $endsAt = Carbon::parse($config->ends_at);
-    
+
             $config->isLive = $now->between($scheduledAt, $endsAt);
             return $config;
         });
@@ -109,7 +112,9 @@ Route::middleware(['auth', 'is.admin'])->group(function() {
             'AdminBoard/AdminMain/AdminBoardNew',
             [
                 'clubData' => $clubs,
-                'scheduleData' => $bookingConfigs
+                'scheduleData' => $bookingConfigs,
+                'availableDays' => YearGroupDays::all()
+
             ]
         );
     })->name('admin-board');
@@ -118,7 +123,7 @@ Route::middleware(['auth', 'is.admin'])->group(function() {
      * A table (data-grid) display of all the clubs, with links
      * to view and edit the clubs in more detail. 
      */
-    Route::get('/admin/clubs/', function() {
+    Route::get('/admin/clubs/', function () {
         $clubs = Club::getAllWithInstances();
 
         return Inertia::render('AdminBoard/AdminMain/ClubsView', [
@@ -129,7 +134,7 @@ Route::middleware(['auth', 'is.admin'])->group(function() {
     /**
      * Renders a view to manage the students. 
      */
-    Route::get('/admin/students/', function() {
+    Route::get('/admin/students/', function () {
 
         $students = User::all()->each->append('organized_by_term');
 
@@ -138,12 +143,12 @@ Route::middleware(['auth', 'is.admin'])->group(function() {
         ]);
     })->name('admin.students');
 
-    
+
     Route::get('/admin/configure-year', [AcademicYearController::class, 'index'])->name('admin.academic-year.index');
     Route::post('/admin/configure-year', [AcademicYearController::class, 'store'])->name('admin.academic-year.store');
 
 
-    Route::get('/admin/students/{id}', function($id) {
+    Route::get('/admin/students/{id}', function ($id) {
 
         $student = User::findOrFail($id);
         $availableClubs = Club::getAllWithInstancesForUser($student);
@@ -158,7 +163,7 @@ Route::middleware(['auth', 'is.admin'])->group(function() {
 
 
     Route::post("/admin/club/{id}", [AdminController::class, 'bookForUser'])->name('admin.clubs.book');
-   
+
     /**
      * Route handles insertion of new club.
      */
@@ -167,12 +172,15 @@ Route::middleware(['auth', 'is.admin'])->group(function() {
     /**
      * Route renders new Club Creation Form.
      */
-    Route::get('/admin/clubs/new', function() {
+    Route::get('/admin/clubs/new', function () {
+
         $clubs = Club::getAllWithInstances();
 
         return Inertia::render('AdminBoard/AdminMain/ClubCreate', [
-            'clubs' => $clubs
+            'clubs' => $clubs,
+            'availableDays' => YearGroupDays::all()
         ]);
+
     })->name('admin.clubs.new');
 
     /**
@@ -184,42 +192,46 @@ Route::middleware(['auth', 'is.admin'])->group(function() {
     /**
      * Can show and update the instances of a club here.
      */
-    Route::get('/admin/clubs/{id}', [ClubController::class, 'show']);
-    Route::post('/admin/clubs/{id}/update', [ClubController::class, 'updateInstances']);
-    Route::put('/admin/clubs/{id}', [ClubController::class, 'update'])->name('admin.clubs.update');
+    Route::get('/admin/clubs/{id}', [ClubController::class, 'show'])->name('admin.clubs.index');
+    Route::put('/admin/clubs/{id}/update', [ClubController::class, 'updateInstances'])->name('admin.clubs.update');
+    Route::put('/admin/clubs/{id}', [ClubController::class, 'update']);
+    Route::get('/admin/clubs/{id}/download', [DataExportController::class, 'clubDataDownload'])->name('admin.download.club-data-id-spreadsheet');
+
+    Route::get('/admin/download-spreadsheet', [DataExportController::class, 'downloadTotalUserClubSpreadsheet'])->name('admin.download.total-user-club-spreadsheet');
 
     /**
      * Some routes for manually managing a students bookings.
      */
-    Route::delete('admin/booking/{id}/',
+    Route::delete(
+        'admin/booking/{id}/',
         [AdminController::class, 'deleteBookingForUser']
     );
 
     Route::post('admin/booking-configs/create', [BookingConfigController::class, 'create']);
 
 
-    Route::get("admin/placeholder", function() {
+    Route::get("admin/placeholder", function () {
 
     })->name("admin.students.new");
 
 });
 
 
-Route::middleware('auth')->group(function() {
+Route::middleware('auth')->group(function () {
 
 
     Route::post('/club-market', [BookingController::class, 'book'])->name("clubs.book");
 
     Route::delete('/club/{id}', [BookingController::class, 'deleteBooking']);
-    
+
     /**
      * Believe this is redundant. 
      */
     Route::post('/clubs/book', [BookingController::class, 'book'])
-        ->middleware(ThrottleRequests::class.':10,1');
+        ->middleware(ThrottleRequests::class . ':10,1');
 
 
 });
 
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';

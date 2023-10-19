@@ -51,6 +51,9 @@ export default function ClubMarket({
         }>
             <Head title="Club Market" />
 
+            {
+                JSON.stringify(alreadyBooked)
+            }
 
             <div className="container mx-auto flex flex-col   mt-5">
 
@@ -166,7 +169,7 @@ export default function ClubMarket({
                                     <Typography className="text-2xl">
                                         This term runs from _ to _
                                     </Typography>
-                                    <TermChoiceCard term={term} csrf={csrf} />
+                                    <TermChoiceCard term={term} csrf={csrf} days={auth.user.days[0].days_array}/>
 
                                 </TimelineBody>
                             </TimelineItem>

@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Redirect;
 
@@ -47,118 +48,139 @@ class ClubController extends Controller
         return response()->json(['message' => 'Club updated successfully!']);
     }
 
-public function store(Request $request)
-{
+    public function store(Request $request)
+    {
 
 
-    return DB::transaction(function () use ($request) {
-        try {
+        return DB::transaction(function () use ($request) {
+            try {
 
-            $data = $request->validate([
-                'clubTitle' => 'required|string',
-                'clubDescription' => 'string|nullable',
-                'clubRules' => 'string|nullable',
-                'instances' => 'required|array',
-                'instances.*.term_no' => 'required|integer',
-                'instances.*.day' => 'required|string|in:Wednesday,Friday',
-                'instances.*.yearGroups' => 'array',
-                // 'instances.*.yearGroups.*' => 'integer|distinct', // assuming yearGroups are integers
+                $data = $request->validate([
+                    'name' => 'required|string',
+                    'description' => 'required|string',
+                    'rules' => 'required|string',
+                    'instances' => 'required|array',
+                    'instances.*.half_term' => 'required|integer',
+                    'instances.*.day_of_week' => 'required|string|in:Monday,Tuesday,Wednesday,Thursday,Friday,Saturday,Sunday',
+                    'instances.*.year_groups' => 'array',
+                    // 'instances.*.yearGroups.*' => 'integer|distinct', // assuming yearGroups are integers
 
-                'instances.*.capacity' => 'integer|nullable',
-                'compatibilities' => 'required|array',
-                'compatibilities.in' => 'array',
-                'compatibilities.in.*' => 'array',
-                'compatibilities.must' => 'array',
-            ]);
+                    'instances.*.capacity' => 'integer|nullable',
+                    'compatibilities' => 'required|array',
+                    'compatibilities.in' => 'array',
+                    'compatibilities.in.*' => 'array',
+                    'compatibilities.must' => 'array',
+                    'is_paid' => 'required|boolean'
+                ]);
 
+                // Create a new club
+                $club = Club::create([
+                    'name' => $data['name'],
+                    'description' => $data['description'],
+                    'rule' => $data['rules'],
+                    'academic_year_id' => CurrentAcademicYear::first()->academic_year_id,
+                    'is_paid' => $data['is_paid']
+                ]);
 
-            // Create a new club
-            $club = Club::create([
-                'name' => $data['clubTitle'],
-                'description' => $data['clubDescription'],
-                'rule' => $data['clubRules'],
-                'academic_year_id' => CurrentAcademicYear::first()->academic_year_id,
-            ]);
+                // Enumerate through instances
+                $tempToActualIdMap = [];
+                $counter = 1; // Manual counter for enumeration
 
-            // Enumerate through instances
-            $tempToActualIdMap = [];
-            $counter = 1; // Manual counter for enumeration
-
-            foreach ($data['instances'] as $instance) {
-                
-
-                if (isset($instance['yearGroups']) && !empty($instance['yearGroups'])) {
-
-                    $createdInstance = ClubInstance::create([
-                        'club_id' => $club->id,
-                        'half_term' => $instance['term_no'],
-                        // 'capacity' => $instance['capacity'],
-                        'capacity' => $instance['capacity'],
-                        'day_of_week' => $instance['day']
-                    ]);
-
-                $tempToActualIdMap[$counter] = $createdInstance->id;
+                foreach ($data['instances'] as $instance) {
 
 
-                    foreach ($instance['yearGroups'] as $year) {
-                        YearGroupClub::create([
-                            'year' => $year,
-                            'club_instance_id' => $createdInstance->id
+                    if (isset($instance['year_groups']) && !empty($instance['year_groups'])) {
+
+                        $createdInstance = ClubInstance::create([
+                            'club_id' => $club->id,
+                            'half_term' => $instance['half_term'],
+                            // 'capacity' => $instance['capacity'],
+                            // 'is_paid' => $instance['']
+                            'capacity' => $instance['capacity'],
+                            'day_of_week' => $instance['day_of_week']
                         ]);
+
+                        $tempToActualIdMap[$counter] = $createdInstance->id;
+
+
+                        foreach ($instance['year_groups'] as $year) {
+                            YearGroupClub::create([
+                                'year' => $year,
+                                'club_instance_id' => $createdInstance->id
+                            ]);
+                        }
+                    }
+
+                    // Store reference of temp ID and actual ID
+                    $counter++;
+                }
+
+
+                if (isset($data['compatibilities']['in']) && is_array($data['compatibilities']['in'])) {
+
+                    foreach ($data['compatibilities']['in'] as $pair) {
+
+                        if (isset($tempToActualIdMap[$pair[0]]) && isset($tempToActualIdMap[$pair[1]])) {
+                            $actualId1 = $tempToActualIdMap[$pair[0]];
+                            $actualId2 = $tempToActualIdMap[$pair[1]];
+
+                            $instance1YearGroups = ClubInstance::find($actualId1)->yearGroups->pluck('year');
+                            $instance2YearGroups = ClubInstance::find($actualId2)->yearGroups->pluck('year');
+
+                            if ($instance1YearGroups == $instance2YearGroups) {
+                                IncompatibleClub::create([
+                                    'club_instance_id_1' => $actualId1,
+                                    'club_instance_id_2' => $actualId2,
+                                ]);
+                            }
+                        }
                     }
                 }
 
-                // Store reference of temp ID and actual ID
-                $counter++;
-            }
+                if (isset($data['compatibilities']['must']) && is_array($data['compatibilities']['must'])) {
 
+                    foreach ($data['compatibilities']['must'] as $pair) {
+                        if (isset($tempToActualIdMap[$pair[0]]) && isset($tempToActualIdMap[$pair[1]])) {
+                            $actualId1 = $tempToActualIdMap[$pair[0]];
+                            $actualId2 = $tempToActualIdMap[$pair[1]];
 
-            if (isset($data['compatibilities']['in']) && is_array($data['compatibilities']['in'])) {
-                
-                foreach ($data['compatibilities']['in'] as $pair) {
-                
-                    if (isset($tempToActualIdMap[$pair[0]]) && isset($tempToActualIdMap[$pair[1]])) {
-                        $actualId1 = $tempToActualIdMap[$pair[0]];
-                        $actualId2 = $tempToActualIdMap[$pair[1]];
-                    
-                        IncompatibleClub::create([
-                            'club_instance_id_1' => $actualId1,
-                            'club_instance_id_2' => $actualId2,
-                        ]);
+                            $instance1YearGroups = ClubInstance::find($actualId1)->yearGroups->pluck('year');
+                            $instance2YearGroups = ClubInstance::find($actualId2)->yearGroups->pluck('year');
+                            if ($instance1YearGroups == $instance2YearGroups) {
+
+                                RequiredClub::create([
+                                    'club_instance_id_1' => $actualId1,
+                                    'club_instance_id_2' => $actualId2,
+                                ]);
+                            }
+                        }
                     }
                 }
+
+                // Continue with processing the rest of the data
+                // After successful insert operation
+                session(['successFromInsert' => true]);
+
+                return Redirect::route("admin.clubs.new", ['id' => $club->id]);
+                // return Redirect::route("admin.clubs.new", ['id' => $club->id]);
+
+
+            } catch (\Exception $e) {
+                throw $e;
+                // Return the error message as a JSON response with a 400 status code
+                return response()->json(['error' => $e->getMessage()], 400);
             }
+        });
+    }
 
-            if (isset($data['compatibilities']['must']) && is_array($data['compatibilities']['must'])) {
-                
-                foreach ($data['compatibilities']['must'] as $pair) {
-                    if (isset($tempToActualIdMap[$pair[0]]) && isset($tempToActualIdMap[$pair[1]])) {
-                        $actualId1 = $tempToActualIdMap[$pair[0]];
-                        $actualId2 = $tempToActualIdMap[$pair[1]];
-            
-                        RequiredClub::create([
-                            'club_instance_id_1' => $actualId1,
-                            'club_instance_id_2' => $actualId2,
-                        ]);
-                    }
-                }
-            }
-            
-            // Continue with processing the rest of the data
 
-            return Redirect::route("admin.clubs.new");
-            
-        } catch (\Exception $e) {
-            throw $e;
-            // Return the error message as a JSON response with a 400 status code
-            return response()->json(['error' => $e->getMessage()], 400);
-        }
-    });
-}
-
-    
     public function show($id)
     {
+
+        if (!session()->has('successFromInsert')) {
+            session(['successFromInsert' => false]);
+        }
+
         $club = Club::with([
             'clubInstances' => function ($query) {
                 $query->withCount('users'); // This will give a users_count property on each clubInstance
@@ -169,16 +191,19 @@ public function store(Request $request)
 
 
         $uniqueUsers = $club->uniqueUsers;
+        $successFromInsert = session('successFromInsert');
 
         return Inertia::render('AdminBoard/ClubShow/ClubShow', [
             'club' => $club,
-            'uniqueUsers' => $uniqueUsers
+            'uniqueUsers' => $uniqueUsers,
+            'successFromInsert' => $successFromInsert
         ]);
     }
 
 
     public function updateInstances(Request $request, $id)
     {
+
         try {
             $club = Club::findOrFail($id);
 
@@ -195,25 +220,28 @@ public function store(Request $request)
         $updatedInstances = [];
         $createdInstances = [];
 
+
         try {
             // Begin transaction
             DB::beginTransaction();
 
-            $club->update($request->input('club'));
+            $club->update([
+                'name' => $request->clubTitle,
+                'description' => $request->clubDescription,
+
+            ]);
 
 
             $requestInstanceIds = collect($items)->pluck('id')->filter()->all();
-
             // Find existing instances in DB related to this club and delete those not in the request
             $existingInstances = $club->clubInstances()->pluck('id')->all();
 
             $instancesToDelete = array_diff($existingInstances, $requestInstanceIds);
+
             ClubInstance::destroy($instancesToDelete);
             $deletedInstances = array_values($instancesToDelete);
             // Now can modify the club instances relationships;
-
             foreach ($items as $item) {
-
                 if (isset($item['id'])) {
 
                     $clubInstance = ClubInstance::find($item['id']);
@@ -225,7 +253,7 @@ public function store(Request $request)
                             // Handle yearGroups syncing
                             if (isset($item['year_groups'])) {
                                 $yearGroups = collect($item['year_groups'])->pluck('year')->toArray();
-                                $clubInstance->yearGroups()->sync($yearGroups);
+                                $clubInstance->yearGroups()->sync($item['year_groups']);
                             }
 
                         } else {
@@ -261,16 +289,19 @@ public function store(Request $request)
                 'clubInstances.yearGroups',
                 'clubInstances.users'
             ])->findOrFail($club->id);
-    
-            return response()->json([
-                'message' => 'Processed successfully!',
-                'updatedInstances' => $updatedInstances,
-                'createdInstances' => $createdInstances,
-                'data' => [
-                    'club' => $club,
-                    'uniqueUsers' => $club->uniqueUsers
-                ]
-            ]);
+
+            // return response()->json([
+            //     'message' => 'Processed successfully!',
+            //     'updatedInstances' => $updatedInstances,
+            //     'createdInstances' => $createdInstances,
+            //     'data' => [
+            //         'club' => $club,
+            //         'uniqueUsers' => $club->uniqueUsers
+            //     ]
+            // ]);
+
+            return Redirect::route("admin.clubs.index", ['id' => $club->id]);
+
 
         } catch (\Exception $e) {
             // Rollback transaction

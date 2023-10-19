@@ -10,9 +10,14 @@ import { Check } from "@mui/icons-material";
 
 // import { Checkbox } from "@material-tailwind/react";
 
-export default function StepClubs({ clubData }) {
+export default function StepClubs({ clubData, availableDays }) {
     // const [active, setActive] = React.useState(1);
+    function daySort(a, b) {
+        const daysInWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+        return daysInWeek.indexOf(a) - daysInWeek.indexOf(b);
+    }
 
+    const availableDaysForBooking = [...new Set(availableDays.flatMap(d => d.days_array))].sort(daySort);
     const { formData, setFormData } = useStep();
 
     const toggleClub = (club) => {
@@ -96,13 +101,13 @@ export default function StepClubs({ clubData }) {
                     <tr>
                         <td></td>
                         {[1, 2, 3, 4, 5, 6].map((term) => (
-                            <td colSpan={2}>Term {term}</td>
+                            <td colSpan={availableDaysForBooking.length}>Term {term}</td>
                         ))}
                     </tr>
                     <tr>
                         <td>Select all in Term</td>
                         {[1, 2, 3, 4, 5, 6].map((term) => (
-                            <td colSpan={2}>
+                            <td colSpan={availableDaysForBooking.length}>
                                 <Checkbox
                                     checked={clubData
                                         .flatMap((club) => club.club_instances)
@@ -130,7 +135,7 @@ export default function StepClubs({ clubData }) {
                             </Typography>
                         </th>
                         {[1, 2, 3, 4, 5, 6].map((term) =>
-                            ["Wed", "Fri"].map((day) => (
+                            availableDaysForBooking.map((day) => (
                                 <th
                                     className={`border-b border-blue-gray-100 p-1 ${
                                         term % 2 === 0
@@ -143,7 +148,7 @@ export default function StepClubs({ clubData }) {
                                         color="blue-gray"
                                         className="font-normal leading-none opacity-70"
                                     >
-                                        {day}
+                                        {day.substring(0, 3)}
                                     </Typography>
                                 </th>
                             )),
@@ -193,7 +198,7 @@ export default function StepClubs({ clubData }) {
                                 </Typography>
                             </td>
                             {[1, 2, 3, 4, 5, 6].map((term) =>
-                                ["Wednesday", "Friday"].map((day) => {
+                                availableDaysForBooking.map((day) => {
                                     const clubInstance =
                                         club.club_instances.find(
                                             (instance) =>
@@ -203,7 +208,6 @@ export default function StepClubs({ clubData }) {
 
                                     return clubInstance ? (
                                         <td key={`${term}-${day}`}>
-                                            <Typography variant="small">
                                                 <Checkbox
                                                     defaultChecked={true}
                                                     onChange={() =>
@@ -211,11 +215,11 @@ export default function StepClubs({ clubData }) {
                                                             clubInstance.id,
                                                         )
                                                     }
+                                                    className="w-3 h-3"
                                                     checked={formData.clubs.includes(
                                                         clubInstance.id,
                                                     )}
                                                 />
-                                            </Typography>
                                         </td>
                                     ) : <td>X</td>;
                                 }),

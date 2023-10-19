@@ -18,7 +18,8 @@ class Club extends Model
         'name',
         'description',
         'rule',
-        'academic_year_id'
+        'academic_year_id',
+        'is_paid'
     ];
 
     public function clubInstances()

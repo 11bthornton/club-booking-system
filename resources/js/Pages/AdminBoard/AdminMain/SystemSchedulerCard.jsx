@@ -24,7 +24,7 @@ import {
     Chip,
 } from "@material-tailwind/react";
 
-export default function SystemSchedulerCard({ clubData, scheduleData }) {
+export default function SystemSchedulerCard({ clubData, scheduleData, availableDays }) {
     console.log(scheduleData);
 
     const [isCreateDialogOpen, setCreateDialogOpen] = useState(false);
@@ -34,12 +34,13 @@ export default function SystemSchedulerCard({ clubData, scheduleData }) {
     const handleViewDialog = () => setViewDialogOpen(!isViewDialogOpen);
 
     return (
-        <Card className="w-full">
+        <Card className="w-full shadow-none">
             <CardBody>
                 <StepsDialog
                     clubData={clubData}
                     handleOpen={handleCreateDialogue}
                     isDialogOpen={isCreateDialogOpen}
+                    availableDays={availableDays}
                 />
 
                 <ViewScheduled

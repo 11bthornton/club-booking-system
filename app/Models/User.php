@@ -26,6 +26,9 @@ class User extends Authenticatable
         'year',
         'role',
         'password',
+        'email',
+        'first_name',
+        'second_name'
     ];
 
     /**
@@ -76,7 +79,7 @@ class User extends Authenticatable
         $clubInstances = $this->bookedClubs()->get();
 
         $organizedByTerm = [];
-        $daysOfWeek = ['Wednesday', 'Friday'];
+        $daysOfWeek = [$this->yearGroup->yearGroupDays()->first()->day_1, $this->yearGroup->yearGroupDays()->first()->day_2];
         $maxTerms = 6;
 
         for ($term = 1; $term <= $maxTerms; $term++) {
@@ -118,7 +121,7 @@ class User extends Authenticatable
         return $this->getNextBookingTime();
     }
 
-    
+
     /**
      * Eligible to book SOME clubs
      */
@@ -167,64 +170,66 @@ class User extends Authenticatable
     }
 
     public function activeBookingConfigs()
-{
-    return $this->belongsToMany(
-        BookingConfig::class,
-        'allowed_users', 
-        'user_id', 
-        'booking_config_id'
-    )->where('scheduled_at', '<=', now())
-    ->where('ends_at', '>', now());
-}
+    {
+        return $this->belongsToMany(
+            BookingConfig::class,
+            'allowed_users',
+            'user_id',
+            'booking_config_id'
+        )->where('scheduled_at', '<=', now())
+            ->where('ends_at', '>', now());
+    }
 
-public function userFutureBookingConfigs()
-{
-    return $this->belongsToMany(
-        BookingConfig::class,
-        'allowed_users',
-        'user_id',
-        'booking_config_id'
-    )->where('scheduled_at', '>', now())
-    ->where('ends_at', '>', now());
-}
+    public function userFutureBookingConfigs()
+    {
+        return $this->belongsToMany(
+            BookingConfig::class,
+            'allowed_users',
+            'user_id',
+            'booking_config_id'
+        )->where('scheduled_at', '>', now())
+            ->where('ends_at', '>', now());
+    }
 
-public function getAllActiveBookingConfigs()
-{
-    // BookingConfigs related to the user
-    $userBookingConfigs = $this->activeBookingConfigs->sortByDesc('ends_at');
-    $userFutureBookingConfigs = $this->userFutureBookingConfigs->sortBy('scheduled_at');
-    // die($userBookingConfigs);
+    public function getAllActiveBookingConfigs()
+    {
+        // BookingConfigs related to the user
+        $userBookingConfigs = $this->activeBookingConfigs->sortByDesc('ends_at');
+        $userFutureBookingConfigs = $this->userFutureBookingConfigs->sortBy('scheduled_at');
+        // die($userBookingConfigs);
 
-    // BookingConfigs related to the user's year group
-    $yearGroup = $this->yearGroup;  // Assuming the relationship is called "yearGroup"
-    $yearGroupBookingConfigs = $yearGroup ? $yearGroup->activeBookingConfigs->sortByDesc('ends_at') : collect();
-    $yearGroupFutureBookingConfigs = $yearGroup ? $yearGroup->futureBookingConfigs->sortBy('scheduled_at') : collect();
+        // BookingConfigs related to the user's year group
+        $yearGroup = $this->yearGroup; // Assuming the relationship is called "yearGroup"
+        $yearGroupBookingConfigs = $yearGroup ? $yearGroup->activeBookingConfigs->sortByDesc('ends_at') : collect();
+        $yearGroupFutureBookingConfigs = $yearGroup ? $yearGroup->futureBookingConfigs->sortBy('scheduled_at') : collect();
 
 
-    // die()
+        // die()
 
-    // Combine and remove duplicates
-    $allBookingConfigs = $userBookingConfigs->concat($yearGroupBookingConfigs)->unique('id');
-    $allFutureConfigs = $userFutureBookingConfigs->concat($yearGroupFutureBookingConfigs)->unique('id');
+        // Combine and remove duplicates
+        $allBookingConfigs = $userBookingConfigs->concat($yearGroupBookingConfigs)->unique('id');
+        $allFutureConfigs = $userFutureBookingConfigs->concat($yearGroupFutureBookingConfigs)->unique('id');
 
-    $this->bookingConfigs = $allBookingConfigs;
-    $this->futureBookingConfigs = $allFutureConfigs;
+        $this->bookingConfigs = $allBookingConfigs;
+        $this->futureBookingConfigs = $allFutureConfigs;
 
-    return $allBookingConfigs;
-}
+        return $allBookingConfigs;
+    }
 
 
     public function bookingConfigs()
-{
-    return $this->belongsToMany(
-        BookingConfig::class,
-        'allowed_users',  // name of the pivot table
-        'user_id',  // foreign key on the pivot table that references this model's table
-        'booking_config_id'  // foreign key on the pivot table that references the related model's table
-    );
-}
+    {
+        return $this->belongsToMany(
+            BookingConfig::class,
+            'allowed_users',
+            // name of the pivot table
+            'user_id',
+            // foreign key on the pivot table that references this model's table
+            'booking_config_id' // foreign key on the pivot table that references the related model's table
+        );
+    }
 
-public function toArray()
+    public function toArray()
     {
         $data = parent::toArray();
         // Customize the 'bookingConfigs' attribute
@@ -240,6 +245,8 @@ public function toArray()
                 ];
             }
         }
+
+        $data['days'] = $this->yearGroup->yearGroupDays;
 
         if (isset($data['futureBookingConfigs'])) {
             foreach ($data['futureBookingConfigs'] as &$bookingConfig) {

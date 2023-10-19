@@ -3,25 +3,14 @@ import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head } from "@inertiajs/react";
 import toast from "react-hot-toast";
-import {
-    TextField,
-    Chip,
-    Box,
-    Button,
-    Dialog,
-    DialogActions,
-    DialogContent,
-    DialogContentText,
-    DialogTitle,
-} from "@mui/material";
-import { makeStyles } from "@mui/styles";
-import { Switch } from "@mui/material";
-import Link from "@mui/material/Link";
 
-import { faEdit } from "@fortawesome/free-solid-svg-icons";
+import { makeStyles } from "@mui/styles";
+
+import { faDownload, faEdit } from "@fortawesome/free-solid-svg-icons";
 import moment from "moment/moment";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faDollarSign, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { Link } from "@inertiajs/inertia-react";
 
 const useStyles = makeStyles({
     root: {
@@ -37,10 +26,8 @@ const useStyles = makeStyles({
     },
 });
 
-export default function ClubView({ auth, clubs }) {
-    const classes = useStyles();
-    const [open, setOpen] = useState(false);
-    const [selectedClub, setSelectedClub] = useState(null);
+export default function ClubView({ auth, clubs, year }) {
+    
 
     const columns = [
         { field: "id", headerName: "ID", width: 70 },
@@ -68,9 +55,11 @@ export default function ClubView({ auth, clubs }) {
             width: 140,
             renderCell: (params) => (
                 <Link
-                    href={`/admin/clubs/${params.id}`}
-                    color="primary"
-                    underline="hover"
+                    href={route("admin.clubs.index", {
+                        id: params.row.id
+                    })}
+                    
+                    className="text-blue-400 hover:underline"
                 >
                     <div className="flex gap-2 items-center">
                         View Instances
@@ -102,11 +91,18 @@ export default function ClubView({ auth, clubs }) {
             width: 100,
             align: "center",
             renderCell: (params) => (
-                <FontAwesomeIcon
-                    icon={faTrash}
-                    onClick={() => handleDelete(params)}
-                    style={{ cursor: "pointer" }}
-                />
+                <div className="flex gap-5 items-center">
+                    <FontAwesomeIcon
+                        icon={faTrash}
+                        onClick={() => handleDelete(params)}
+                        style={{ cursor: "pointer" }}
+                    />
+
+                    <a href={route("admin.download.club-data-id-spreadsheet", {id: params.row.id})}>
+                        Download data
+                    </a>
+
+                </div>
             ),
         },
         // {
@@ -130,24 +126,11 @@ export default function ClubView({ auth, clubs }) {
         // },
     ];
 
-    const handleRowClick = (param) => {
-        const club = clubs.find((c) => c.id === param.id);
-        setSelectedClub(club);
-        setOpen(true);
-    };
+    
 
-    const handleClose = () => {
-        setOpen(false);
-        setSelectedClub(null);
-    };
+    
 
-    const handleDelete = (params) => {
-        const club = clubs.find((c) => c.id === params.id);
-        setSelectedClub(club);
-        toast.success(`Successfully deleted ${selectedClub.name}`);
-        // Perform actual deletion here
-        setOpen(false);
-    };
+    
 
     return (
         <AuthenticatedLayout
@@ -159,36 +142,31 @@ export default function ClubView({ auth, clubs }) {
             }
         >
             <Head title="View Clubs" />
-            <div className="container mx-auto p-6 bg-white mt-5 rounded-lg shadow-lg">
-                <div className={classes.root}>
+            <div className="container mx-auto p-6  mt-5 rounded-lg ">
+
+                <div className="bg-white p-4 mb-4 rounded-lg shadow-sm">
+                    <h2 className="text-4xl font-bold text-gray-900">
+                        Clubs Overview - {year.year_start} / {year.year_end}
+                    </h2>
+
+                    <p className="mt-1 text-sm text-gray-600">
+                        All the clubs for the ongoing academic year. 
+                    </p>
+                </div>
+
+                <div className="bg-white rounded-lg shadow-md">
                     <DataGrid
                         rows={clubs}
                         columns={columns}
                         pageSize={5}
                         rowsPerPageOptions={[5]}
-                        checkboxSelection
                         disableSelectionOnClick
                         components={{
                             Toolbar: GridToolbar,
                         }}
                     />
                 </div>
-                <Dialog open={open} onClose={handleClose}>
-                    <DialogTitle>{"Are You Sure?"}</DialogTitle>
-                    <DialogContent>
-                        <DialogContentText>
-                            Do you really want to delete {selectedClub?.name}?
-                        </DialogContentText>
-                    </DialogContent>
-                    <DialogActions>
-                        <Button onClick={handleClose} color="primary">
-                            Cancel
-                        </Button>
-                        <Button onClick={handleDelete} color="primary">
-                            Delete
-                        </Button>
-                    </DialogActions>
-                </Dialog>
+
             </div>
         </AuthenticatedLayout>
     );

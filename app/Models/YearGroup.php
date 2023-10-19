@@ -19,25 +19,34 @@ class YearGroup extends Model
     {
         return $this->belongsToMany(
             BookingConfig::class,
-            'allowed_year_groups',  // pivot table name
-            'year',  // foreign key on the pivot table related to YearGroup
-            'booking_config_id'  // foreign key on the pivot table related to BookingConfig
+            'allowed_year_groups',
+            // pivot table name
+            'year',
+            // foreign key on the pivot table related to YearGroup
+            'booking_config_id' // foreign key on the pivot table related to BookingConfig
         )
-        ->where('scheduled_at', '<=', now())
-        ->where('ends_at', '>', now());
+            ->where('scheduled_at', '<=', now())
+            ->where('ends_at', '>', now());
     }
-    
+
+    public function yearGroupDays()
+    {
+        return $this->hasMany(YearGroupDays::class, 'year', 'year');
+    }
+
+
+
 
     public function futureBookingConfigs()
-{
-    return $this->belongsToMany(
-        BookingConfig::class,
-        'allowed_year_groups',
-        'year',
-        'booking_config_id'
-    )->where('scheduled_at', '>', now())
-    ->where('ends_at', '>', now());
-}
+    {
+        return $this->belongsToMany(
+            BookingConfig::class,
+            'allowed_year_groups',
+            'year',
+            'booking_config_id'
+        )->where('scheduled_at', '>', now())
+            ->where('ends_at', '>', now());
+    }
 
 
 }
