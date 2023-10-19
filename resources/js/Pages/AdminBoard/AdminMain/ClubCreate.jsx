@@ -65,7 +65,7 @@ export default function ClubCreate({ auth, clubs, availableDays }) {
         instances: Array.from({ length: availableDaysForBooking.length * 6 }, (_, index) =>
             availableDaysForBooking[index % availableDaysForBooking.length]
         ).map((day_of_week, i) => ({
-            half_term: Math.floor(i / 4) + 1,
+            half_term: Math.floor(i / availableDaysForBooking.length) + 1,
             day_of_week: day_of_week,
             year_groups: [7, 8, 9, 10, 11].filter(year => availableDays.filter(aV => aV.year == year)[0].days_array.includes(day_of_week)),
             capacity: null, // null means unlimited
@@ -609,7 +609,11 @@ export default function ClubCreate({ auth, clubs, availableDays }) {
                                                         const instanceData = data.instances.filter(instance =>
                                                             instance.half_term == term && instance.day_of_week == day
                                                         )[0];
+                                                        
+                                                        console.log(data.instances);
+                                                        console.log("looking for", term, day ,instanceData);
 
+                                                        
                                                         return (
                                                             <div className="mb-3 mt-3 border-t" key={`${index}-${day}`}>
 
