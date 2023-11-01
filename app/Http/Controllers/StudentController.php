@@ -118,7 +118,7 @@ class StudentController extends Controller
             $filePath = $file->getRealPath();
 
             // Import the data using the file path
-            Excel::import(new UsersImport, $filePath);
+            Excel::import(new UsersImport, $filePath, null, \Maatwebsite\Excel\Excel::XLSX);
 
             // Rest of your import logic here
         } else {

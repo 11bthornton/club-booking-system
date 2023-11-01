@@ -35,6 +35,9 @@ use Inertia\Inertia;
 |
 */
 
+/**
+ * Laravel generated route.
+ */
 Route::get('/', function () {
     return Inertia::render('Welcome', [
         'canLogin' => Route::has('login'),
@@ -44,10 +47,19 @@ Route::get('/', function () {
     ]);
 });
 
+/**
+ * Laravel generated route. 
+ * 
+ * TODO: Use for a student how-to.
+ */
 Route::get('/dashboard', function () {
     return Inertia::render('Dashboard', []);
 })->middleware(['auth', 'verified'])->name('dashboard');
 
+/**
+ * Routes, for the student. These routes require that the system is configured properly first,
+ * otherwise the student is simply redirected to a maintenance view. 
+ */
 Route::middleware(['auth', 'system.is.setup'])->group(function () {
     Route::get('/club-market', function () {
         $user = Auth::user();
@@ -89,12 +101,16 @@ Route::middleware(['auth', 'system.is.setup'])->group(function () {
 
 });
 
-
+/**
+ * No matter if booking system is correctly configured, students can still change their details.
+ */
 Route::middleware('auth')->group(function () {
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    // Perhaps not this one
+    // Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
 /**
@@ -132,18 +148,7 @@ Route::middleware(['auth', 'is.admin'])->group(function () {
         );
     })->name('admin-board');
 
-    /**
-     * A table (data-grid) display of all the clubs, with links
-     * to view and edit the clubs in more detail. 
-     */
-    Route::get('/admin/clubs/', function () {
-        $clubs = Club::getAllWithInstances();
-
-        return Inertia::render('AdminBoard/Clubs/ClubsView', [
-            'clubs' => $clubs
-        ]);
-    })->middleware('system.is.setup')
-        ->name("admin.clubs");
+   
 
     /**
      * Renders a view to manage the students. 
@@ -165,26 +170,25 @@ Route::middleware(['auth', 'is.admin'])->group(function () {
 
 
     Route::post("/admin/club/{id}", [AdminController::class, 'bookForUser'])->name('admin.clubs.book');
-
-
+    Route::get('/admin/clubs/{id}', [ClubController::class, 'show'])->name('admin.clubs.index');
+    Route::put('/admin/clubs/{id}/update', [ClubController::class, 'update'])->name('admin.clubs.update');
+    // Route::put('/admin/clubs/{id}', [ClubController::class, 'update']);
+    Route::get('/admin/clubs/{id}/download', [DataExportController::class, 'clubDataDownload'])->name('admin.download.club-data-id-spreadsheet');
+    Route::delete('/admin/clubs/{id}', [ClubController::class, 'delete'])->name('admin.clubs.delete');
     /**
      * Route handles insertion of new club.
      */
     Route::post("/admin/clubs", [ClubController::class, 'store'])->name("admin.clubs.create");
-
+ /**
+     * A table (data-grid) display of all the clubs, with links
+     * to view and edit the clubs in more detail. 
+     */
+    Route::get('/admin/clubs/', [ClubController::class, 'index'])->middleware('system.is.setup')
+        ->name("admin.clubs");
     /**
      * Route renders new Club Creation Form.
      */
-    Route::get('/admin/clubs/new', function () {
-
-        $clubs = Club::getAllWithInstances();
-
-        return Inertia::render('AdminBoard/AdminMain/ClubCreate', [
-            'clubs' => $clubs,
-            'availableDays' => YearGroupDays::all()
-        ]);
-
-    })->name('admin.clubs.new');
+    Route::get('/admin/clubs/new', [ClubController::class, 'createIndex'])->name('admin.clubs.new');
 
     /**
      * Routes for globally allowing bookings.
@@ -195,11 +199,7 @@ Route::middleware(['auth', 'is.admin'])->group(function () {
     /**
      * Can show and update the instances of a club here.
      */
-    Route::get('/admin/clubs/{id}', [ClubController::class, 'show'])->name('admin.clubs.index');
-    Route::put('/admin/clubs/{id}/update', [ClubController::class, 'update'])->name('admin.clubs.update');
-    // Route::put('/admin/clubs/{id}', [ClubController::class, 'update']);
-    Route::get('/admin/clubs/{id}/download', [DataExportController::class, 'clubDataDownload'])->name('admin.download.club-data-id-spreadsheet');
-    Route::delete('/admin/clubs/{id}', [ClubController::class, 'delete'])->name('admin.clubs.delete');
+    
     Route::get('/admin/download-spreadsheet', [DataExportController::class, 'downloadTotalUserClubSpreadsheet'])->name('admin.download.total-user-club-spreadsheet');
 
     /**
@@ -217,22 +217,11 @@ Route::middleware(['auth', 'is.admin'])->group(function () {
     Route::delete('/admin/booking-configs/{id}', [BookingConfigController::class, 'delete'])->middleware('system.is.setup')
         ->name('admin.booking-config.delete');
 
-
-
-
-
     Route::post('/admin/book-for-student/{clubInstanceId}/student/{studentId}', [BookingController::class, 'bookClubForStudentAsAdmin'])->name("admin.clubs.book");
     Route::delete('/admin/delete-for-student/{clubInstanceId}/student/{studentId}', [BookingController::class, 'deleteClubForStudentAsAdmin'])->name("admin.clubs.book");
 
 });
 
-
-
-Route::post("/placeholder", function () {
-    // die("yo");
-
-    back();
-})->name("placeholder");
 
 
 require __DIR__ . '/auth.php';

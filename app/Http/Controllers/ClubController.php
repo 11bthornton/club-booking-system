@@ -83,7 +83,16 @@ class ClubController extends Controller
             }
         });
     }
+    public function createIndex() {
 
+        $clubs = Club::getAllWithInstances();
+
+        return Inertia::render('AdminBoard/Clubs/ClubCreate', [
+            'clubs' => $clubs,
+            'availableDays' => YearGroupDays::all()
+        ]);
+
+    }
 
     public function show($id)
     {
@@ -193,6 +202,14 @@ class ClubController extends Controller
         }
 
         $this->show($id);
+    }
+
+    public function index() {
+        $clubs = Club::getAllWithInstances();
+
+        return Inertia::render('AdminBoard/Clubs/ClubsView', [
+            'clubs' => $clubs
+        ]);
     }
 
     protected $mainRules  = [
