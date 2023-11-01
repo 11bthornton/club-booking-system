@@ -16,7 +16,7 @@ class Kernel extends ConsoleKernel
         $schedule
             ->command('booking-config:delete-expired')
             ->everyMinute()
-            ->emailOutputTo('11bthornton@gmail.com');
+            ->emailOutputTo('11bthornton@gmail.com')->subject("Booking config");
     }
 
     /**

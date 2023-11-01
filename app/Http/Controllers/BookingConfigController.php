@@ -3,93 +3,130 @@
 namespace App\Http\Controllers;
 
 use App\Models\BookingConfig;
+use App\Models\Club;
+use App\Models\YearGroupDays;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Validator;
+use App\Rules\ValidBookingScheduleTime;
 
 use App\Models\ClubInstance;
 use App\Models\YearGroup;
 use App\Models\User;
+use Inertia\Inertia;
 
 class BookingConfigController extends Controller
 {
     public function create(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'formData.start_date' => 'required|date',
-            'formData.end_date' => 'required|date',
-            'formData.start_time' => 'required|date_format:H:i',
-            'formData.end_time' => 'required|date_format:H:i',
-            'formData.year_groups' => 'array',
-            'formData.clubs' => 'array',
-            'formData.students' => 'array',
-        ]);
+        $rules = [
+            'start_date' => 'required|date',
+            'end_date' => 'required|date',
+            'start_time' => 'required|date_format:H:i',
+            'end_time' => ['required', 'date_format:H:i', new ValidBookingScheduleTime],
+            'year_groups' => 'required|array|min:1',
+            'year_groups.*' => 'in:7,8,9,10,11',
+            'clubs' => 'required|array|min:1',
+        ];
     
-        $validator->after(function ($validator) use ($request) {
-            $formData = $request->json()->all()['formData'];
-            $startDate = \Carbon\Carbon::parse($formData['start_date'] . ' ' . $formData['start_time']);
-            $endDate = \Carbon\Carbon::parse($formData['end_date'] . ' ' . $formData['end_time']);
-    
-            if ($endDate->lt($startDate)) {
-                $validator->errors()->add('formData.end_time', 'The end time must be after the start time.');
-            }
-        });
-    
-        if ($validator->fails()) {
-            return response()->json([
-                'status' => "error",
-                'message' => $validator->errors(),
-                'data' => []
-            ]);
-        }
+        $data = $request->validate($rules);
 
         DB::beginTransaction();
-    
-        try {
-     
-            $jsonData = $request->json()->all()['formData'];
 
-            $startDate = \Carbon\Carbon::parse($jsonData['start_date'] . ' ' . $jsonData['start_time']);
-            $endDate = \Carbon\Carbon::parse($jsonData['end_date'] . ' ' . $jsonData['end_time']);
+        try {
+
+
+            $startDate = \Carbon\Carbon::parse($data['start_date'] . ' ' . $data['start_time']);
+            $endDate = \Carbon\Carbon::parse($data['end_date'] . ' ' . $data['end_time']);
 
             $bookingConfig = BookingConfig::create([
                 'scheduled_at' => $startDate,
                 'ends_at' => $endDate
             ]);
 
-            $clubs = $jsonData['clubs'] ?: ClubInstance::all()->pluck('id');
+            $clubs = $data['clubs'] ?: ClubInstance::all()->pluck('id');
             $bookingConfig->allowedClubs()->attach($clubs);
 
-            $yearGroups = $jsonData['year_groups'] ?: YearGroup::all()->pluck('year');
+            $yearGroups = $data['year_groups'] ?: YearGroup::all()->pluck('year');
             $bookingConfig->allowedYearGroups()->attach($yearGroups);
 
-            $users = $jsonData['students'] ?: User::all()->pluck('id');
+            // $users = $data['students'] ?: User::all()->pluck('id');
             // $bookingConfig->allowedUsers()->attach($users);
 
             // Commit the transaction if everything is okay
             DB::commit();
 
-            return response()->json(
-                [
-                    'status' => "success",
-                    'message' => 'Successfully Scheduled System Uptime',
-                    'data' => [
-                        'bookingConfig' => $bookingConfig
-                    ]
-                ]
-            );
+            $bookingConfigs = BookingConfig::all();
+
+            $bookingConfigs->map(function ($config) {
+                $now = Carbon::now();
+                $scheduledAt = Carbon::parse($config->scheduled_at);
+                $endsAt = Carbon::parse($config->ends_at);
+
+                $config->isLive = $now->between($scheduledAt, $endsAt);
+                return $config;
+            });
+            $bookingConfigs = $bookingConfigs->sortBy('scheduled_at');
+            // dd($bookingConfigs);
+
+            $clubs = Club::getAllWithInstances();
+
+            return Redirect::route('admin.booking-config.index', [
+                'scheduleData' => $bookingConfigs,
+                'clubData' => $clubs,
+                'availableDays' => YearGroupDays::all()
+            ]);
+
         } catch (\Exception $e) {
             // Rollback the transaction in case of errors
-            DB::rollback();
-        
-            return response()->json(
-                [
-                    'status' => "error",
-                    'message' => $e->getMessage(),
-                    'data' => []
-                ]
-            );
+            // DB::rollback();
+            die($e->getMessage());
+            
         }
+    }
+
+    public function delete($id) {
+            $bookingConfig = BookingConfig::findOrFail($id);
+
+            $bookingConfig->delete();
+            
+            
+            $this->index();
+    }
+
+    public function index()
+    {
+
+        $bookingConfigs = BookingConfig::all();
+
+        $bookingConfigs = $bookingConfigs->map(function ($config) {
+            // Parse the scheduled_at field into a timestamp
+            $config->scheduled_at_timestamp = strtotime($config->scheduled_at);
+        
+            // Parse the ends_at field into a timestamp
+            $config->ends_at_timestamp = strtotime($config->ends_at);
+        
+            // Calculate the isLive attribute
+            $now = time();
+            $config->isLive = ($now >= $config->scheduled_at_timestamp && $now <= $config->ends_at_timestamp);
+        
+            return $config;
+        });
+        
+        // Sort the collection by scheduled_at_timestamp in ascending order
+        $bookingConfigs = $bookingConfigs->sortByDesc('scheduled_at');
+
+        $clubs = Club::getAllWithInstances();
+        // dd($bookingConfigs);
+
+
+        return Inertia::render('AdminBoard/BookingConfigs/BookingConfigs', [
+            'scheduleData' => $bookingConfigs,
+            'clubData' => $clubs,
+            'availableDays' => YearGroupDays::all()
+        ]);
     }
 
 }

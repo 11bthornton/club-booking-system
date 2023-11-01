@@ -1,12 +1,13 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 
-import DeleteUserForm from "@/Pages/Profile/Partials/DeleteUserForm";
-import UpdatePasswordForm from "@/Pages/Profile/Partials/UpdatePasswordForm";
+import DeleteUserForm from "@/Pages/AdminBoard/Students/Partials/DeleteUserForm";
 import UpdateProfileInformationForm from "@/Pages/Profile/Partials/UpdateProfileInformationForm";
+import AdminUpdatePasswordForm from "./Partials/AdminUpdatePasswordForm";
 
 import UpdateClubInformationForm from "./UpdateClubInformationForm";
 
 import { Head } from "@inertiajs/react";
+import { useSpinner } from "@/LoadingContext";
 
 export default function Edit({
     auth,
@@ -15,7 +16,11 @@ export default function Edit({
     student,
     availableClubs,
     organizedByTerm,
+    csrf
 }) {
+
+    const { setShowSpinner } = useSpinner();
+
     return (
         <AuthenticatedLayout
             user={auth.user}
@@ -39,19 +44,25 @@ export default function Edit({
                     </div>
 
                     <div className="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
-                        <UpdateClubInformationForm
-                            student={student}
-                            availableClubs={availableClubs}
-                            organizedByTerm={organizedByTerm}
+                        <AdminUpdatePasswordForm 
+                            className="max-w-xl" 
+                            user={student}
                         />
                     </div>
 
                     <div className="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
-                        <UpdatePasswordForm className="max-w-xl" />
+                        <UpdateClubInformationForm
+                            student={student}
+                            availableClubs={availableClubs}
+                            organizedByTerm={organizedByTerm}
+                            csrf={csrf}
+                        />
                     </div>
 
+                    
+
                     <div className="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
-                        <DeleteUserForm className="max-w-xl" />
+                        <DeleteUserForm className="max-w-xl" user={student}/>
                     </div>
                 </div>
             </div>

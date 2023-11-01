@@ -35,8 +35,8 @@ export default function YearConfigure({ auth, year, clubs }) {
         errors,
         recentlySuccessful
     } = useForm({
-        yearStart: year.year_start + 1,
-        yearEnd: year.year_end + 1,
+        yearStart: year ? year.year_start + 1 : null,
+        yearEnd: year ? year.year_end + 1 : null,
         usersFile: file,
         keepClubs: [],
         transferStudents: false,
@@ -225,7 +225,7 @@ export default function YearConfigure({ auth, year, clubs }) {
                             provided with new login information. Naturally, this option will be required for the first year
                             the system is run.
                         </p>
-                        <InputLabel
+                        { year ? <><InputLabel
                             value={`Transfer across from the current academic year, ${year.year_start}/${year.year_end}?`}
                             check
                         />
@@ -242,7 +242,7 @@ export default function YearConfigure({ auth, year, clubs }) {
                                 onChange={() => setData("transferStudents", !data.transferStudents)}
                                 defaultChecked={data.transferStudents}
                             />
-                        </div>
+                        </div></>: <></>}
 
                         <div className="p-4 bg-gray-50 mt-3 rounded-sm">
                             <Typography

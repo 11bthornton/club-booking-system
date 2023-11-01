@@ -7,11 +7,19 @@ import { useEffect } from "react";
 import { FindClubModal } from "@/Components/ClubMarket/FindClubModal";
 import { useState } from "react";
 
+import deleteClub from "@/Pages/ClubMarket/scripts/DeleteBooking";
+import { ConfirmDeleteDialog } from "@/Components/ClubMarket/ConfirmDeleteDialog";
+
+import { useSpinner } from "@/LoadingContext";
 export default function UpdateClubInformationForm({
     student,
     organizedByTerm,
     availableClubs,
+    csrf
 }) {
+
+    const { setShowSpinner } = useSpinner();
+
     const { setAvailableClubs, setAlreadyBooked, alreadyBooked } =
         useAvailableClubs();
 
@@ -42,12 +50,13 @@ export default function UpdateClubInformationForm({
                 handleOpen={handleFindClubModalOpen}
                 term={currentTerm}
                 day={currentDay}
-                adminMode={ 
+                adminMode={
                     {
                         flag: true,
                         id: student.id
                     }
                 }
+                csrf={csrf}
             />
 
             <h2 className="text-xl font-medium text-gray-900">Club Bookings</h2>
@@ -57,7 +66,7 @@ export default function UpdateClubInformationForm({
             </p>
 
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {Object.values(alreadyBooked).map((term, index) => {
+                {Object.values(organizedByTerm).map((term, index) => {
                     return (
                         <div class="col-span-1 flex flex-col items-center justify-center ">
                             <h3 className="text-lg font-medium text-gray-900">
@@ -70,16 +79,16 @@ export default function UpdateClubInformationForm({
                                             {day}
                                         </h3>
                                         <p
-                                            className={`${
-                                                term[day]?.club
+                                            className={`${term[day]?.club
                                                     ? " "
                                                     : "text-red-600 font-bold"
-                                            }`}
+                                                }`}
                                         >
-                                            {term[day]?.club ??
+                                            {term[day]?.club.name ??
                                                 "No Club Selected"}
                                         </p>
                                         <div className="flex gap-4 mt-4 justify-center">
+                                            
                                             <Button
                                                 color="blue"
                                                 variant="text"
@@ -91,7 +100,25 @@ export default function UpdateClubInformationForm({
                                             >
                                                 Find / Swap{" "}
                                             </Button>
-                                            <Button variant="text" color="red">
+                                            <Button variant="text" color="red" onClick={() => {
+                                                setShowSpinner(true);
+
+                                                setTimeout(async () => {
+                                                    const data = await deleteClub(
+                                                        term[day]?.id,
+                                                        csrf,
+                                                        {
+                                                            flag: true,
+                                                            id: student.id
+                                                        }
+                                                    );
+                        
+                                                    setAvailableClubs(data.data.availableClubs);
+                                                    setAlreadyBooked(data.data.alreadyBookedOn);
+                                                    setShowSpinner(false);
+                                                    handleOpen();
+                                                }, 1000);
+                                            }}>
                                                 Delete
                                             </Button>
                                         </div>

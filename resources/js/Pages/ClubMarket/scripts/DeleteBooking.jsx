@@ -1,7 +1,9 @@
-export default async function deleteClub(clubId, csrfToken) {
+export default async function deleteClub(clubId, csrfToken, adminMode) {
+
+    const route = adminMode.flag ? `/admin/delete-for-student/${clubId}/student/${adminMode.id}` : `/club/${clubId}`;
 
     try {
-        const response = await fetch(`/club/${clubId}`, {
+        const response = await fetch(route, {
             method: "DELETE",
             headers: {
                 "Content-Type": "application/json",

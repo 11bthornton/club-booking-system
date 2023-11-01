@@ -1,10 +1,9 @@
-export default async function postClub(clubId, csrfToken) {
+export default async function postClub(clubId, csrfToken, adminMode) {
 
-
-    console.log("CSRF TOKEN is", csrfToken);
+    const route = adminMode.flag ? `/admin/book-for-student/${clubId}/student/${adminMode.id}` : `/club-market/${clubId}`;
 
     try {
-        const response = await fetch(`/club-market`, {
+        const response = await fetch(route, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -12,14 +11,9 @@ export default async function postClub(clubId, csrfToken) {
                 "X-Requested-With": "XMLHttpRequest",
                 "X-CSRF-TOKEN": csrfToken,
             },
-            body: JSON.stringify(
-                {
-                    id: clubId
-                }
-            )
+            
         });
 
-        // console.log("response text", await response.text());
         const data = await response.json();
 
         if (response.ok) {
@@ -31,5 +25,7 @@ export default async function postClub(clubId, csrfToken) {
     } catch (error) {
         console.error("There was an error:", error);
         throw error;
+    } finally {
+        
     }
 }

@@ -17,7 +17,8 @@ export function ConfirmDeleteDialog({
     handleOpen,
     currentClubInfo,
     currentClubInstance,
-    csrf
+    csrf,
+    adminMode
 }) {
     const { setShowSpinner } = useSpinner();
     const { setAlreadyBooked, setAvailableClubs } = useAvailableClubs();
@@ -87,7 +88,8 @@ export function ConfirmDeleteDialog({
                         setTimeout(async () => {
                             const data = await deleteClub(
                                 currentClubInstance.id,
-                                csrf
+                                csrf,
+                                adminMode
                             );
 
                             setAvailableClubs(data.data.availableClubs);

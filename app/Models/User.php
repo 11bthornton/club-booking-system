@@ -74,6 +74,16 @@ class User extends Authenticatable
         return $this->organizedByTerm();
     }
 
+    public static function getAdmins()
+    {
+        return self::where('role', 1)->get();
+    }
+
+    public static function getStudents()
+    {
+        return self::where('role', 0)->get();
+    }
+
     public function organizedByTerm()
     {
         $clubInstances = $this->bookedClubs()->get();

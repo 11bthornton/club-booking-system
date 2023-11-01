@@ -16,6 +16,9 @@ return new class extends Migration
             $table->string('name');
             $table->text('description');
             $table->string('rule');
+            $table->unsignedInteger('max_per_term')->nullable();
+            $table->unsignedInteger('max_per_year')->nullable();
+            $table->boolean('must_do_all');
             $table->timestamps();
         });
     }

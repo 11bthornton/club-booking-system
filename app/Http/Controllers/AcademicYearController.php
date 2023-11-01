@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Imports\UsersImport;
 use App\Models\YearGroupDays;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
@@ -18,6 +19,7 @@ use App\Models\Club;
 use App\Models\User;
 use App\Models\AcademicYear;
 use App\Models\CurrentAcademicYear;
+use Maatwebsite\Excel\Facades\Excel;
 
 
 class AcademicYearController extends Controller
@@ -143,20 +145,19 @@ class AcademicYearController extends Controller
                     $user->delete();
                 }
             }
+            
+            if ($request->hasFile('usersFile')) {
+                // Get the uploaded file from the request
+                $file = $request->file('usersFile');
     
-            $csv = Reader::createFromPath($request->usersFile->getPathname(), 'r');
-            $csv->setHeaderOffset(0); // Assuming the first row contains headers
-        
-            foreach ($csv->getRecords() as $record) {
-                // Create a new User model and set its attributes from the CSV data
-                
-                
-                $user = new User($record);
-                $user->role = 0;
-                $user->save();
-                // // Save the user to the database
-                // $user->save();
-            }
+                // Get the file path
+                $filePath = $file->getRealPath();
+    
+                // Import the data using the file path
+                Excel::import(new UsersImport, $filePath);
+    
+                // Rest of your import logic here
+            } 
             
             DB::commit();
         } catch(\Exception $e) {

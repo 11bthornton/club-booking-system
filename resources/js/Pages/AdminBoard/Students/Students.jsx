@@ -1,25 +1,45 @@
-import { useState } from "react";
 
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head } from "@inertiajs/react";
+import { Select, Option } from "@material-tailwind/react";
 
-import { DataGrid, GridToolbar } from "@mui/x-data-grid";
+import { Input } from "@material-tailwind/react";
+
+import { DataGrid,  } from "@mui/x-data-grid";
 import {
-    Dialog,
-    DialogBody,
-    DialogHeader,
-    DialogFooter,
+
+    Alert,
     Chip,
     Button,
 } from "@material-tailwind/react";
 
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+
+import { Link } from "@inertiajs/react";
 import {
     faEdit,
-    faRightLeft,
-    faTrash,
+
 } from "@fortawesome/free-solid-svg-icons";
 
+import { useForm } from "@inertiajs/react";
+import StudentImportForm from "./StudentCreate/StudentImportForm";
+
 export default function ClubShow({ auth, students }) {
+
+    const { data, setData, post, reset, errors } = useForm({
+        file: null
+    });
+
+    // Function to handle file input change
+    const handleFileInputChange = (e) => {
+        const selectedFile = e.target.files[0]; // Get the selected file
+        setData('file', selectedFile); // Update the 'file' field in the form data
+    };
+
+    // Function to reset the form and clear the selected file
+    const handleReset = () => {
+        reset(); // Reset the form data
+    };
     return (
         <AuthenticatedLayout
             user={auth.user}
@@ -31,22 +51,279 @@ export default function ClubShow({ auth, students }) {
         >
             <Head title="Students" />
 
-            <div className="container mx-auto p-6 bg-white mt-5 rounded-lg shadow-lg">
+            <div className="container mx-auto p-4 mt-5 rounded-lg ">
                 <div>
                     <p className="text-3xl mb-4">Manage Students</p>
                 </div>
 
                 <UserDataGrid studentData={students} />
+
+                <div className="mt-4">
+                    <div className="max-w-7xl mx-auto space-y-6">
+                        <div className="p-4 sm:p-8 bg-white shadow-md sm:rounded-lg">
+                            <h2 className="text-lg font-medium text-gray-900">
+                                Import Users
+                            </h2>
+
+                            {
+                                JSON.stringify(errors) != "{}" && <Alert color="red" variant="ghost">
+                                    There were some errors
+                                    <ul className="ml-3">
+                                        {
+                                            Object.values(errors).map((err, index) => (
+                                                <li key={index}>{err}</li>
+                                            ))
+                                        }
+                                    </ul>
+                                </Alert>
+                            }
+                            <p className="mt-1 text-sm text-gray-600">
+                                Upload a file with all the new users you wish to add. This should be an excel or csv file with the following headers.
+                            </p>
+                            <ul className="text-sm mt-3 ml-3">
+                                <li>username</li>
+                                <li>year</li>
+                                <li>email *</li>
+                                <li>first_name</li>
+                                <li>last_name</li>
+                            </ul>
+
+                            <p className="mt-3 text-sm text-gray-600">
+                                Users must be unique. Any duplicates already found in the system will cause the whole batch to fail and none will be uploaded.
+                            </p>
+
+                            {/* File input */}
+                            <input
+                                type="file"
+                                accept=".csv, .xlsx" // Specify accepted file types if needed
+                                onChange={handleFileInputChange} // Call the function when the file input changes
+                                style={{ display: "none" }} // Hide the input element
+                            />
+
+                            {/* Display the selected file */}
+                            <div className="bg-gray-50 p-3 mt-3">
+                                {data.file && (
+                                    <p className="text-sm text-gray-600">
+                                        Selected File: {data.file.name}
+                                    </p>
+                                )}
+
+                                {/* Button to trigger file input click */}
+                                <Button
+                                    className="mt-3 mr-2"
+                                    size="sm"
+                                    onClick={() => {
+                                        // Trigger the file input when this button is clicked
+                                        document.querySelector('input[type="file"]').click();
+                                    }}
+                                    variant="outlined"
+                                >
+                                    Select File
+                                </Button>
+                            </div>
+                            <br />
+                            {/* Reset button */}
+                            <div className="flex justify-between mt-1">
+
+                                {/* Upload button */}
+                                <Button
+                                    // variant="outlined"
+                                    className="mt-3"
+                                    onClick={() => {
+                                        post(route("admin.students.import"),
+                                            {
+                                                onSuccess: () => handleReset()
+                                            })
+                                    }}
+                                >
+                                    Upload
+                                </Button>
+                                <Button
+                                    // variant="outlined"
+                                    variant="text"
+                                    color="red"
+                                    className="mt-3"
+                                    onClick={handleReset} // Call the reset function to clear the selected file
+                                >
+                                    Reset
+                                </Button>
+
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="mt-4">
+                    <StudentCreate />
+                </div>
             </div>
         </AuthenticatedLayout>
     );
 }
 
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
-import { Menu, MenuItem } from "@mui/material";
+function StudentCreate({ /**  */ }) {
+    const { post, data, setData, reset } = useForm({
+        username: "",
+        first_name: "",
+        second_name: "",
+        email: "",
+        year: "",
+        password: ""
+    });
+
+    const yearOptions = [
+        { value: "7", label: "Year 7" },
+        { value: "8", label: "Year 8" },
+        { value: "9", label: "Year 9" },
+        { value: "10", label: "Year 10" },
+        { value: "11", label: "Year 11" },
+    ];
+
+    return (
+        <div className="max-w-7xl mx-auto space-y-6">
+            <div className="p-4 sm:p-8 bg-white shadow-md sm:rounded-lg">
+                <h2 className="text-lg font-medium text-gray-900">
+                    Create a new student
+                </h2>
+
+
+                <p className="mt-1 text-sm text-gray-600">Submit a new student</p>
+
+                {/* Username Field */}
+                <div className="mt-4">
+                    <label htmlFor="username" className="text-gray-700">
+                        Username:
+                    </label>
+                    <Input
+                        type="text"
+                        id="username"
+                        name="username"
+                        value={data.username}
+                        onChange={(e) => setData("username", e.target.value)}
+                        className="mt-1 mb-4"
+                    />
+                </div>
+
+                {/* First Name Field */}
+                <div className="mt-4">
+                    <label htmlFor="first_name" className="text-gray-700">
+                        First Name:
+                    </label>
+                    <Input
+                        type="text"
+                        id="first_name"
+                        name="first_name"
+                        value={data.first_name}
+                        onChange={(e) => setData("first_name", e.target.value)}
+                        className="mt-1 mb-4"
+                    />
+                </div>
+
+                {/* Last Name Field */}
+                <div className="mt-4">
+                    <label htmlFor="second_name" className="text-gray-700">
+                        Last Name:
+                    </label>
+                    <Input
+                        type="text"
+                        id="second_name"
+                        name="second_name"
+                        value={data.second_name}
+                        onChange={(e) => setData("second_name", e.target.value)}
+                        className="mt-1 mb-4"
+                    />
+                </div>
+
+                {/* Email Field */}
+                <div className="mt-4">
+                    <label htmlFor="email" className="text-gray-700">
+                        Email:
+                    </label>
+                    <Input
+                        type="email"
+                        id="email"
+                        name="email"
+                        value={data.email}
+                        onChange={(e) => setData("email", e.target.value)}
+                        className="mt-1 mb-4"
+                    />
+                </div>
+
+                {/* Year Field */}
+                <div className="mt-4">
+                    <label htmlFor="year" className="text-gray-700 mt-3 mb-2">
+                        Select Year:
+                    </label>
+                    <div className="mt-3">
+                        <Select
+                            id="year"
+                            name="year"
+                            label="Year Group"
+                            value={data.year}
+                            onChange={(e) => setData("year", e)}
+                            className="mt-1 mb-4"
+                        >
+                            {yearOptions.map((yearOption) => (
+                                <Option key={yearOption.value} value={yearOption.value}>
+                                    {yearOption.label}
+                                </Option>
+                            ))}
+                        </Select>
+
+                    </div>
+                </div>
+
+                <div className="mt-4">
+                    <label htmlFor="password" className="text-gray-700">
+                        Password:
+                    </label>
+                    <Input
+                        type="password"
+                        id="password"
+                        name="password"
+                        value={data.password}
+                        onChange={(e) => setData("password", e.target.value)}
+                        className="mt-1 mb-4"
+                    />
+                </div>
+
+                {/* Additional Fields (You can add these as needed) */}
+                <br />
+                <div className="flex justify-between items-center">
+                <Button
+                    // variant="outlined"
+                    className="mt-3"
+                    onClick={() => {
+                        post(route("admin.students.store"),
+                            {
+                                onSuccess: () => reset()
+                            }
+                        )
+                    }}
+                >
+                    Save
+                </Button>
+                <Button
+                    variant="text"
+                    color="red"
+                    onClick={() => reset()}
+                >
+                    Delete
+                </Button>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+
 
 function UserDataGrid({ studentData }) {
+
+    const { delete: destroy } = useForm({});
+
     // Define the columns
     const columns = [
         { field: "id", headerName: "ID", width: 70 },
@@ -55,7 +332,7 @@ function UserDataGrid({ studentData }) {
             headerName: "Username",
             width: 150,
             renderCell: (params) => (
-                <a
+                <Link
                     href={`/admin/students/${params.row.id}`}
                     className="text-blue-500 hover:underline"
                 >
@@ -67,7 +344,7 @@ function UserDataGrid({ studentData }) {
                             style={{ cursor: "pointer" }}
                         />
                     </div>
-                </a>
+                </Link>
             ),
         },
         { field: "year", headerName: "Year", width: 100 },
@@ -90,29 +367,53 @@ function UserDataGrid({ studentData }) {
                             count === 0
                                 ? "red"
                                 : count < 12
-                                ? "orange"
-                                : "green"
+                                    ? "orange"
+                                    : "green"
                         }
                         variant="ghost"
-                        onClick={() => {}}
-                        // className='cursor-pointer'
+                        onClick={() => { }}
+                    // className='cursor-pointer'
                     />
                 );
             },
         },
 
+        
+        {
+            field: "email",
+            width: 150
+        },
+        {
+            field: "first_name",
+        },
+        {
+            field: "second_name"
+        },
+
         {
             field: "actions",
-            headerName: "Actions",
+            headerName: "",
             headerAlign: "center",
+            width: 250,
             renderCell: (params) => {
                 return (
-                    <Button variant="text" color="red" className="text-center">
-                        Delete
-                    </Button>
+                    <div className="flex justify-between gap-2 ml-2">
+                        <Button variant="outlined" className="text-center" size="sm"
+                            onClick={() => destroy(route("admin.students.delete", { id: params.row.id }))}
+                        >
+                            Email Choices
+                        </Button>
+                        <Button variant="text" color="red" className="text-center" size="sm"
+                            onClick={() => destroy(route("admin.students.delete", { id: params.row.id }))}
+                        >
+                            Delete
+                        </Button>
+                    </div>
                 );
             },
+            
         },
+        
     ];
 
     return (
@@ -121,9 +422,10 @@ function UserDataGrid({ studentData }) {
             columns={columns}
             pageSize={5}
             rowsPerPageOptions={[5]}
-            // components={{
-            //     Toolbar: GridToolbar
-            // }}
+            className="bg-white rounded-lg "
+        // components={{
+        //     Toolbar: GridToolbar
+        // }}
         />
     );
 }

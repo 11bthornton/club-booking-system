@@ -2,185 +2,290 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\ClubInstance;
-use App\Models\UserClub;
 use App\Models\Club;
+use App\Models\ClubInstance;
+use App\Models\User;
+use App\Models\UserClub;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class BookingController extends Controller
 {
-    /**
-     * It is vital this function is called within the context of a DB transaction.
-     */
-    public function deleteBookingNew($existingBooking, $user)
-    {
 
-        if ($existingBooking) {
-
-            // We don't need to lock these since we're only ever going
-            // to increase the cappacity if there is one.
-
-            $clubInstance = ClubInstance::find($existingBooking->club_instance_id);
-            if (!$clubInstance) {
-                throw new \Exception("Can't find club instance for booking, internal server error");
-            }
-
-            $allClubsToDelete = $clubInstance->mustGoWithForward->concat($clubInstance->mustGoWithReverse);
-            $allClubsToDelete[] = $clubInstance;
-
-            foreach ($allClubsToDelete as $clubToDelete) {
-                $userClubInstance = UserClub::where('user_id', $user->id)
-                    ->where('club_instance_id', $clubToDelete->id)
-                    ->first();
-
-                if ($userClubInstance) {
-                    $userClubInstance->delete();
-                }
-            }
-
-        }
-    }
-
-    public function simulateDeleteBooking($existingBooking, $user)
+    private function simulateDeleteBooking($existingBooking, $user)
     {
         $clubsToDelete = [];
 
+        /**
+         * If the existing booking exists
+         */
         if ($existingBooking) {
+
             $clubInstance = ClubInstance::find($existingBooking->club_instance_id);
             if (!$clubInstance) {
                 throw new \Exception("Can't find club instance for booking, internal server error");
             }
 
-            $allClubsToDelete = $clubInstance->mustGoWithForward->concat($clubInstance->mustGoWithReverse);
-            $allClubsToDelete[] = $clubInstance;
+            if ($clubInstance->club->must_do_all) {
+                $allClubsToDelete = ClubInstance::where('club_id', $clubInstance->club_id)->pluck('id');
 
-            // Instead of deleting, just add to the result
-            foreach ($allClubsToDelete as $clubToDelete) {
-                if (UserClub::where('user_id', $user->id)->where('club_instance_id', $clubToDelete->id)->exists()) {
-                    $clubsToDelete[] = $clubToDelete;
+                // Get all club_instance_id values for the user's bookings
+                $thoseThatUserHasBooked = UserClub::where('user_id', $user->id)->pluck('club_instance_id');
+
+                // Find the intersection of the two lists (clubs that appear in both)
+                $commonClubs = ClubInstance::whereIn('id', $allClubsToDelete)
+                    ->whereIn('id', $thoseThatUserHasBooked)
+                    ->get();
+
+                // Instead of deleting, just add to the result
+                foreach ($commonClubs as $clubToDelete) {
+                    if (UserClub::where('user_id', $user->id)->where('club_instance_id', $clubToDelete->id)->exists()) {
+                        $clubsToDelete[] = $clubToDelete;
+                    }
                 }
+
+            } else {
+                $clubsToDelete = [ClubInstance::find($clubInstance->id)];
             }
         }
 
         return $clubsToDelete;
     }
 
-    public function simulateBook($id, Request $request)
+
+    private function internalSimulateBooking($id, $user)
     {
-        // We won't use DB transactions here since we are not making any database changes
-
         try {
-            $user = $request->user();
 
+            /**
+             * First establish the target club that needs to be booked
+             */
             $clubInstance = ClubInstance::find($id);
+            $club = $clubInstance->club;
 
             if (!$clubInstance) {
                 throw new \Exception("Club Not Found");
             }
 
-            $allClubsToBook = $clubInstance->mustGoWithForward->concat($clubInstance->mustGoWithReverse);
-            $allClubsToBook[] = $clubInstance;
+            /**
+             * Some clubs require commitment over multiple days/terms so
+             * collect all club instances into an array.
+             */
+            if ($club->must_do_all) {
+                $allClubsToBook = ClubInstance::where('club_id', $club->id)->get();
+            } else {
+                $allClubsToBook = [$clubInstance];
+            }
 
-            // Check capacity of each club
+            /**
+             * Then, need to establish if any of these clubs don't have capacity. 
+             */
             $clubsWithoutCapacity = [];
             foreach ($allClubsToBook as $clubToBook) {
                 if (!(is_null($clubToBook->capacity) || $clubInstance->capacity > 0)) {
                     $clubsWithoutCapacity[] = $clubToBook;
                 }
             }
+
             if (count($clubsWithoutCapacity) > 0) {
                 throw new \Exception("One or more clubs doesn't have enough capacity");
             }
 
-            // Only need to get this once
-            $userBookedClubInstanceIds = $user->bookedClubs()->pluck('club_instance_id')->all();
-
+            /**
+             * Students might have clubs booked on days they're trying to book for. 
+             */
             $clubsToDelete = [];
 
+            /**
+             * For each of the clubs student wants to book, need to find out whether there's
+             * already a club booked in that timeslot. 
+             */
             foreach ($allClubsToBook as $clubToBook) {
+
                 $existingBooking = UserClub::whereHas('clubInstance', function ($query) use ($clubToBook) {
                     $query->where('half_term', $clubToBook->half_term)
                         ->where('day_of_week', $clubToBook->day_of_week);
                 })->where('user_id', $user->id)->first();
 
+                /**
+                 * Simulate delete handles the deletion of dependant clubs. 
+                 */
                 if ($existingBooking) {
                     $clubsToDelete = array_merge($clubsToDelete, $this->simulateDeleteBooking($existingBooking, $user));
                 }
 
-                // Check for incompatible clubs
-                $incompatibleClubs = $clubToBook->incompatibleForward->concat($clubToBook->incompatibleReverse);
+                /**
+                 * Get the max number of allowed instances per term/year. 
+                 * These can be null (unlimited) but must be positive.
+                 */
+                $maxPerTerm = $clubToBook->club->max_per_term;
+                $maxPerYear = $clubToBook->club->max_per_year;
 
-                foreach ($incompatibleClubs as $incompatibleClub) {
-                    if (in_array($incompatibleClub->id, $userBookedClubInstanceIds)) {
-                        $existingBooking = UserClub::whereHas('clubInstance', function ($query) use ($incompatibleClub) {
-                            $query->where('id', $incompatibleClub->id);
-                        })->where('user_id', $user->id)->first();
+                /**
+                 * The `must_do_all` club instances are all booked together, so they're never partially
+                 * booked by the user. This is an invariant that's upheld. This is why only one club
+                 * has to be added 
+                 */
+                if ($maxPerTerm) {
+                    $existingBookings = UserClub::whereHas('clubInstance', function ($query) use ($club, $clubToBook) {
+                        $query
+                            ->where('club_id', $club->id)
+                            ->where('half_term', $clubToBook->half_term)
+                            ->whereNot('day_of_week', $clubToBook->day_of_week); // Suppose this is not really needed. But has no effect.
+                    });
 
-                        if ($existingBooking) {
-                            $clubsToDelete = array_merge($clubsToDelete, $this->simulateDeleteBooking($existingBooking, $user));
-                        }
+                    if ($existingBookings->count() >= $maxPerTerm) {
+                        $clubsToDelete = array_merge($clubsToDelete, $this->simulateDeleteBooking($existingBookings->first(), $user));
                     }
                 }
+
+                /**
+                 * Same as above but since this is per year don't need the extra checks.
+                 */
+                if ($maxPerYear) {
+                    $existingBookings = UserClub::whereHas('clubInstance', function ($query) use ($club, $clubToBook) {
+                        $query
+                            ->where('club_id', $club->id);
+                        // ->where('half_term', $clubToBook->half_term)
+                        // ->whereNot('day_of_week', $clubToBook->day_of_week);
+                    });
+
+                    if ($existingBookings->count() >= $maxPerTerm) {
+                        $clubsToDelete = array_merge($clubsToDelete, $this->simulateDeleteBooking($existingBookings->first(), $user));
+                    }
+                }
+
+
             }
 
-            return response()->json([
+            // Extract IDs from $allClubsToBook and $clubsToDelete using collections
+            $clubsToBookIds = collect($allClubsToBook)->pluck('id')->all();
+            $clubsToDeleteIds = collect($clubsToDelete)->pluck('id')->all();
+
+            // Unique the extracted IDs
+            $uniqueClubsToBookIds = array_unique($clubsToBookIds);
+            $uniqueClubsToDeleteIds = array_unique($clubsToDeleteIds);
+
+            // Create the result array
+            $result = [
                 'status' => 'success',
                 'data' => [
-                    'clubsToBook' => collect($allClubsToBook)->pluck('id')->all(),
-                    'clubsToDelete' => collect($clubsToDelete)->pluck('id')->all()
-                ]
-            ]);
+                    'clubsToBook' => $uniqueClubsToBookIds,
+                    'clubsToDelete' => $uniqueClubsToDeleteIds,
+                ],
+            ];
 
-
-
+            return $result;
         } catch (\Exception $e) {
+            return [
+                'status' => 'error',
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
+        /**
+     * User route
+     */
+    public function simulateBook($id, Request $request)
+    {
+        try {
+            // Execute the simulation and get the result as an associative array
+            $result = $this->internalSimulateBooking($id, $request->user());
+
+            if ($result['status'] === 'error') {
+                // Handle the error case with a 500 status code
+                return response()->json([
+                    'status' => 'error',
+                    'message' => $result['message'],
+                ], 500);
+            }
+
+            // Transform the success result into JSON
+            $jsonResult = [
+                'status' => 'success',
+                'data' => $result['data'],
+            ];
+
+            return response()->json($jsonResult);
+        } catch (\Exception $e) {
+            // Handle any unexpected exceptions with a 500 status code
             return response()->json([
                 'status' => 'error',
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ], 500);
         }
     }
 
+    public function bookClubStudent(Request $request, $id) {
 
-    public function book(Request $request)
+        return $this->bookForUser($request->user(), $id);
+    }
+
+    public function bookClubForStudentAsAdmin(Request $request, $clubId, $userId) {
+
+        // dd($request);
+        $user = User::findOrFail($userId);
+        return $this->bookForUser($user, $clubId, true);
+    }
+
+    public function deleteClubForStudentAsAdmin(Request $request, $clubId, $userId) {
+        $user = User::findOrFail($userId);
+
+        return $this->deleteBookingForUser($clubId, $user);
+    }
+
+    private function bookForUser($user, $id, $adminMode = false)
     {
 
         DB::beginTransaction();
 
         try {
-            $user = $request->user();
-            
 
-            $clubInstance = ClubInstance::find($request->id);
+            $clubInstance = ClubInstance::find($id);
 
             if (!$clubInstance) {
-                throw new \Exception("Club Not Found");
+                throw new \Exception("Club Not Found - " . $id);
             }
 
-            // Find all the clubs I need to book
-            $allClubsToBook = $clubInstance->mustGoWithForward->concat($clubInstance->mustGoWithReverse);
-            $allClubsToBook[] = $clubInstance;
+            $clubsInvolved = $this->internalSimulateBooking($clubInstance->id, $user)['data'];
 
-            $allClubsToBookIds = $allClubsToBook->pluck('id');
-            // Asser that the clubs are actually currently allowed to be booked. 
+            $clubsToBookIds = $clubsInvolved['clubsToBook'];
+            $clubsToDeleteIds = $clubsInvolved['clubsToDelete'];
+
+            $clubsToBook = ClubInstance::whereIn('id', $clubsToBookIds)->get();
+
+            // Retrieve ClubInstance objects for clubsToDeleteIds
+            $clubsToDelete = ClubInstance::whereIn('id', $clubsToDeleteIds)->get();
+
+            // Assert that the clubs are actually currently allowed to be booked. 
+            $allClubsToBookIds = $clubsToBook->pluck('id');
+
+            // Assert that the clubs are actually currently allowed to be booked. 
             $availableClubs = Club::getAllWithInstancesForUser($user)
                 ->pluck('clubInstances')->flatten(1)->pluck('id');
 
+            /**
+            * Admin can make special exceptions on behalf of the user
+            */
+            if(!$adminMode) {
+                $allClubsToBookIds->each(function ($clubId) use ($availableClubs) {
+                    if (!$availableClubs->contains($clubId)) {
+                        throw new \Exception("ID {$clubId} not found in required clubs to book");
+                    }
+                });
+            }
 
-            $allClubsToBookIds->each(function($clubId) use ($availableClubs) {
-                if (!$availableClubs->contains($clubId)) {
-                   throw new \Exception("ID {$clubId} not found in required clubs to book");
-                }
-            });
-
-            // Lock each of the rows for update.
-            foreach ($allClubsToBook as $clubToBook) {
+            foreach ($clubsToBook as $clubToBook) {
                 $clubToBook->lockForUpdate();
             }
 
-            foreach ($allClubsToBook as $clubToBook) {
+            foreach ($clubsToDelete as $clubToDelete) {
+                $clubToDelete->lockForUpdate();
+            }
+
+            foreach ($clubsToBook as $clubToBook) {
                 if (is_null($clubToBook->capacity) || $clubInstance->capacity > 0) {
                     // continue
                 } else {
@@ -188,43 +293,19 @@ class BookingController extends Controller
                 }
             }
 
-            // Only need to get this once. 
-            $userBookedClubInstanceIds = $user->bookedClubs()->pluck('club_instance_id')->all();
+            foreach ($clubsToDelete as $clubToDelete) {
 
-            foreach ($allClubsToBook as $clubToBook) {
+                $existingBooking = UserClub::where('user_id', $user->id)->where('club_instance_id', $clubToDelete->id)->first();
 
-                // 1) Check if user has already booked a club for this current day. 
-                $existingBooking = UserClub::whereHas('clubInstance', function ($query) use ($clubToBook) {
-                    $query->where('half_term', $clubToBook->half_term)
-                        ->where('day_of_week', $clubToBook->day_of_week);
-                })->where('user_id', $user->id)->first();
-
-                // If so, delete it (this needs to be refactored out, to get all the knock on effects too)
                 if ($existingBooking) {
-                    $this->deleteBookingNew($existingBooking, $user);
+                    $existingBooking->delete();
                 }
 
-                // 2) Check whether the user has any incompatible clubs for this booking.
-                $incompatibleClubs = $clubToBook->incompatibleForward->concat($clubToBook->incompatibleReverse);
-
-                foreach ($incompatibleClubs as $incompatibleClub) {
-                    if (in_array($incompatibleClub->id, $userBookedClubInstanceIds)) {
-
-                        $existingBooking = UserClub::whereHas('clubInstance', function ($query) use ($incompatibleClub) {
-                            $query->where('id', $incompatibleClub->id);
-                        })->where('user_id', $user->id)->first();
-
-                        if ($existingBooking) {
-                            $this->deleteBookingNew($existingBooking, $user);
-                        }
-
-                    }
-                }
             }
 
-            // Then do the bookings:
+            foreach ($clubsToBook as $clubToBook) {
 
-            foreach ($allClubsToBook as $clubToBook) {
+
                 UserClub::create([
                     'user_id' => $user->id,
                     'club_instance_id' => $clubToBook->id
@@ -238,9 +319,6 @@ class BookingController extends Controller
 
             DB::commit();
 
-            // Then return the newly updated set of booked clubs
-            // and all the available clubs for the user. Need to do this
-            // because the capacity values will have changed.
             return response()->json([
                 'status' => 'success',
                 'message' => 'Successfully booked the club.',
@@ -249,8 +327,6 @@ class BookingController extends Controller
                     'availableClubs' => Club::getAllWithInstancesForUser($user)
                 ]
             ], 200);
-
-            // return Redirect::route('club.market');
 
         } catch (\Exception $e) {
 
@@ -265,9 +341,17 @@ class BookingController extends Controller
     }
 
 
-    public function deleteBooking($id, Request $request)
+    /**
+     * User route method.
+     */
+    public function deleteBookingStudent(Request $request, $id) {
+        return $this->deleteBookingForUser($id, $request->user());
+    }
+
+
+    private function deleteBookingForUser($id, $user)
     {
-        $user = $request->user();
+
 
         // Start a database transaction
         DB::beginTransaction();
@@ -275,12 +359,25 @@ class BookingController extends Controller
         try {
 
             $clubToDelete = ClubInstance::findOrFail($id);
+
             $existingBooking = UserClub::whereHas('clubInstance', function ($query) use ($clubToDelete) {
                 $query->where('id', $clubToDelete->id);
             })->where('user_id', $user->id)->first();
 
             if ($existingBooking) {
-                $this->deleteBookingNew($existingBooking, $user);
+                $clubsToDelete = $this->simulateDeleteBooking($existingBooking, $user);
+
+                foreach ($clubsToDelete as $clubToDelete) {
+
+                    $existingBooking = UserClub::where('user_id', $user->id)->where('club_instance_id', $clubToDelete->id)->first();
+    
+                    if ($existingBooking) {
+                        $existingBooking->delete();
+                    }
+    
+                }
+            } else {
+                throw new \Exception("Can't delete non-existent booking");
             }
 
             $organizedByTerm = $user->organizedByTerm();

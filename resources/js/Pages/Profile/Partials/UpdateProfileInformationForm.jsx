@@ -14,6 +14,8 @@ export default function UpdateProfileInformation({
     className = "",
     user,
 }) {
+
+    console.log(user);
     const { setShowSpinner } = useSpinner();
 
     const { data, setData, patch, errors, processing, recentlySuccessful } =

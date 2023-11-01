@@ -45,6 +45,8 @@
         "@react-spring/web": "^9.7.3",
         "browser-sync": "^2.29.3",
         "browser-sync-webpack-plugin": "^2.3.0",
+        "date-fns-tz": "^2.0.0",
+        "luxon": "^3.4.3",
         "moment": "^2.29.4",
         "react-hot-toast": "^2.4.1",
         "react-spring": "^9.7.2",

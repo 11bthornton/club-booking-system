@@ -19,6 +19,10 @@ class BookingConfig extends Model
     use HasFactory;
 
     protected $fillable = ['scheduled_at', 'ends_at'];
+    protected $casts = [
+        'scheduled_at' => 'datetime:Y-m-d H:i:s',
+        'ends_at' => 'datetime:Y-m-d H:i:s',
+    ];
 
     // protected $hidden = ["allowedClubs", "pivot"];
 
@@ -29,49 +33,51 @@ class BookingConfig extends Model
     }
 
     public static function createFromJson($jsonPayload)
-{
-    // Decode the JSON payload
+    {
+        // Decode the JSON payload
 
-    // die($data);
+        // die($data);
 
-    // Begin a database transaction to ensure all operations are atomic
-    // DB::beginTransaction();
+        // Begin a database transaction to ensure all operations are atomic
+        // DB::beginTransaction();
 
-    try {
+        try {
 
-        $d = Carbon::now();
+            $d = Carbon::now();
 
-        // die($d);
-        // Log::info(Carbon::now());
-        // Create a new booking config
-        $bookingConfig = BookingConfig::create([
+            // die($d);
+            // Log::info(Carbon::now());
+            // Create a new booking config
+            $bookingConfig = BookingConfig::create([
                 'scheduled_at' => Carbon::now(),
                 'ends_at' => Carbon::now()
             ]);
-        die($bookingConfig);
+            die($bookingConfig);
 
-        // Attach Clubs if specified, else attach all
-        $clubs = $jsonPayload['clubs'] ?: ClubInstance::all()->pluck('id');
-        $bookingConfig->allowedClubs()->attach($clubs);
+            // Attach Clubs if specified, else attach all
+            $clubs = $jsonPayload['clubs'] ?: ClubInstance::all()->pluck('id');
+            $bookingConfig->allowedClubs()->attach($clubs);
 
-        // Attach Year Groups
-        $yearGroups = $jsonPayload['year_groups'] ?: YearGroup::all()->pluck('id');
-        $bookingConfig->allowedYearGroups()->attach($yearGroups);
+            // Attach Year Groups
+            $yearGroups = $jsonPayload['year_groups'] ?: YearGroup::all()->pluck('id');
+            $bookingConfig->allowedYearGroups()->attach($yearGroups);
 
-        // Attach Users if specified, else attach all
-        $users = $jsonPayload['students'] ?: User::all()->pluck('id');
-        $bookingConfig->allowedUsers()->attach($users);
+            // Attach Users if specified, else attach all
+            $users = $jsonPayload['students'] ?: User::all()->pluck('id');
+            $bookingConfig->allowedUsers()->attach($users);
 
-        // Commit the transaction if everything is okay
-        // DB::commit();
+            // Commit the transaction if everything is okay
+            // DB::commit();
 
-        return $bookingConfig;
-    } catch (\Exception $e) {
-        // Rollback the transaction in case of errors
-        DB::rollback();
-        throw $e;
+            return $bookingConfig;
+        } catch (\Exception $e) {
+            // Rollback the transaction in case of errors
+            DB::rollback();
+            throw $e;
+        }
     }
-}
+
+
 
 
     public function canUserBook($user)
@@ -114,7 +120,7 @@ class BookingConfig extends Model
     // protected static function booted()
     // {
     //     static::created(function ($bookingConfig) {
-            
+
     //         // Associate with all Clubs
     //         $allClubs = ClubInstance::all()->pluck('id');
     //         $bookingConfig->allowedClubs()->attach($allClubs);
@@ -129,25 +135,25 @@ class BookingConfig extends Model
     //     });
     // }
     public function toArray()
-{
+    {
 
-    $data = parent::toArray();
+        $data = parent::toArray();
 
-    if ($this->allowedClubs) {
-        // Extract 'half_term' values from the relationship
-        $halfTermValues = $this->allowedClubs->pluck('half_term')->toArray();
+        if ($this->allowedClubs) {
+            // Extract 'half_term' values from the relationship
+            $halfTermValues = $this->allowedClubs->pluck('half_term')->toArray();
 
-        // Get unique 'half_term' values
-        $uniqueHalfTermValues = array_unique($halfTermValues);
+            // Get unique 'half_term' values
+            $uniqueHalfTermValues = array_unique($halfTermValues);
 
-        // Rename 'allowed_clubs' to 'associated_terms' and update with unique values as a list
-        $data['associated_terms'] = array_values($uniqueHalfTermValues);
+            // Rename 'allowed_clubs' to 'associated_terms' and update with unique values as a list
+            $data['associated_terms'] = array_values($uniqueHalfTermValues);
 
-        // Remove the 'allowed_clubs' column
-        unset($data['allowed_clubs']);
+            // Remove the 'allowed_clubs' column
+            unset($data['allowed_clubs']);
+        }
+
+        return $data;
     }
-
-    return $data;
-}
 
 }

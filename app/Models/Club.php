@@ -19,7 +19,10 @@ class Club extends Model
         'description',
         'rule',
         'academic_year_id',
-        'is_paid'
+        'is_paid',
+        'max_per_year',
+        'max_per_term',
+        'must_do_all',
     ];
 
     public function clubInstances()
@@ -38,13 +41,21 @@ class Club extends Model
     }
 
 
-
+    /**
+     * Gets all the clubs that the user can currently book
+     */
     public static function getAllWithInstancesForUser(User $user)
     {
         $year = $user->year;
 
+        /**
+         * Gets all the active booking configurations
+         */
         $activeBookingConfigs = $user->getAllActiveBookingConfigs();
         
+        /**
+         * Clubs only from this academic year. 
+         */
         $currentAcademcicYearId = CurrentAcademicYear::first()->academic_year_id;
 
         $clubs = self::with([
@@ -77,14 +88,12 @@ class Club extends Model
             $club->setRelation('clubInstances', $filteredClubInstances);
         });
 
-        
         return $clubs;
     }
 
-    
-
-
-
+    public static function allAvailable() {
+        return self::with('clubInstances')->get();
+    }
 
     public function getUniqueUsersAttribute()
     {

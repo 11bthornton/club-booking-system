@@ -16,6 +16,8 @@ import {
     TimelineBody,
 } from "@material-tailwind/react";
 
+import CountdownTimer from "@/Components/CountDownTimer";
+
 import { TermChoiceCard } from "@/Components/ClubMarket/TermChoiceCard";
 import { ChipWithStatus } from "@/Components/ClubMarket/ChipWithStatus";
 export default function ClubMarket({
@@ -51,9 +53,6 @@ export default function ClubMarket({
         }>
             <Head title="Club Market" />
 
-            {
-                JSON.stringify(alreadyBooked)
-            }
 
             <div className="container mx-auto flex flex-col   mt-5">
 
@@ -135,14 +134,24 @@ export default function ClubMarket({
                                                     tooltipContent="You are currently able to book clubs for this term"
                                                     className=""
                                                 />
-                                                <p className="font-bold text-500 ">
-                                                    Bookings for this term ends at <strong>
-                                                        {
-                                                            [...auth.user.bookingConfigs.filter(cBc =>
-                                                                cBc.associated_terms.includes(term)
-                                                            )].reverse()[0].ends_at
-                                                        }
-                                                    </strong> at the latest.
+                                                <p className="text-500 ">
+                                                    Bookings for this term ends in &nbsp;
+                                                <strong className="font-bold">
+                                                <CountdownTimer
+                                                    targetDate={
+                                                        [...auth.user.bookingConfigs.filter(cBc =>
+                                                            cBc.associated_terms.includes(term)
+                                                        )].reverse()[0].ends_at
+                                                    }
+                                                    className="font-bold"
+                                                />
+                                                </strong>
+                                                &nbsp;
+                                                    ({
+                                                        [...auth.user.bookingConfigs.filter(cBc =>
+                                                            cBc.associated_terms.includes(term)
+                                                        )].reverse()[0].ends_at
+                                                    })
                                                 </p>
                                             </>
                                             :
@@ -152,12 +161,16 @@ export default function ClubMarket({
                                                     text="Bookings Closed"
                                                     tooltipContent="Bookings are currently closed for this term"
                                                 />
-                                                <p className="font-bold text-red-500">
+                                                <p className="text-red-500">
                                                     {
                                                         auth.user.futureBookingConfigs.filter(fBc =>
                                                             fBc.associated_terms.includes(term)
                                                         ).map(fBc => (
-                                                            <>Bookings for this term next opens at {fBc.scheduled_at}</>
+                                                            <>Bookings for this term next opens in <strong className="font-bold">
+                                                                <CountdownTimer
+                                                                targetDate={fBc.scheduled_at}
+                                                                className="font-bold"
+                                                            /></strong></>
                                                         ))
                                                     }
                                                 </p>
@@ -169,7 +182,7 @@ export default function ClubMarket({
                                     <Typography className="text-2xl">
                                         This term runs from _ to _
                                     </Typography>
-                                    <TermChoiceCard term={term} csrf={csrf} days={auth.user.days[0].days_array}/>
+                                    <TermChoiceCard term={term} csrf={csrf} days={auth.user.days[0].days_array} />
 
                                 </TimelineBody>
                             </TimelineItem>

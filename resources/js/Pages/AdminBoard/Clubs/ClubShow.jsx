@@ -15,7 +15,7 @@ import InputLabel from "@/Components/InputLabel";
 import { ChipWithStatus } from "@/Components/ClubMarket/ChipWithStatus";
 import { Transition } from "@headlessui/react";
 
-export default function ClubCreate({ auth, clubs, availableDays }) {
+export default function ClubShow({ auth, club, availableDays }) {
 
     const [defaultCapacity, setDefaultCapacity] = useState(20);
     const totalCards = 6; // Change this to the number of cards you have
@@ -52,24 +52,43 @@ export default function ClubCreate({ auth, clubs, availableDays }) {
         data,
         setData,
         errors,
-        post,
+        put,
         reset,
         processing,
         recentlySuccessful,
     } = useForm({
-        name: "",
-        description: "",
-        rules: "",
+        name: club.name,
+        description: club.description,
+        rules: club.rule,
         ruleChoice: "",
-        is_paid: false,
+        is_paid: club.is_paid,
         instances: Array.from({ length: availableDaysForBooking.length * 6 }, (_, index) =>
             availableDaysForBooking[index % availableDaysForBooking.length]
-        ).map((day_of_week, i) => ({
-            half_term: Math.floor(i / availableDaysForBooking.length) + 1,
-            day_of_week: day_of_week,
-            year_groups: [7, 8, 9, 10, 11].filter(year => availableDays.filter(aV => aV.year == year)[0].days_array.includes(day_of_week)),
-            capacity: null, // null means unlimited
-        })),
+        ).map((day_of_week, i) => {
+
+            const term = Math.floor(i / availableDaysForBooking.length) + 1;
+
+            const existingInstance = club.club_instances
+                .filter(instance => instance.day_of_week == day_of_week &&
+                    instance.half_term == term
+                )[0]
+
+            if(existingInstance) {
+                return({
+                    ...existingInstance,
+                    year_groups: existingInstance.year_groups.map(y => Number(y.year))
+                });
+            }
+
+            return(
+                {
+                    half_term: Math.floor(i / availableDaysForBooking.length) + 1,
+                    day_of_week: day_of_week,
+                    year_groups: [],
+                    capacity: null, // null means unlimited
+                }
+            );
+        }),
         compatibilities: {
             "in": [],
             "must": []
@@ -172,7 +191,11 @@ export default function ClubCreate({ auth, clubs, availableDays }) {
             }
         >
             <Head title="Add New Club" />
-            
+            {
+                JSON.stringify(
+                    club.club_instances.filter(x => x.half_term == 3)
+                )
+            }
             <form>
                 <div className="container mx-auto flex-col gap-4">
 
@@ -562,6 +585,7 @@ export default function ClubCreate({ auth, clubs, availableDays }) {
                                                                     value={`Year ${yearGroup}`}
                                                                     variant="ghost"
                                                                     color="green"
+                                                                size="sm"
                                                                 // className= text-center"
                                                                 // icon={
                                                                 //     <Checkbox
@@ -580,6 +604,7 @@ export default function ClubCreate({ auth, clubs, availableDays }) {
                                                                 value={`Year ${yearGroup}`}
                                                                 variant="ghost"
                                                                 color="red"
+                                                                size="sm"
                                                             // className= text-center"
                                                             // icon={
                                                             //     <Checkbox
@@ -784,7 +809,7 @@ export default function ClubCreate({ auth, clubs, availableDays }) {
                             Review choices carefully, and when ready, press submit.
                         </p>
                         <Button className=" mb-4" color="blue" onClick={() => {
-                            post(route("admin.clubs.create"), {
+                            put(route("admin.clubs.update"), {
                                 onSuccess: () => reset(),
                                 onError: (error) => {
                                 }
@@ -798,3 +823,4 @@ export default function ClubCreate({ auth, clubs, availableDays }) {
         </AuthenticatedLayout>
     );
 }
+

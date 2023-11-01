@@ -23,6 +23,7 @@ import {
     DialogFooter,
     Chip,
 } from "@material-tailwind/react";
+import { Link } from "@inertiajs/react";
 
 export default function SystemSchedulerCard({ clubData, scheduleData, availableDays }) {
     console.log(scheduleData);
@@ -85,20 +86,23 @@ export default function SystemSchedulerCard({ clubData, scheduleData, availableD
             </CardBody>
             <CardFooter className="pt-0">
                 <div className="flex justify-between items-center">
-                    <Button
+                    {/* <Button
                         variant="text"
                         className="flex lg:justify-center items-center gap-2"
                         onClick={handleCreateDialogue}
                     >
                         <p>Schedule</p>
-                    </Button>
-                    <Button
-                        variant="text"
-                        className="flex lg:justify-center items-center gap-2"
-                        onClick={handleViewDialog}
-                    >
-                        <p>View</p>
-                    </Button>
+                    </Button> */}
+                    <Link href={route('admin.booking-config.index')}>
+
+                        <Button
+                            variant="text"
+                            className="flex lg:justify-center items-center gap-2"
+                        // onClick={handleViewDialog}
+                        >
+                            Take me there
+                        </Button>
+                    </Link>
                 </div>
             </CardFooter>
         </Card>
@@ -112,7 +116,7 @@ function ViewScheduled({ isOpen, handleOpen, scheduleData }) {
         <Dialog
             open={isOpen}
             handler={handleOpen}
-            // className="h-[80vh]"
+        // className="h-[80vh]"
         >
             <DialogHeader>
                 <Typography variant="h2">Currently Scheduled</Typography>
@@ -188,9 +192,8 @@ function ScheduleStatusChip({ data }) {
                 value={data.isLive ? "Live" : "Complete"}
                 icon={
                     <span
-                        className={`mx-auto mt-1 block h-2 w-2 rounded-full ${
-                            data.isLive ? "bg-green-900" : "bg-red-900"
-                        } content-['']`}
+                        className={`mx-auto mt-1 block h-2 w-2 rounded-full ${data.isLive ? "bg-green-900" : "bg-red-900"
+                            } content-['']`}
                     />
                 }
             />

@@ -12,7 +12,6 @@ import {
 import postClub from "../../Pages/ClubMarket/scripts/BookClub";
 import { useSpinner } from "@/LoadingContext";
 
-import { useForm, Inertia  } from "@inertiajs/inertia-react";
 
 export function ChangeConfirmationDialogue({
     open,
@@ -28,20 +27,6 @@ export function ChangeConfirmationDialogue({
     const { setShowSpinner } = useSpinner();
     const { availableClubs, setAlreadyBooked, setAvailableClubs } =
         useAvailableClubs();
-
-    const {
-        setData,
-        put,
-        reset,
-        processing,
-        recentlySuccessful
-    } = useForm({
-        id: clubIdToBook
-    });
-
-    // useEffect(() => {
-    //     setShowSpinner(processing)
-    // }, [processing])
 
     return open ? (
         <Dialog open={open}>
@@ -161,7 +146,7 @@ export function ChangeConfirmationDialogue({
 
                                     return (
                                         <li>
-                                            <strong>{club.name}</strong> -{" "}
+                                            <strong>{club.name}</strong> - {" "}
                                             {clubInstance.day_of_week}, Term{" "}
                                             {clubInstance.half_term}
                                         </li>
@@ -195,7 +180,7 @@ export function ChangeConfirmationDialogue({
                          * happened
                          */
                         setTimeout(async () => {
-                            const data = await postClub(clubIdToBook, csrf);
+                            const data = await postClub(clubIdToBook, csrf, adminMode);
 
                             /**
                              * Need some error handling here, but otherwise this is
@@ -208,7 +193,14 @@ export function ChangeConfirmationDialogue({
                             setTimeout(() => {
                                 setAlreadyBooked(data.data.alreadyBookedOn);
                                 setAvailableClubs(data.data.availableClubs);
+                                
+                                /**
+                                 * Run this regardless of if error or not.
+                                 */
+                                setShowSpinner(false);
                             }, 500);
+
+                            
                         }, 1000);
                     }}
                 >

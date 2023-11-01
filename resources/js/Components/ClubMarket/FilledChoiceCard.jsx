@@ -53,6 +53,9 @@ export function FilledChoiceCard({
                 currentClubInfo={currentClubInfo}
                 currentClubInstance={currentClubInstance}
                 csrf={csrf}
+                adminMode={{
+                    flag: false, id: null
+                }}
             />
 
             <Card className="mt-2 w-96 border shadow-2xl">

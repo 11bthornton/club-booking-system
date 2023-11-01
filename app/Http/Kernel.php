@@ -73,6 +73,6 @@ class Kernel extends HttpKernel
         'is.admin' => \App\Http\Middleware\EnsureIsAdmin::class,
         // 'checkbooking' => \App\Http\Middleware\CheckBookingStatus::class,
         'canBookClubs' => \App\Http\Middleware\CheckIfUserCanBookClubs::class,
-
+        'system.is.setup' => \App\Http\Middleware\CheckCurrentAcademicYear::class,
     ];
 }
