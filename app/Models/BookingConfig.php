@@ -18,7 +18,7 @@ class BookingConfig extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['scheduled_at', 'ends_at'];
+    protected $fillable = ['scheduled_at', 'ends_at', 'name'];
     protected $casts = [
         'scheduled_at' => 'datetime:Y-m-d H:i:s',
         'ends_at' => 'datetime:Y-m-d H:i:s',

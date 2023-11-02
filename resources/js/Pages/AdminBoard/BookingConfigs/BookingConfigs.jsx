@@ -13,6 +13,9 @@ import {
     ListItemPrefix,
     Typography
 } from "@material-tailwind/react";
+
+import TextInput from "@/Components/TextInput";
+
 import { Transition } from "@headlessui/react";
 import { useForm } from "@inertiajs/react";
 
@@ -21,6 +24,7 @@ export default function BookingConfigs({ auth, scheduleData, availableDays, club
     // console.log("S", );
 
     const { post, recentlySuccessful, reset, data, setData, errors } = useForm({
+        name: "",
         start_time: null,
         start_date: null,
         end_time: null,
@@ -120,9 +124,7 @@ export default function BookingConfigs({ auth, scheduleData, availableDays, club
             <Head title="Admin Dashboard" />
 
             <div className="container mx-auto pb-10">
-                {
-                    JSON.stringify(errors)
-                }
+
                 <div className="bg-white  bg-white shadow sm:rounded-lg mt-4">
                     <ViewScheduled scheduleData={scheduleData} />
                 </div>
@@ -160,6 +162,29 @@ export default function BookingConfigs({ auth, scheduleData, availableDays, club
                         There were errors, review the form and resubmit.
                     </Alert>
                 }
+                <div className="p-4 sm:p-8 bg-white shadow sm:rounded-lg mt-4">
+                    <Typography
+                        className="font-bold"
+                        variant="h5"
+                    >
+                        Name
+                    </Typography>
+                    <p className="mt-1 text-sm text-gray-600">
+                        Name this open-booking configuration so it's easier to track at a later date.
+                    </p>
+                    <TextInput
+                        className="mt-3"
+                        value={data.name}
+                        onChange={(e) => setData("name", e.target.value)}
+                        placeholder="Name your configuration"
+                    />
+                    {
+                        errors.name &&
+                        <Alert className="mt-4" color="red" variant="ghost">
+                            {errors.name}
+                        </Alert>
+                    }
+                </div>
                 <div className="p-4 sm:p-8 bg-white shadow sm:rounded-lg mt-4">
 
                     <Typography variant="h5" className="font-bold ">
@@ -336,137 +361,139 @@ export default function BookingConfigs({ auth, scheduleData, availableDays, club
                         </Button>
                     </div>
                     Or:
-                    <table className="w-full  table-auto text-center overflow-x-hidden">
-                        <thead>
-                            <tr>
-                                <td></td>
-                                {[1, 2, 3, 4, 5, 6].map((term) => (
-                                    <td colSpan={availableDaysForBooking.length}>Term {term}</td>
-                                ))}
-                            </tr>
-                            <tr>
-                                <td>Select all in Term</td>
-                                {[1, 2, 3, 4, 5, 6].map((term) => (
-                                    <td colSpan={availableDaysForBooking.length}>
-                                        <Checkbox
-                                            checked={clubData
-                                                .flatMap((club) => club.club_instances)
-                                                .filter(
-                                                    (instance) =>
-                                                        instance.half_term == term,
-                                                )
-                                                .map((i) => i.id)
-                                                .every((club) =>
-                                                    data.clubs.includes(club),
-                                                )}
-                                            onChange={() => toggleTermSelect(term)}
-                                        />
-                                    </td>
-                                ))}
-                            </tr>
-                            <tr>
-                                <th className="border-b border-blue-gray-100 bg-gray-400 p-1 ">
-                                    <Typography
-                                        variant="small"
-                                        color="blue-gray"
-                                        className="font-normal leading-none opacity-70"
-                                    >
-                                        Club Name
-                                    </Typography>
-                                </th>
-                                {[1, 2, 3, 4, 5, 6].map((term) =>
-                                    availableDaysForBooking.map((day) => (
-                                        <th
-                                            className={`border-b border-blue-gray-100 p-1 ${term % 2 === 0
-                                                ? "bg-gray-400"
-                                                : "bg-gray-100"
-                                                }`}
-                                        >
-                                            <Typography
-                                                variant="small"
-                                                color="blue-gray"
-                                                className="font-normal leading-none opacity-70"
-                                            >
-                                                {day.substring(0, 3)}
-                                            </Typography>
-                                        </th>
-                                    )),
-                                )}
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {clubData.filter(club => true).map((club) => (
+                    <div className="overflow-x-auto overflow-y-none p-3">
+                        <table className="w-full  table-auto text-center ">
+                            <thead>
                                 <tr>
-                                    <td>
+                                    <td></td>
+                                    {[1, 2, 3, 4, 5, 6].map((term) => (
+                                        <td colSpan={availableDaysForBooking.length}>Term {term}</td>
+                                    ))}
+                                </tr>
+                                <tr>
+                                    <td>Select all in Term</td>
+                                    {[1, 2, 3, 4, 5, 6].map((term) => (
+                                        <td colSpan={availableDaysForBooking.length}>
+                                            <Checkbox
+                                                checked={clubData
+                                                    .flatMap((club) => club.club_instances)
+                                                    .filter(
+                                                        (instance) =>
+                                                            instance.half_term == term,
+                                                    )
+                                                    .map((i) => i.id)
+                                                    .every((club) =>
+                                                        data.clubs.includes(club),
+                                                    )}
+                                                onChange={() => toggleTermSelect(term)}
+                                            />
+                                        </td>
+                                    ))}
+                                </tr>
+                                <tr>
+                                    <th className="border-b border-blue-gray-100 bg-gray-400 p-1 ">
                                         <Typography
                                             variant="small"
-                                            className="text-left"
+                                            color="blue-gray"
+                                            className="font-normal leading-none opacity-70"
                                         >
-                                            <div className="flex justify-between items-center">
-                                                {club.name}
-                                                <Button
-                                                    variant="text"
-                                                    onClick={() => {
-                                                        let clubsToAdd =
-                                                            club.club_instances.map(
-                                                                (i) => i.id,
-                                                            );
-                                                        let newClubs = [
-                                                            ...(data.clubs || []),
-                                                        ];
-
-                                                        clubsToAdd.forEach((toAdd) => {
-                                                            if (
-                                                                newClubs.includes(toAdd)
-                                                            ) {
-                                                            } else {
-                                                                // Add year to array if not included
-                                                                newClubs.push(toAdd);
-                                                            }
-                                                        });
-
-                                                        setData({
-                                                            ...data,
-                                                            clubs: newClubs,
-                                                        });
-                                                    }}
-                                                >
-                                                    All
-                                                </Button>
-                                            </div>
+                                            Club Name
                                         </Typography>
-                                    </td>
+                                    </th>
                                     {[1, 2, 3, 4, 5, 6].map((term) =>
-                                        availableDaysForBooking.map((day) => {
-                                            const clubInstance =
-                                                club.club_instances.find(
-                                                    (instance) =>
-                                                        instance.half_term === term &&
-                                                        instance.day_of_week === day,
-                                                );
-
-                                            return clubInstance ? (
-                                                <td key={`${term}-${day}`}>
-                                                    <Checkbox
-                                                        defaultChecked={true}
-                                                        onChange={() =>
-                                                            toggleClub(
-                                                                clubInstance.id,
-                                                            )
-                                                        }
-                                                        // className="w-3 h-3"
-                                                        checked={data.clubs.includes(
-                                                            clubInstance.id,
-                                                        )}
-                                                    />
-                                                </td>
-                                            ) : <td>X</td>;
-                                        }),
+                                        availableDaysForBooking.map((day) => (
+                                            <th
+                                                className={`border-b border-blue-gray-100 p-1 ${term % 2 === 0
+                                                    ? "bg-gray-400"
+                                                    : "bg-gray-100"
+                                                    }`}
+                                            >
+                                                <Typography
+                                                    variant="small"
+                                                    color="blue-gray"
+                                                    className="font-normal leading-none opacity-70"
+                                                >
+                                                    {day.substring(0, 3)}
+                                                </Typography>
+                                            </th>
+                                        )),
                                     )}
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                {clubData.filter(club => true).map((club) => (
+                                    <tr>
+                                        <td>
+                                            <Typography
+                                                variant="small"
+                                                className="text-left"
+                                            >
+                                                <div className="flex justify-between items-center">
+                                                    {club.name}
+                                                    <Button
+                                                        variant="text"
+                                                        onClick={() => {
+                                                            let clubsToAdd =
+                                                                club.club_instances.map(
+                                                                    (i) => i.id,
+                                                                );
+                                                            let newClubs = [
+                                                                ...(data.clubs || []),
+                                                            ];
+
+                                                            clubsToAdd.forEach((toAdd) => {
+                                                                if (
+                                                                    newClubs.includes(toAdd)
+                                                                ) {
+                                                                } else {
+                                                                    // Add year to array if not included
+                                                                    newClubs.push(toAdd);
+                                                                }
+                                                            });
+
+                                                            setData({
+                                                                ...data,
+                                                                clubs: newClubs,
+                                                            });
+                                                        }}
+                                                    >
+                                                        All
+                                                    </Button>
+                                                </div>
+                                            </Typography>
+                                        </td>
+                                        {[1, 2, 3, 4, 5, 6].map((term) =>
+                                            availableDaysForBooking.map((day) => {
+                                                const clubInstance =
+                                                    club.club_instances.find(
+                                                        (instance) =>
+                                                            instance.half_term === term &&
+                                                            instance.day_of_week === day,
+                                                    );
+
+                                                return clubInstance ? (
+                                                    <td key={`${term}-${day}`}>
+                                                        <Checkbox
+                                                            defaultChecked={true}
+                                                            onChange={() =>
+                                                                toggleClub(
+                                                                    clubInstance.id,
+                                                                )
+                                                            }
+                                                            // className="w-3 h-3"
+                                                            checked={data.clubs.includes(
+                                                                clubInstance.id,
+                                                            )}
+                                                        />
+                                                    </td>
+                                                ) : <td>X</td>;
+                                            }),
+                                        )}
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
                     {
                         errors.clubs &&
                         <Alert className="mt-4" color="red" variant="ghost">
@@ -497,25 +524,35 @@ function ViewScheduled({ isOpen, handleOpen, scheduleData }) {
 
     const { delete: destroy } = useForm({});
 
+    const liveConfigurations = Object.values(scheduleData).filter(bC => bC.isLive);
+
     return (
 
         <div>
+
             <div className="flex justify-between items-center">
                 <Typography className="p-4 font-bold" variant="h5">
-                    {Object.values(scheduleData).length} Live Configurations
+                    {liveConfigurations.length} Live Configurations
                 </Typography>
                 {
-                    Object.values(scheduleData).length ?
+                    liveConfigurations.length ?
                         <Chip className="mr-3"
                             value="Live"
                             color="green"
                         >
                         </Chip>
-                        : <Chip className="mr-3"
-                            value="Offline"
-                            color="red"
-                        >
-                        </Chip>
+                        : Object.values(scheduleData).length ?
+                            <Chip className="mr-3"
+                                value="Scheduled"
+                                color="amber"
+                            >
+                            </Chip> :
+                            <Chip className="mr-3"
+                                value="Offline"
+                                color="red"
+                            >
+                            </Chip>
+
                 }
             </div>
             <table className="w-full  table-auto text-center">
@@ -547,7 +584,7 @@ function ViewScheduled({ isOpen, handleOpen, scheduleData }) {
 
                         return (
                             <tr key={data.id}>
-                                <td className={classes}>/</td>
+                                <td className={classes}>{data.name}</td>
                                 <td className={classes}>
                                     {data.scheduled_at}
                                 </td>

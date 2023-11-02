@@ -76,9 +76,6 @@ class AcademicYearController extends Controller
             return redirect()->back()->withErrors($allErrors)->withInput();
         }
         
-        
-        
-        
         try {
             DB::beginTransaction();
             $newAcademicYear = new AcademicYear([

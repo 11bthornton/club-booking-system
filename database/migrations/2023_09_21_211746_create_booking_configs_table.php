@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->boolean('is_open')->default(false);  // false means booking is closed, true means it's open
             $table->timestamp('scheduled_at')->nullable();  // time at which the booking status should change, null means immediate
+            $table->string("name");
             $table->timestamps();
         });
     }

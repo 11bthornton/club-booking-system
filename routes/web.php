@@ -9,6 +9,7 @@ use App\Http\Controllers\DataExportController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\BookingConfigController;
 
+use App\Http\Controllers\SystemController;
 use App\Models\BookingConfig;
 use App\Models\ClubInstance;
 use Illuminate\Foundation\Application;
@@ -188,7 +189,7 @@ Route::middleware(['auth', 'is.admin'])->group(function () {
     /**
      * Route renders new Club Creation Form.
      */
-    Route::get('/admin/clubs/new', [ClubController::class, 'createIndex'])->name('admin.clubs.new');
+    Route::get('/admin/new-club', [ClubController::class, 'createIndex'])->name('admin.clubs.new');
 
     /**
      * Routes for globally allowing bookings.
@@ -220,6 +221,8 @@ Route::middleware(['auth', 'is.admin'])->group(function () {
     Route::post('/admin/book-for-student/{clubInstanceId}/student/{studentId}', [BookingController::class, 'bookClubForStudentAsAdmin'])->name("admin.clubs.book");
     Route::delete('/admin/delete-for-student/{clubInstanceId}/student/{studentId}', [BookingController::class, 'deleteClubForStudentAsAdmin'])->name("admin.clubs.book");
 
+
+    Route::post('/admin/reset', [SystemController::class, 'reset'])->name("admin.reset");
 });
 
 

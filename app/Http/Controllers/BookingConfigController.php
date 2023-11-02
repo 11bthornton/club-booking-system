@@ -22,6 +22,7 @@ class BookingConfigController extends Controller
     public function create(Request $request)
     {
         $rules = [
+            'name' => 'required|string|min:3',
             'start_date' => 'required|date',
             'end_date' => 'required|date',
             'start_time' => 'required|date_format:H:i',
@@ -43,7 +44,8 @@ class BookingConfigController extends Controller
 
             $bookingConfig = BookingConfig::create([
                 'scheduled_at' => $startDate,
-                'ends_at' => $endDate
+                'ends_at' => $endDate,
+                'name' => $data['name']
             ]);
 
             $clubs = $data['clubs'] ?: ClubInstance::all()->pluck('id');

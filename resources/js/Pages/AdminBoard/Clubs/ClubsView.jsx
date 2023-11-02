@@ -5,12 +5,14 @@ import { Head } from "@inertiajs/react";
 import toast from "react-hot-toast";
 
 import { makeStyles } from "@mui/styles";
-
+import { useForm } from "@inertiajs/inertia-react";
 import { faDownload, faEdit } from "@fortawesome/free-solid-svg-icons";
 import moment from "moment/moment";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faDollarSign, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { Link } from "@inertiajs/inertia-react";
+
+import { Button } from "@material-tailwind/react";
 
 const useStyles = makeStyles({
     root: {
@@ -27,7 +29,10 @@ const useStyles = makeStyles({
 });
 
 export default function ClubView({ auth, clubs, year }) {
-    
+
+    const {
+        delete: destroy,
+    } = useForm({});
 
     const columns = [
         { field: "id", headerName: "ID", width: 70 },
@@ -51,18 +56,18 @@ export default function ClubView({ auth, clubs, year }) {
         // },
         {
             field: "instances",
-            headerName: "Instances",
+            headerName: "Edit",
             width: 140,
             renderCell: (params) => (
                 <Link
                     href={route("admin.clubs.index", {
                         id: params.row.id
                     })}
-                    
+
                     className="text-blue-400 hover:underline"
                 >
                     <div className="flex gap-2 items-center">
-                        View Instances
+                        Edit
                         <FontAwesomeIcon
                             icon={faEdit}
                             onClick={() => handleEdit(params)}
@@ -74,33 +79,44 @@ export default function ClubView({ auth, clubs, year }) {
         },
         {
             field: "is_paid",
-            headerName: "Requires Payment",
+            headerName: "Paid?",
             align: "center",
-            width: 140,
+            width: 50,
             renderCell: (params) => {
-                if (params.value) {
+                if (params.row.is_paid) {
                     return <FontAwesomeIcon icon={faDollarSign} />;
                 }
-                return "No";
+                return "/";
             },
         },
         {
             field: "actions",
-            headerName: "Actions",
+            headerName: "",
             headerAlign: "center",
-            width: 100,
+            width: 250,
             align: "center",
             renderCell: (params) => (
                 <div className="flex gap-5 items-center">
-                    <FontAwesomeIcon
-                        icon={faTrash}
-                        onClick={() => handleDelete(params)}
-                        style={{ cursor: "pointer" }}
-                    />
 
-                    <a href={route("admin.download.club-data-id-spreadsheet", {id: params.row.id})}>
-                        Download data
+                    <a href={route("admin.download.club-data-id-spreadsheet", { id: params.row.id })}>
+                        <Button
+                            variant="outlined"
+                            size="sm"
+                        >
+                            Download
+                        </Button>
                     </a>
+                    <Button
+                        onClick={() => destroy(route("admin.clubs.delete", { id: params.row.id }))}
+
+                        variant="text"
+                        color="red"
+                        size="sm"
+                    >
+                        Delete
+                    </Button>
+
+
 
                 </div>
             ),
@@ -126,11 +142,11 @@ export default function ClubView({ auth, clubs, year }) {
         // },
     ];
 
-    
 
-    
 
-    
+
+
+
 
     return (
         <AuthenticatedLayout
@@ -144,26 +160,24 @@ export default function ClubView({ auth, clubs, year }) {
             <Head title="View Clubs" />
             <div className="container mx-auto p-6  mt-5 rounded-lg ">
 
-                <div className="bg-white p-4 mb-4 rounded-lg shadow-sm">
+                <div className="bg-white p-5 shadow-lg mb-4 rounded-lg ">
                     <h2 className="text-4xl font-bold text-gray-900">
                         Clubs Overview - {year.year_start} / {year.year_end}
                     </h2>
 
                     <p className="mt-1 text-sm text-gray-600">
-                        All the clubs for the ongoing academic year. 
+                        All the clubs for the ongoing academic year.
                     </p>
                 </div>
 
-                <div className="bg-white rounded-lg shadow-md">
+                <div className="bg-white rounded-lg shadow-lg">
                     <DataGrid
                         rows={clubs}
                         columns={columns}
                         pageSize={5}
                         rowsPerPageOptions={[5]}
                         disableSelectionOnClick
-                        components={{
-                            Toolbar: GridToolbar,
-                        }}
+
                     />
                 </div>
 

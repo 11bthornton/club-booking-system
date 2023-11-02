@@ -9,6 +9,7 @@ import {
     Typography,
     Button,
     ButtonGroup,
+    Tooltip
 } from "@material-tailwind/react";
 
 import { Switch } from "@material-tailwind/react";
@@ -26,7 +27,7 @@ import {
 import { Link } from "@inertiajs/react";
 
 export default function SystemSchedulerCard({ clubData, scheduleData, availableDays }) {
-    console.log(scheduleData);
+    const liveConfigurations = Object.values(scheduleData).filter(bC => bC.isLive);
 
     const [isCreateDialogOpen, setCreateDialogOpen] = useState(false);
     const handleCreateDialogue = () => setCreateDialogOpen(!isCreateDialogOpen);
@@ -77,7 +78,40 @@ export default function SystemSchedulerCard({ clubData, scheduleData, availableD
                             </Typography>
                         </div>
                     </div>
-                    <ChipWithStatus />
+                    {
+                        liveConfigurations.length ?
+                            <Tooltip
+                                content="Students can currently book clubs"
+                            >
+                                <Chip className="mr-3"
+                                    value="Live"
+                                    color="green"
+                                >
+                                </Chip>
+                            </Tooltip>
+                            :
+                            Object.values(scheduleData).length ?
+                                <Tooltip
+                                    content="No booking configs are live, but some are scheduled"
+                                >
+                                    <Chip className="mr-3"
+                                        value="Scheduled"
+                                        color="amber"
+                                    >
+                                    </Chip>
+                                </Tooltip>
+                                :
+                                <Tooltip
+                                    content="No booking configs are live or scheduled"
+                                >
+                                    <Chip className="mr-3"
+                                        value="Offline"
+                                        color="red"
+                                    >
+                                    </Chip>
+                                </Tooltip>
+
+                    }
                 </div>
                 <Typography className="min-h-[100px]">
                     Schedule bookings to go live - globally or for specific year
