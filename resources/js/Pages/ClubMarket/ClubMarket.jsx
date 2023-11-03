@@ -53,7 +53,8 @@ export default function ClubMarket({
         }>
             <Head title="Club Market" />
 
-
+            {JSON.stringify(g)}
+           
             <div className="container mx-auto flex flex-col   mt-5">
 
                 <Typography variant="h2" className="mb-1">
@@ -114,12 +115,18 @@ export default function ClubMarket({
                                                 {term}
                                             </Typography>
                                         </TimelineIcon>
-                                        <Typography
+                                        {/* <Typography
                                             variant="h3"
                                             color="blue-gray"
                                             className="leading-none uppercase tracking-widest"
                                         >
-                                            Term {term}
+                                            Term {term} 
+                                        </Typography> */}
+                                        <Typography
+                                            variant="h3"
+                                            color="blue-gray"
+                                            className="leading-none uppercase tracking-widest">
+                                           Term {term} - {year[`term${term}_name`]}
                                         </Typography>
                                     </TimelineHeader>
                                     {
@@ -136,17 +143,17 @@ export default function ClubMarket({
                                                 />
                                                 <p className="text-500 ">
                                                     Bookings for this term ends in &nbsp;
-                                                <strong className="font-bold">
-                                                <CountdownTimer
-                                                    targetDate={
-                                                        [...auth.user.bookingConfigs.filter(cBc =>
-                                                            cBc.associated_terms.includes(term)
-                                                        )].reverse()[0].ends_at
-                                                    }
-                                                    className="font-bold"
-                                                />
-                                                </strong>
-                                                &nbsp;
+                                                    <strong className="font-bold">
+                                                        <CountdownTimer
+                                                            targetDate={
+                                                                [...auth.user.bookingConfigs.filter(cBc =>
+                                                                    cBc.associated_terms.includes(term)
+                                                                )].reverse()[0].ends_at
+                                                            }
+                                                            className="font-bold"
+                                                        />
+                                                    </strong>
+                                                    &nbsp;
                                                     ({
                                                         [...auth.user.bookingConfigs.filter(cBc =>
                                                             cBc.associated_terms.includes(term)
@@ -168,19 +175,21 @@ export default function ClubMarket({
                                                         ).map(fBc => (
                                                             <>Bookings for this term next opens in <strong className="font-bold">
                                                                 <CountdownTimer
-                                                                targetDate={fBc.scheduled_at}
-                                                                className="font-bold"
-                                                            /></strong></>
+                                                                    targetDate={fBc.scheduled_at}
+                                                                    className="font-bold"
+                                                                /></strong></>
                                                         ))
                                                     }
                                                 </p>
                                             </>
                                     }
+                                    <Typography>
 
+                                    </Typography>
                                 </div>
                                 <TimelineBody className={` m-4 ${false ? 'opacity-50' : 'opacity-100'}`}>
                                     <Typography className="text-2xl">
-                                        This term runs from _ to _
+                                        This term starts on {year[`term${term}_start`]}
                                     </Typography>
                                     <TermChoiceCard term={term} csrf={csrf} days={auth.user.days[0].days_array} />
 

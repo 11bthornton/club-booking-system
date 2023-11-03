@@ -37,6 +37,21 @@ export default function YearConfigure({ auth, year, clubs }) {
     } = useForm({
         yearStart: year ? year.year_start + 1 : null,
         yearEnd: year ? year.year_end + 1 : null,
+
+        term1_start: year ? year.term1_start : null,
+        term2_start: year ? year.term2_start : null,
+        term3_start: year ? year.term3_start : null,
+        term4_start: year ? year.term4_start : null,
+        term5_start: year ? year.term5_start : null,
+        term6_start: year ? year.term6_start : null,
+
+        term1_name: year ? year.term1_name : "Autumn 1",
+        term2_name: year ? year.term2_name : "Autumn 2",
+        term3_name: year ? year.term3_name : "Winter 1",
+        term4_name: year ? year.term4_name : "Winter 2",
+        term5_name: year ? year.term5_name : "Spring 1",
+        term6_name: year ? year.term6_name : "Spring 2",
+        
         usersFile: file,
         keepClubs: [],
         transferStudents: false,
@@ -88,7 +103,9 @@ export default function YearConfigure({ auth, year, clubs }) {
             </h2>
         }>
             <Head title="Configure Year" />
-
+            {
+                JSON.stringify(year)
+            }
             <div className="py-12 sm:p-4">
 
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
@@ -180,35 +197,48 @@ export default function YearConfigure({ auth, year, clubs }) {
                             errors.yearEnd && <Alert color="red" variant="ghost" className="mt-1">{errors.yearEnd}</Alert>
                         }
 
-                        <p className="mt-1 text-sm text-gray-600 mb-2">
+                        <p className="mt-4 text-sm text-gray-600 mb-2">
                             Now set the term dates, these are purely for visual purposes and only convey information to the students
                             when they're booking their clubs.
                         </p>
+                        <div class="grid grid-cols-3 gap-4">
 
-                        {
-                            // [1, 2, 3, 4, 5, 6].map(term => (
-                            //     <div class="grid grid-cols-6 gap-4">
+                            {
+                                [1, 2, 3, 4, 5, 6].map(term => (
 
-                            //         <div className="flex flex-col">
-                            //             <InputLabel
-                            //                 htmlFor="year-end"
-                            //                 value={`Term ${term}`}
-                            //             />
+                                    <div className="flex flex-col ">
+                                        <InputLabel
+                                            value={`Term ${term} name and start date`}
+                                        />
 
-                            //             <TextInput
-                            //                 id="year-end"
-                            //                 type="number"
-                            //                 value={data.yearEnd}
-                            //                 onChange={(e) => {
-                            //                     setData("yearEnd", e.target.value)
-                            //                 }
-                            //                 }
-                            //                 aria-required
-                            //             />
-                            //         </div>
-                            //     </div>
-                            // ))
-                        }
+                                        <TextInput
+                                            id={`term${term}_name`}
+                                            value={data[`term${term}_name`]}
+                                            placeholder="Name this term"
+                                            onChange={(e) => {
+                                                setData(`term${term}_name`, e.target.value)
+                                                }
+                                            }
+                                            name={`term${term}_name`}
+                                            aria-required
+                                        />
+                                        
+                                        <input
+                                            type="date"
+                                            id={`term${term}_start`}
+                                            className="mt-2"
+                                            name={`term${term}_start`} // matching the name to formData keys
+                                            value={data[`term${term}_start`]}
+                                            onChange={(e) => {
+                                                setData(`term${term}_start`, e.target.value)
+
+                                            }}
+                                        />
+                                    </div>
+                                ))
+                            }
+                        </div>
+
                     </div>
 
                     <div className="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
@@ -225,24 +255,24 @@ export default function YearConfigure({ auth, year, clubs }) {
                             provided with new login information. Naturally, this option will be required for the first year
                             the system is run.
                         </p>
-                        { year ? <><InputLabel
+                        {year ? <><InputLabel
                             value={`Transfer across from the current academic year, ${year.year_start}/${year.year_end}?`}
                             check
                         />
-                        <div className="flex gap-3">
-                            <Radio
-                                name="type"
-                                label="No"
-                                onChange={() => setData("transferStudents", !data.transferStudents)}
-                                defaultChecked={!data.transferStudents}
-                            />
-                            <Radio
-                                name="type"
-                                label="Yes"
-                                onChange={() => setData("transferStudents", !data.transferStudents)}
-                                defaultChecked={data.transferStudents}
-                            />
-                        </div></>: <></>}
+                            <div className="flex gap-3">
+                                <Radio
+                                    name="type"
+                                    label="No"
+                                    onChange={() => setData("transferStudents", !data.transferStudents)}
+                                    defaultChecked={!data.transferStudents}
+                                />
+                                <Radio
+                                    name="type"
+                                    label="Yes"
+                                    onChange={() => setData("transferStudents", !data.transferStudents)}
+                                    defaultChecked={data.transferStudents}
+                                />
+                            </div></> : <></>}
 
                         <div className="p-4 bg-gray-50 mt-3 rounded-sm">
                             <Typography
@@ -333,9 +363,9 @@ export default function YearConfigure({ auth, year, clubs }) {
                                                 "Saturday",
                                                 "Sunday",
                                             ].map((day) => (
-                                                <Option 
+                                                <Option
                                                     key={day} value={day} className="p-3"
-                                                    disabled={yearGroupDays.day_2 == day}    
+                                                    disabled={yearGroupDays.day_2 == day}
                                                 >
                                                     {day}
                                                 </Option>
@@ -371,9 +401,9 @@ export default function YearConfigure({ auth, year, clubs }) {
                                                 "Saturday",
                                                 "Sunday",
                                             ].map((day) => (
-                                                <Option 
+                                                <Option
                                                     key={day} value={day} className="p-3"
-                                                    disabled={yearGroupDays.day_1 == day}    
+                                                    disabled={yearGroupDays.day_1 == day}
                                                 >
                                                     {day}
                                                 </Option>

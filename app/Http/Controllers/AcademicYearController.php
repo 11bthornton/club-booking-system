@@ -49,7 +49,7 @@ class AcademicYearController extends Controller
             ],
             
 
-            'usersFile' => ['required', 'file', new CsvFileValidation],
+            'usersFile' => ['nullable', 'file', new CsvFileValidation],
             'transferStudents' => 'required|boolean',
             'keepClubs' => [
                 // 'required', // The field must be present
@@ -81,12 +81,20 @@ class AcademicYearController extends Controller
             $newAcademicYear = new AcademicYear([
                 'year_start' => $request->yearStart,
                 'year_end' => $request->yearEnd,
-                'term1_start' => now(),
-                'term2_start' => now(),
-                'term3_start' => now(),
-                'term4_start' => now(),
-                'term5_start' => now(),
-                'term6_start' => now(),
+                'term1_start' => $request->term1_start,
+                'term2_start' => $request->term2_start,
+                'term3_start' => $request->term3_start,
+                'term4_start' => $request->term4_start,
+                'term5_start' => $request->term5_start,
+                'term6_start' => $request->term6_start,
+
+                'term1_name' => $request->term1_name,
+                'term2_name' => $request->term2_name,
+                'term3_name' => $request->term3_name,
+                'term4_name' => $request->term4_name,
+                'term5_name' => $request->term5_name,
+                'term6_name' => $request->term6_name,
+
             ]);
     
             $newAcademicYear->save(); 
