@@ -10,7 +10,7 @@ use App\Models\User;
 use App\Models\Club;
 use App\Models\ClubInstance;
 use App\Models\UserClub;
-use App\Models\YearGroupClub;
+use App\Models\YearGroupDays;
 
 use App\Exports\ClubExport;
 
@@ -21,46 +21,53 @@ class DataExportController extends Controller
     public function downloadTotalUserClubSpreadsheet(Request $request)
     {
         // Query your database to retrieve the data you want to include in the spreadsheet
-        $users = User::all(); // Replace YourModel with your actual model
+        $users = User::getStudents(); // Replace YourModel with your actual model
 
         // Create a CSV writer
         $csv = Writer::createFromFileObject(new \SplTempFileObject());
+        $availableDays = YearGroupDays::all();
 
-        // Add a header row (optional)
-        $csv->insertOne([
-            'first_name', 'second_name', 'year',
-            'Wednesday 1',
-            'Friday 1',
-            'Wednesday 2',
-            'Friday 2',
-            'Wednesday 3',
-            'Friday 3',
-            'Wednesday 4',
-            'Friday 4',
-            'Wednesday 5',
-            'Friday 5',
-            'Wednesday 6',
-            'Friday 6',
+        // Flatten the day_1 and day_2 into a single array
+        $flattenedDays = $availableDays->flatMap(function ($yearGroupDay) {
+            return [$yearGroupDay->day_1, $yearGroupDay->day_2];
+        })->toArray();
 
-        ]); // Customize column headers
+        // Get unique days
+        $uniqueDays = array_unique($flattenedDays);
+
+        // If you need to reindex the array keys
+        $uniqueDays = array_values($uniqueDays);
+
+        $columnHeaders = ['first_name', 'second_name', 'year'];
+
+        for ($i = 1; $i <= 6; $i++) {
+            foreach ($uniqueDays as $day) {
+
+                $columnHeaders[] = $day . " " . $i;
+            }
+        }
+
+
+        // Insert the column headers into the CSV
+        $csv->insertOne($columnHeaders);
 
         // Add data rows
         foreach ($users as $user) {
             $organizedByTerm = $user->organizedByTerm();
-            
+
             $values = [
                 $user->first_name,
                 $user->second_name,
                 $user->year,
             ];
-        
+
             for ($term = 1; $term <= 6; $term++) {
-                foreach (['Wednesday', 'Friday'] as $day) {
+                foreach ($uniqueDays as $day) {
                     $value = $organizedByTerm[$term][$day] ? ($organizedByTerm[$term][$day]->club ? $organizedByTerm[$term][$day]->club->name : "None Selected") : "None Selected";
                     $values[] = $value;
                 }
             }
-        
+
             $csv->insertOne($values);
         }
 
@@ -80,7 +87,8 @@ class DataExportController extends Controller
         );
     }
 
-    public function clubDataDownload(Request $request, $id) {
+    public function clubDataDownload(Request $request, $id)
+    {
 
         return Excel::download(new ClubExport, 'exported_data.xlsx');
 

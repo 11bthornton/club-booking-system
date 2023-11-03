@@ -51,7 +51,7 @@ export default function Dashboard({ auth, clubData, scheduleData, year, availabl
                                 <Button size="sm" variant="outlined">Configure New Academic Year</Button>
                             </Link>
                         </Tooltip>
-                        <Tooltip
+                        {/* <Tooltip
                             content="Place the system into maintenance mode, restricting access to students to the site whatsoever."
                         >
                             <Button
@@ -61,7 +61,7 @@ export default function Dashboard({ auth, clubData, scheduleData, year, availabl
                             >
                                 Maintenance Mode
                             </Button>
-                        </Tooltip>
+                        </Tooltip> */}
                     </div>
                 </div>
 
@@ -253,8 +253,8 @@ export default function Dashboard({ auth, clubData, scheduleData, year, availabl
                         </Typography>
                     </div>
                     <p className="mt-3 text-sm text-gray-600 mb-4">
-                        When scheduled periods end, this will automatically be emailed to <strong>admin@admin.com</strong> (you can change this in <em>Communication Controls</em>),
-                        but you can download them in their current state now.
+                        {/* When scheduled periods end, this will automatically be emailed to <strong>admin@admin.com</strong> (you can change this in <em>Communication Controls</em>),
+                        but you can download them in their current state now. */}
                     </p>
 
                     <a href={route('admin.download.total-user-club-spreadsheet')} class="btn btn-primary">

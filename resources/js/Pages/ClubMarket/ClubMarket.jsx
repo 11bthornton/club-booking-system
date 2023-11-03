@@ -53,7 +53,6 @@ export default function ClubMarket({
         }>
             <Head title="Club Market" />
 
-            {JSON.stringify(g)}
            
             <div className="container mx-auto flex flex-col   mt-5">
 

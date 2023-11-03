@@ -166,7 +166,15 @@ export default function ClubCreate({ auth, availableDays, club }) {
 
     }, [data.max_per_year])
 
+    useEffect(() => {
+        console.log(data.must_do_all)
 
+        if(data.must_do_all) {
+            setData("max_per_term", 0);
+            setData("max_per_year", 0);
+        }
+
+    }, [data.must_do_all])
 
     return (
         <AuthenticatedLayout
@@ -311,7 +319,11 @@ export default function ClubCreate({ auth, availableDays, club }) {
                             </p>
                             <div className="w-32 mt-2">
                                 <Input
+                                    id="max-per-term"
+                                    name="max-per-term"
+
                                     type="number"
+                                    disabled={data.must_do_all}
                                     placeholder="Unlimited"
                                     value={data.max_per_term}
                                     onChange={(e) => setData("max_per_term", e.target.value ? Number(e.target.value) : null)}
@@ -323,7 +335,12 @@ export default function ClubCreate({ auth, availableDays, club }) {
                             </p>
                             <div className="w-32 mt-2">
                                 <Input
+                                    id="max-per-year"
+                                    name="max-per-year"
+
                                     type="number"
+                                    disabled={data.must_do_all}
+
                                     placeholder="Unlimited"
                                     value={data.max_per_year}
                                     onChange={(e) => setData("max_per_year", e.target.value ? Number(e.target.value) : null)}
@@ -350,6 +367,10 @@ export default function ClubCreate({ auth, availableDays, club }) {
                         </Typography>
                         <p className="mt-1 text-sm text-gray-600 mb-4">
                             You can set a global capacity for all club instances.
+                        </p>
+                        <p className="mt-1 text-sm text-red-600 mb-4">
+                            All clubs start out with an unlimited default capacity,
+                            so make sure to change it if this is not the case,
                         </p>
 
                         <div className="flex gap-20 items-center">
@@ -813,6 +834,10 @@ export default function ClubCreate({ auth, availableDays, club }) {
                         </Typography>
                         <p className="mt-1 text-sm text-gray-600 mb-4">
                             Review choices carefully, and when ready, press submit.
+                        </p>
+                        <p className="mt-1 text-sm text-red-600 mb-4">
+                            Remember, all clubs start out with an unlimited default capacity,
+                            so make sure to change it if this is not the case,
                         </p>
                         <Button className=" mb-4" color="blue" onClick={() => {
                             club ? put(route("admin.clubs.update", { id: club.id }), {

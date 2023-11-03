@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AcademicYearController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\JSErrorLogController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\ClubController;
@@ -225,6 +226,7 @@ Route::middleware(['auth', 'is.admin'])->group(function () {
     Route::post('/admin/reset', [SystemController::class, 'reset'])->name("admin.reset");
 });
 
+Route::post('/report-error', [JSErrorLogController::class, 'store'])->name('report.error');
 
 
 require __DIR__ . '/auth.php';

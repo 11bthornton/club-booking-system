@@ -16,21 +16,21 @@ import { Inertia } from "@inertiajs/inertia";
 
 // This will run globally for all Inertia responses
 Inertia.on("success", (event) => {
-    console.log("Event:", event.detail);
+  console.log("Event:", event.detail);
 
-    // If it exists, destructure the xhr object.
-    const { xhr } = event || {};
+  // If it exists, destructure the xhr object.
+  const { xhr } = event || {};
 
-    if (xhr) {
-        const newCsrfToken = xhr.getResponseHeader("X-CSRF-TOKEN");
-        if (newCsrfToken) {
-            document
-                .querySelector('meta[name="csrf-token"]')
-                .setAttribute("content", newCsrfToken);
-        }
-    } else {
-        console.warn("xhr object not found in the event");
+  if (xhr) {
+    const newCsrfToken = xhr.getResponseHeader("X-CSRF-TOKEN");
+    if (newCsrfToken) {
+      document
+        .querySelector('meta[name="csrf-token"]')
+        .setAttribute("content", newCsrfToken);
     }
+  } else {
+    console.warn("xhr object not found in the event");
+  }
 });
 
 // Your createInertiaApp call or equivalent setup here
@@ -38,35 +38,38 @@ Inertia.on("success", (event) => {
 import { ThemeProvider } from "@material-tailwind/react";
 
 createInertiaApp({
-    title: (title) => `${title} - Bethany Club Booking`,
-    resolve: (name) =>
-        resolvePageComponent(
-            `./Pages/${name}.jsx`,
-            import.meta.glob("./Pages/**/*.jsx"),
-        ),
-    setup({ el, App, props }) {
-        const root = createRoot(el);
-        root.render(
-                <AvailableClubsProvider>
-                <SpinnerProvider>
-                    <ThemeProvider>
+  title: (title) => `${title} - Bethany Club Booking`,
+  resolve: (name) =>
+    resolvePageComponent(
+      `./Pages/${name}.jsx`,
+      import.meta.glob("./Pages/**/*.jsx"),
+    ),
+  setup({ el, App, props }) {
+    const root = createRoot(el);
+    root.render(
+      <AvailableClubsProvider>
+        <SpinnerProvider>
+          <ThemeProvider>
             <ErrorBoundary>
 
-                        <App {...props} />
+              <App {...props} />
             </ErrorBoundary>
 
-                    </ThemeProvider>
-                </SpinnerProvider>
-            </AvailableClubsProvider>,
-        );
-    },
-    progress: {
-        color: "#4B5563",
-    },
+          </ThemeProvider>
+        </SpinnerProvider>
+      </AvailableClubsProvider>,
+    );
+  },
+  progress: {
+    color: "#4B5563",
+  },
 });
 
 
 import React from 'react';
+import { useForm } from '@inertiajs/inertia-react';
+import AuthenticatedLayout from "./Layouts/AuthenticatedLayout";
+import { Button, Typography } from "@material-tailwind/react";
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -80,20 +83,56 @@ class ErrorBoundary extends React.Component {
   }
 
   componentDidCatch(error, errorInfo) {
-    // You can also log the error to an error reporting service
+    // Prepare the data to be sent
+    const errorData = {
+      error_message: error.toString(),
+      component_stack: errorInfo.componentStack,
+      url: window.location.href,
+      user_agent: navigator.userAgent,
+    };
+
+    // Send a POST request to the server
+    axios.post('/report-error', errorData)
+      .then(() => {
+        console.log("Successfully Submitted");
+      })
+      .catch(() => {
+        console.log("There was an error submitting the form");
+      });
   }
 
   render() {
     if (this.state.hasError) {
       // You can render any custom fallback UI
       return (
-        <div>
-          <h1>Something went wrong.</h1>
-          
-        </div>
+        <ErrorDisplay />
       );
     }
 
     return this.props.children;
   }
+}
+
+
+function ErrorDisplay() {
+  return (
+    <div className="container mx-auto p-4 flex flex-col items-center justify-center min-h-screen">
+      <Typography variant="h2" className="mb-8 text-center text-red-500">
+        Oops! Something went wrong.
+      </Typography>
+      <Typography variant="paragraph" className="mb-4 text-center">
+        We're sorry for the inconvenience and we're working on it. Please try again later.
+      </Typography>
+      <Button
+        color="lightBlue"
+        buttonType="filled"
+        size="regular"
+        className="mt-4"
+        ripple="light"
+        onClick={() => window.location.href = '/dashboard'}
+      >
+        Return to Dashboard
+      </Button>
+    </div>
+  );
 }
