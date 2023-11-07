@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Imports\UsersImport;
+use App\Models\BookingConfig;
+use App\Models\UserClub;
 use App\Models\YearGroupDays;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
@@ -47,8 +49,8 @@ class AcademicYearController extends Controller
                 new YearEndIsOneMoreThanYearStart, // Your custom rule
             ],
             
-
-            'usersFile' => ['nullable', 'file', new CsvFileValidation],
+            //new CsvFileValidation
+            'usersFile' => ['nullable', 'file', ],
             'transferStudents' => 'required|boolean',
             'keepClubs' => [
                 // 'required', // The field must be present
@@ -99,7 +101,15 @@ class AcademicYearController extends Controller
             $newAcademicYear->save(); 
             
             $currentAcademicYear = CurrentAcademicYear::first();
-    
+            
+        
+            BookingConfig::all()->each(function ($config) {
+                $config->delete();
+            });
+            UserClub::all()->each(function ($booking) {
+                $booking->delete();
+            });
+
             if ($currentAcademicYear) {
                 // Delete the record
                 $currentAcademicYear->delete();
@@ -134,26 +144,26 @@ class AcademicYearController extends Controller
                 }
             }
 
-            $users = User::where('role', 0)->get(); 
+            $students = User::getStudents();
             // $users = User::all();
             
             if($request->transferStudents) {
-                foreach ($users as $user) {
-                    $year = $user->year;
+                foreach ($students as $student) {
+                    $year = $student->year;
                 
                     if (in_array($year, [7, 8, 9, 10])) {
                         // Increment the year by one and save
-                        $user->year = $year + 1;
-                        $user->save();
+                        $student->year = $year + 1;
+                        $student->save();
                     } elseif ($year === 11) {
                         // Delete the user
-                        $user->delete();
+                        $student->delete();
                     }
                 }
             } else {
-                /**
-                 * Delete them all
-                 */
+                foreach ($students as $student) {
+                    $student->delete();
+                }
             }
 
             // Then insert the new users.
@@ -165,9 +175,8 @@ class AcademicYearController extends Controller
                 $filePath = $file->getRealPath();
     
                 // Import the data using the file path
-                Excel::import(new UsersImport, $filePath, null, $readerType = \Maatwebsite\Excel\Excel::XLSX);
+                // Excel::import(new UsersImport, $filePath, null, $readerType = \Maatwebsite\Excel\Excel::XLSX);
     
-                // Rest of your import logic here
             } 
             
             DB::commit();
