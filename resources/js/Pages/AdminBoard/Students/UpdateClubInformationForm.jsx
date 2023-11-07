@@ -80,15 +80,15 @@ export default function UpdateClubInformationForm({
                                         </h3>
                                         <p
                                             className={`${term[day]?.club
-                                                    ? " "
-                                                    : "text-red-600 font-bold"
+                                                ? "text-green-600 font-black"
+                                                : "text-red-600 font-bold"
                                                 }`}
                                         >
                                             {term[day]?.club.name ??
                                                 "No Club Selected"}
                                         </p>
                                         <div className="flex gap-4 mt-4 justify-center">
-                                            
+
                                             <Button
                                                 color="blue"
                                                 variant="text"
@@ -100,25 +100,34 @@ export default function UpdateClubInformationForm({
                                             >
                                                 Find / Swap{" "}
                                             </Button>
-                                            <Button variant="text" color="red" onClick={() => {
+                                            <Button disabled={!term[day]} variant="text" color="red" onClick={() => {
                                                 setShowSpinner(true);
 
                                                 setTimeout(async () => {
-                                                    const data = await deleteClub(
-                                                        term[day]?.id,
-                                                        csrf,
-                                                        {
-                                                            flag: true,
-                                                            id: student.id
-                                                        }
-                                                    );
-                        
-                                                    setAvailableClubs(data.data.availableClubs);
-                                                    setAlreadyBooked(data.data.alreadyBookedOn);
-                                                    setShowSpinner(false);
-                                                    handleOpen();
+                                                    try {
+                                                        const data = await deleteClub(
+                                                            term[day]?.id,
+                                                            csrf,
+                                                            {
+                                                                flag: true,
+                                                                id: student.id
+                                                            }
+                                                        );
+
+                                                        setAvailableClubs(data.data.availableClubs);
+                                                        setAlreadyBooked(data.data.alreadyBookedOn);
+                                                    } catch (error) {
+                                                        console.error("An error occurred:", error);
+                                                        // Handle the error appropriately
+                                                        // You might want to set some state here to show an error message to the user
+                                                    } finally {
+                                                        setShowSpinner(false);
+                                                        // handleOpen(); // If handleOpen needs to be called regardless of success or error, put it in finally block
+                                                        window.location.reload()
+                                                    }
                                                 }, 1000);
-                                            }}>
+                                            }}
+                                            >
                                                 Delete
                                             </Button>
                                         </div>

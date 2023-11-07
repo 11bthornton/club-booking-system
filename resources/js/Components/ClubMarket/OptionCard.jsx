@@ -185,7 +185,8 @@ export function OptionCard({
                                     setTimeout(async () => {
                                         const data = await findClubChanges(
                                             currentClubInstance.id,
-                                            csrf
+                                            csrf,
+                                            adminMode
                                         );
                                         setDataForConfirmation(data);
                                         setShowSpinner(false);

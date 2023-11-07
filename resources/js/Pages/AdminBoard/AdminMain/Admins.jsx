@@ -1,13 +1,12 @@
-import React, { useEffect, useState } from "react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 
 import { Head } from "@inertiajs/react";
 import { DataGrid } from "@mui/x-data-grid";
-import { Button, Input, Option, Select } from "@material-tailwind/react";
+import { Button, Input, Tooltip } from "@material-tailwind/react";
 
 import { useForm } from "@inertiajs/react";
 
-export default function Dashboard({ auth, admins, deleteError }) {
+export default function Dashboard({ auth, admins }) {
 
     return (
         <AuthenticatedLayout
@@ -18,10 +17,10 @@ export default function Dashboard({ auth, admins, deleteError }) {
                 </h2>
             }
         >
-            
+
             <Head title="Admin Dashboard" />
             <div className="container mx-auto p-4 mt-5 rounded-lg ">
-                <AdminDataGrid adminData={admins} />
+                <AdminDataGrid adminData={admins} auth={auth} />
                 <div className="mt-4">
                     <AdminCreate />
                 </div>
@@ -30,9 +29,9 @@ export default function Dashboard({ auth, admins, deleteError }) {
     );
 }
 
-function AdminDataGrid({ adminData }) {
+function AdminDataGrid({ adminData, auth }) {
 
-    const { delete: destroy, errors } = useForm({});
+    const { delete: destroy } = useForm({});
 
     // Define the columns
     const columns = [
@@ -58,14 +57,30 @@ function AdminDataGrid({ adminData }) {
             width: 250,
             renderCell: (params) => {
                 return (
-                    <div className="flex justify-between gap-2 ml-2">
+                    auth.user.id != params.row.id ?
+                        <div className="flex justify-between gap-2 ml-2">
 
-                        <Button variant="text" color="red" className="text-center" size="sm"
-                            onClick={() => destroy(route("admin.students.delete", { id: params.row.id }))}
-                        >
-                            Delete
-                        </Button>
-                    </div>
+                            <Button variant="text" color="red" className="text-center" size="sm"
+                                onClick={() => destroy(
+                                    route("admin.admins.delete", { id: params.row.id }),
+
+                                )}
+                            >
+                                Delete
+                            </Button>
+                        </div>
+                        : <div className="flex justify-between gap-2 ml-2">
+
+                            <Button disabled variant="text" color="red" className="text-center" size="sm"
+                                onClick={() => destroy(
+                                    route("admin.admins.delete", { id: params.row.id }),
+
+                                )}
+                            >
+                                Can't delete self
+
+                            </Button>
+                        </div>
                 );
             },
 
@@ -75,18 +90,17 @@ function AdminDataGrid({ adminData }) {
 
     return (
         <>
-        
-        <DataGrid
-            rows={adminData}
-            columns={columns}
-            pageSize={5}
-            rowsPerPageOptions={[5]}
-            className="bg-white rounded-lg "
-        // components={{
-        //     Toolbar: GridToolbar
-        // }}
-        /></>
-        
+            <DataGrid
+                rows={adminData}
+                columns={columns}
+                pageSize={5}
+                rowsPerPageOptions={[5]}
+                className="bg-white rounded-lg shadow-md"
+            // components={{
+            //     Toolbar: GridToolbar
+            // }}
+            /></>
+
     );
 }
 
@@ -171,7 +185,7 @@ function AdminCreate({ /**  */ }) {
                     />
                 </div>
 
-               
+
 
                 <div className="mt-4">
                     <label htmlFor="password" className="text-gray-700">

@@ -69,21 +69,35 @@ class StudentController extends Controller
         // Find the user by ID
         $user = User::findOrFail($id);
 
-        // Check if the user to delete is not the currently authenticated user
-        if ($user->id === auth()->user()->id) {
-            // You can handle this case accordingly, for example, by showing an error message.
-            return redirect()->back()->with('error', 'You cannot delete your own account.');
+        // Define the rules for the validator
+        $rules = [
+            'not_current_user' => 'not_in:' . auth()->user()->id,
+            'not_admin' => 'different:1',
+        ];
+
+        // Define custom error messages for the validator
+        $messages = [
+            'not_current_user.not_in' => 'You cannot delete your own account.',
+            'not_admin.different' => 'Admin accounts cannot be deleted.',
+        ];
+
+        // Create the validator instance
+        $validator = Validator::make($user->only('id', 'role'), [
+            'id' => $rules['not_current_user'],
+            'role' => $rules['not_admin'],
+        ], $messages);
+
+        // Perform the validation
+        if ($validator->fails()) {
+            // Redirect back with errors if the validation fails
+            $errors = $validator->errors();
+            return redirect()->back()->withErrors($errors);
         }
 
-        // Check if the user to delete is not an admin (role = 1)
-        if ($user->role === 1) {
-            // You can handle this case accordingly, for example, by showing an error message.
-            return redirect()->back()->with('error', 'Admin accounts cannot be deleted.');
-        }
-
-        // If all checks pass, delete the user
+        // If the validation passes, delete the user
         $user->delete();
 
+        // Redirect to the desired route with a success message
         return redirect()->route("admin.students")->with('success', 'User deleted successfully.');
     }
 

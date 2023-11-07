@@ -23,6 +23,7 @@ class BookingController extends Controller
         if ($existingBooking) {
 
             $clubInstance = ClubInstance::find($existingBooking->club_instance_id);
+
             if (!$clubInstance) {
                 throw new \Exception("Can't find club instance for booking, internal server error");
             }
@@ -51,6 +52,7 @@ class BookingController extends Controller
         }
 
         return $clubsToDelete;
+        // return [];
     }
 
 
@@ -133,7 +135,7 @@ class BookingController extends Controller
                             ->where('club_id', $club->id)
                             ->where('half_term', $clubToBook->half_term)
                             ->whereNot('day_of_week', $clubToBook->day_of_week); // Suppose this is not really needed. But has no effect.
-                    });
+                    })->where('user_id', $user->id);
 
                     if ($existingBookings->count() >= $maxPerTerm) {
                         $clubsToDelete = array_merge($clubsToDelete, $this->simulateDeleteBooking($existingBookings->first(), $user));
@@ -149,7 +151,7 @@ class BookingController extends Controller
                             ->where('club_id', $club->id);
                         // ->where('half_term', $clubToBook->half_term)
                         // ->whereNot('day_of_week', $clubToBook->day_of_week);
-                    });
+                    })->where('user_id', $user->id);
 
                     if ($existingBookings->count() >= $maxPerTerm) {
                         $clubsToDelete = array_merge($clubsToDelete, $this->simulateDeleteBooking($existingBookings->first(), $user));
@@ -193,6 +195,39 @@ class BookingController extends Controller
         try {
             // Execute the simulation and get the result as an associative array
             $result = $this->internalSimulateBooking($id, $request->user());
+
+            if ($result['status'] === 'error') {
+                // Handle the error case with a 500 status code
+                return response()->json([
+                    'status' => 'error',
+                    'message' => $result['message'],
+                ], 500);
+            }
+
+            // Transform the success result into JSON
+            $jsonResult = [
+                'status' => 'success',
+                'data' => $result['data'],
+            ];
+
+            return response()->json($jsonResult);
+        } catch (\Exception $e) {
+            // Handle any unexpected exceptions with a 500 status code
+            return response()->json([
+                'status' => 'error',
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function simulateBookAdminMode($id, $userId, Request $request)
+    {
+
+        try {
+
+            $user = User::findOrFail($userId);
+            // ecute the simulation and get the result as an associative array
+            $result = $this->internalSimulateBooking($id, $user);
 
             if ($result['status'] === 'error') {
                 // Handle the error case with a 500 status code

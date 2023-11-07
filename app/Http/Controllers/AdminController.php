@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 
 use App\Models\BookingConfig;
 use App\Models\UserClub;
+use Illuminate\Support\Facades\Validator;
 use Inertia\Inertia;
 
 class AdminController extends Controller
@@ -34,7 +35,8 @@ class AdminController extends Controller
         return response()->json($currentConfigs);
     }
 
-    public function deleteBookingForUser(Request $request, $bookingId) {
+    public function deleteBookingForUser(Request $request, $bookingId)
+    {
 
         $booking = UserClub::findOrFail($bookingId);
         $booking->delete();
@@ -50,7 +52,8 @@ class AdminController extends Controller
         ]);
     }
 
-    public function index() {
+    public function index()
+    {
         return Inertia::render("AdminBoard/AdminMain/Admins", [
             'admins' => User::getAdmins()
         ]);
@@ -83,7 +86,7 @@ class AdminController extends Controller
         // Check if the user to delete is not an admin (role = 1)
         if ($user->role === 0) {
             // You can handle this case accordingly, for example, by showing an error message.
-            return redirect()->back()->with('error', 'This route is for student accounts only.');
+            return redirect()->back()->with('errors', 'This route is for student accounts only.');
         }
 
         // If all checks pass, delete the user
@@ -92,12 +95,13 @@ class AdminController extends Controller
         return redirect()->route("admin.admins")->with('success', 'User deleted successfully.');
     }
 
-    public function reset() {
+    public function reset()
+    {
         // Delete User models with role 0
         User::where('role', 0)->delete();
-    
+
         // Delete all Club models
         Club::truncate();
     }
-    
+
 }

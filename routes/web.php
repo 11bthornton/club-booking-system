@@ -41,12 +41,7 @@ use Inertia\Inertia;
  * Laravel generated route.
  */
 Route::get('/', function () {
-    return Inertia::render('Welcome', [
-        'canLogin' => Route::has('login'),
-        'canRegister' => Route::has('register'),
-        'laravelVersion' => Application::VERSION,
-        'phpVersion' => PHP_VERSION,
-    ]);
+    return Redirect::route("dashboard");
 });
 
 /**
@@ -167,7 +162,7 @@ Route::middleware(['auth', 'is.admin'])->group(function () {
     Route::post('/admin/configure-year', [AcademicYearController::class, 'store'])->name('admin.academic-year.store');
 
     Route::get('/admin/admins', [AdminController::class, 'index'])->name("admin.admins");
-    Route::delete('/admin/admins/', [AdminController::class, 'delete'])->name('admin.admins.delete');
+    Route::delete('/admin/admins/{id}', [AdminController::class, 'delete'])->name('admin.admins.delete');
     Route::post('/admin/admins', [AdminController::class, 'store'])->name("admin.admins.store");
 
 
@@ -219,6 +214,7 @@ Route::middleware(['auth', 'is.admin'])->group(function () {
     Route::delete('/admin/booking-configs/{id}', [BookingConfigController::class, 'delete'])->middleware('system.is.setup')
         ->name('admin.booking-config.delete');
 
+    Route::get('/admin/simulate-book/{clubInstanceId}/student/{studentId}', [BookingController::class, 'simulateBookAdminMode'])->name("admin.book.simulate");
     Route::post('/admin/book-for-student/{clubInstanceId}/student/{studentId}', [BookingController::class, 'bookClubForStudentAsAdmin'])->name("admin.clubs.book");
     Route::delete('/admin/delete-for-student/{clubInstanceId}/student/{studentId}', [BookingController::class, 'deleteClubForStudentAsAdmin'])->name("admin.clubs.book");
 
