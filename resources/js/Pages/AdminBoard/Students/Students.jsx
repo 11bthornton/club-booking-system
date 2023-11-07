@@ -5,7 +5,7 @@ import { Select, Option } from "@material-tailwind/react";
 
 import { Input } from "@material-tailwind/react";
 
-import { DataGrid,  } from "@mui/x-data-grid";
+import { DataGrid, } from "@mui/x-data-grid";
 import {
 
     Alert,
@@ -24,7 +24,7 @@ import {
 import { useForm } from "@inertiajs/react";
 import StudentImportForm from "./StudentCreate/StudentImportForm";
 
-export default function ClubShow({ auth, students }) {
+export default function Students({ auth, students }) {
 
     const { data, setData, post, reset, errors } = useForm({
         file: null
@@ -59,7 +59,19 @@ export default function ClubShow({ auth, students }) {
                 <UserDataGrid studentData={students} />
 
                 <div className="mt-4">
+
+
                     <div className="max-w-7xl mx-auto space-y-6">
+
+                        <div className="p-4 sm:p-8 bg-white shadow-md sm:rounded-lg">
+                            <h2 className="text-xl font-medium text-gray-900">
+                                Create / Import Users
+                            </h2>
+
+                            <p className="mt-1 text-sm text-gray-600">
+                                Use these forms to import users in bulk or create them manually.
+                            </p>
+                        </div>
                         <div className="p-4 sm:p-8 bg-white shadow-md sm:rounded-lg">
                             <h2 className="text-lg font-medium text-gray-900">
                                 Import Users
@@ -77,17 +89,23 @@ export default function ClubShow({ auth, students }) {
                                     </ul>
                                 </Alert>
                             }
+
+                            <Alert variant="ghost" color="orange" className="mt-4">The system will only accept <strong className="font-black">.xlsx</strong> files. </Alert>
                             <p className="mt-1 text-sm text-gray-600">
-                                Upload a file with all the new users you wish to add. This should be an excel or csv file with the following headers.
+                                Upload a file with all the new users you wish to add. This should be a .xlsx file with the following headers.
                             </p>
                             <ul className="text-sm mt-3 ml-3">
-                                <li>username</li>
-                                <li>year</li>
-                                <li>email *</li>
+                                <li>username *</li>
+                                <li>year *</li>
+                                <li>email</li>
                                 <li>first_name</li>
                                 <li>last_name</li>
                             </ul>
+                            <p className="mt-3 text-sm text-gray-600">
+                                All of the header names are required but the columns can be in any order. While the header names are required, you only have to poplate the fields
+                                of the items with asterisks above.
 
+                            </p>
                             <p className="mt-3 text-sm text-gray-600">
                                 Users must be unique. Any duplicates already found in the system will cause the whole batch to fail and none will be uploaded.
                             </p>
@@ -95,18 +113,20 @@ export default function ClubShow({ auth, students }) {
                             {/* File input */}
                             <input
                                 type="file"
-                                accept=".csv, .xlsx" // Specify accepted file types if needed
+                                accept=".xlsx" // Specify accepted file types if needed
                                 onChange={handleFileInputChange} // Call the function when the file input changes
                                 style={{ display: "none" }} // Hide the input element
                             />
 
                             {/* Display the selected file */}
                             <div className="bg-gray-50 p-3 mt-3">
-                                {data.file && (
+                                {data.file ? 
                                     <p className="text-sm text-gray-600">
                                         Selected File: {data.file.name}
+                                    </p> : <p className="text-sm text-gray-600">
+                                        No file is currently selected.
                                     </p>
-                                )}
+                                }
 
                                 {/* Button to trigger file input click */}
                                 <Button
@@ -292,26 +312,26 @@ function StudentCreate({ /**  */ }) {
                 {/* Additional Fields (You can add these as needed) */}
                 <br />
                 <div className="flex justify-between items-center">
-                <Button
-                    // variant="outlined"
-                    className="mt-3"
-                    onClick={() => {
-                        post(route("admin.students.store"),
-                            {
-                                onSuccess: () => reset()
-                            }
-                        )
-                    }}
-                >
-                    Save
-                </Button>
-                <Button
-                    variant="text"
-                    color="red"
-                    onClick={() => reset()}
-                >
-                    Delete
-                </Button>
+                    <Button
+                        // variant="outlined"
+                        className="mt-3"
+                        onClick={() => {
+                            post(route("admin.students.store"),
+                                {
+                                    onSuccess: () => reset()
+                                }
+                            )
+                        }}
+                    >
+                        Save
+                    </Button>
+                    <Button
+                        variant="text"
+                        color="red"
+                        onClick={() => reset()}
+                    >
+                        Delete
+                    </Button>
                 </div>
             </div>
         </div>
@@ -326,7 +346,7 @@ function UserDataGrid({ studentData }) {
 
     // Define the columns
     const columns = [
-        { field: "id", headerName: "ID", width: 70 },
+        { field: "id", headerName: "ID", width: 10 },
         {
             field: "username",
             headerName: "Username",
@@ -347,11 +367,18 @@ function UserDataGrid({ studentData }) {
                 </Link>
             ),
         },
-        { field: "year", headerName: "Year", width: 100 },
-
+        {
+            field: "year",
+            headerName: "Year",
+            headerAlign: "Center",
+            align: "Center",
+            width: 10
+        },
         {
             field: "count_chosen",
             headerName: "Number Chosen",
+            align: "center",
+            headerAlign: "center",
             width: 150,
             renderCell: (params) => {
                 const row = params.row;
@@ -360,34 +387,40 @@ function UserDataGrid({ studentData }) {
                     .filter((x) => x).length;
 
                 return (
-                    <Chip
-                        value={`${count} Booked`}
-                        // variant="outlined"
-                        color={
-                            count === 0
-                                ? "red"
-                                : count < 12
-                                    ? "orange"
-                                    : "green"
-                        }
-                        variant="ghost"
-                        onClick={() => { }}
-                    // className='cursor-pointer'
-                    />
+                    // <Chip
+                    //     value={`${count} Booked`}
+                    //     // variant="outlined"
+                    //     color={
+                    //         count === 0
+                    //             ? "red"
+                    //             : count < 12
+                    //                 ? "orange"
+                    //                 : "green"
+                    //     }
+                    //     variant="ghost"
+                    //     onClick={() => { }}
+                    // // className='cursor-pointer'
+                    // />
+                    <>{count}</>
                 );
             },
         },
 
-        
+
         {
             field: "email",
-            width: 150
+            headerName: "Email",
+            width: 250
         },
         {
             field: "first_name",
+            headerName: "First Name",
+
         },
         {
-            field: "second_name"
+            field: "second_name",
+            headerName: "Last Name",
+
         },
 
         {
@@ -397,7 +430,7 @@ function UserDataGrid({ studentData }) {
             width: 250,
             renderCell: (params) => {
                 return (
-                    <div className="flex justify-between gap-2 ml-2">
+                    <div className="flex justify-between gap-2 ml-2 ">
                         <Button variant="outlined" className="text-center" size="sm"
                             onClick={() => destroy(route("admin.students.delete", { id: params.row.id }))}
                         >
@@ -411,9 +444,9 @@ function UserDataGrid({ studentData }) {
                     </div>
                 );
             },
-            
+
         },
-        
+
     ];
 
     return (
@@ -422,7 +455,7 @@ function UserDataGrid({ studentData }) {
             columns={columns}
             pageSize={5}
             rowsPerPageOptions={[5]}
-            className="bg-white rounded-lg "
+            className="bg-white rounded-lg shadow-md  "
         // components={{
         //     Toolbar: GridToolbar
         // }}

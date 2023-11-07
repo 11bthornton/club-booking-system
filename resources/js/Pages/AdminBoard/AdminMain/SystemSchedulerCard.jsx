@@ -14,9 +14,9 @@ import {
 
 import { Switch } from "@material-tailwind/react";
 
-import { ChipWithStatus } from "./ChipWithStatus";
+import { ChipWithStatus } from "@/Components/ClubMarket/ChipWithStatus";
 
-import StepsDialog from "./StepsDialog";
+
 import {
     Dialog,
     DialogBody,
@@ -38,12 +38,7 @@ export default function SystemSchedulerCard({ clubData, scheduleData, availableD
     return (
         <Card className="w-full shadow-none">
             <CardBody>
-                <StepsDialog
-                    clubData={clubData}
-                    handleOpen={handleCreateDialogue}
-                    isDialogOpen={isCreateDialogOpen}
-                    availableDays={availableDays}
-                />
+                
 
                 <ViewScheduled
                     isOpen={isViewDialogOpen}

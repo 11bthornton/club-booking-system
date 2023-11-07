@@ -54,7 +54,7 @@ export default function YearConfigure({ auth, year, clubs }) {
         
         usersFile: file,
         keepClubs: [],
-        transferStudents: false,
+        transferStudents: true,
         days: [7, 8, 9, 10, 11].map((year) => {
             return {
                 year: year,
@@ -103,20 +103,11 @@ export default function YearConfigure({ auth, year, clubs }) {
             </h2>
         }>
             <Head title="Configure Year" />
-            {
-                JSON.stringify(year)
-            }
+            
             <div className="py-12 sm:p-4">
 
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
 
-                    {
-                        JSON.stringify(data)
-                    }
-
-                    {
-                        JSON.stringify(errors)
-                    }
                     <Transition
                         show={recentlySuccessful}
                         enter="transition ease-in-out"
@@ -273,14 +264,32 @@ export default function YearConfigure({ auth, year, clubs }) {
                                     defaultChecked={data.transferStudents}
                                 />
                             </div></> : <></>}
+                            <Alert variant="ghost" color="orange" className="mt-4">The system will only accept <strong className="font-black">.xlsx</strong> files. </Alert>
+                            <p className="mt-1 text-sm text-gray-600">
+                                Upload a file with all the new users you wish to add. This should be a .xlsx file with the following headers.
+                            </p>
+                            <ul className="text-sm mt-3 ml-3">
+                                <li>username *</li>
+                                <li>year *</li>
+                                <li>email</li>
+                                <li>first_name</li>
+                                <li>last_name</li>
+                            </ul>
+                            <p className="mt-3 text-sm text-gray-600">
+                                All of the header names are required but the columns can be in any order. While the header names are required, you only have to poplate the fields
+                                of the items with asterisks above.
 
+                            </p>
+                            <p className="mt-3 text-sm text-gray-600">
+                                Users must be unique. Any duplicates already found in the system will cause the whole batch to fail and none will be uploaded.
+                            </p>
                         <div className="p-4 bg-gray-50 mt-3 rounded-sm">
                             <Typography
                                 variant="h6"
                             >
                                 Upload
                             </Typography>
-                            <p className=" text-sm text-gray-600 mb-4 min-h-[40px]">
+                            <p className=" text-sm text-gray-600  min-h-[40px]">
                                 {
                                     data.transferStudents ?
                                         <span>
@@ -295,7 +304,6 @@ export default function YearConfigure({ auth, year, clubs }) {
                                 <br />
                             </p>
 
-                            <a href="" className="text-blue-400 hover:underline">What format should this data be supplied in?</a>
                             <div className="mt-2">
 
                                 <input

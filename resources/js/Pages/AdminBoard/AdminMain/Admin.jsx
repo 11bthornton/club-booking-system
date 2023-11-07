@@ -18,8 +18,6 @@ import {
 
 import SystemSchedulerCard from "./SystemSchedulerCard";
 
-import { ChipWithStatus } from "@/Components/ClubMarket/ChipWithStatus";
-import { StepProvider } from "./StepContext";
 
 import { useForm } from "@inertiajs/react";
 
@@ -66,14 +64,12 @@ export default function Dashboard({ auth, clubData, scheduleData, year, availabl
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <StepProvider>
                         <SystemSchedulerCard
                             clubData={clubData}
                             scheduleData={scheduleData}
                             className="shadow-none"
                             availableDays={availableDays}
                         />
-                    </StepProvider>
 
                     <Card className="w-full shadow-none">
                         <CardBody>

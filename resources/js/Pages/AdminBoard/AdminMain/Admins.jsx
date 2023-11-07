@@ -44,9 +44,11 @@ function AdminDataGrid({ adminData }) {
         },
         {
             field: "first_name",
+            headerName: "First Name"
         },
         {
-            field: "second_name"
+            field: "second_name",
+            field: "Last Name"
         },
 
         {
@@ -73,9 +75,7 @@ function AdminDataGrid({ adminData }) {
 
     return (
         <>
-        {
-            JSON.stringify(errors)
-        }
+        
         <DataGrid
             rows={adminData}
             columns={columns}

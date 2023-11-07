@@ -33,7 +33,6 @@ class AcademicYearController extends Controller
     }
 
     public function store(Request $request) {
-
         $validator = Validator::make($request->all(), [
             'yearStart' => [
                 'required',
@@ -137,20 +136,27 @@ class AcademicYearController extends Controller
 
             $users = User::where('role', 0)->get(); 
             // $users = User::all();
-    
-            foreach ($users as $user) {
-                $year = $user->year;
             
-                if (in_array($year, [7, 8, 9, 10])) {
-                    // Increment the year by one and save
-                    $user->year = $year + 1;
-                    $user->save();
-                } elseif ($year === 11) {
-                    // Delete the user
-                    $user->delete();
+            if($request->transferStudents) {
+                foreach ($users as $user) {
+                    $year = $user->year;
+                
+                    if (in_array($year, [7, 8, 9, 10])) {
+                        // Increment the year by one and save
+                        $user->year = $year + 1;
+                        $user->save();
+                    } elseif ($year === 11) {
+                        // Delete the user
+                        $user->delete();
+                    }
                 }
+            } else {
+                /**
+                 * Delete them all
+                 */
             }
-            
+
+            // Then insert the new users.
             if ($request->hasFile('usersFile')) {
                 // Get the uploaded file from the request
                 $file = $request->file('usersFile');
