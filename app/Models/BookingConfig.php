@@ -141,6 +141,7 @@ class BookingConfig extends Model
 
         if ($this->allowedClubs) {
             // Extract 'half_term' values from the relationship
+            // dd($this->allowedClubs);
             $halfTermValues = $this->allowedClubs->pluck('half_term')->toArray();
 
             // Get unique 'half_term' values

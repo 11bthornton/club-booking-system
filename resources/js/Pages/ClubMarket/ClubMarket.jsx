@@ -54,7 +54,7 @@ export default function ClubMarket({
         }>
             <Head title="Club Market" />
 
-            
+
             <div className="container mx-auto flex flex-col mt-5 px-4 sm:px-6">
 
 
@@ -120,7 +120,7 @@ export default function ClubMarket({
 
                             const stillNeedsToBook = Object.values(bookings).some(booking => !booking)
                             const length = Object.values(bookings).length
-                            const countBooked= Object.values(bookings).filter(booking => booking).length
+                            const countBooked = Object.values(bookings).filter(booking => booking).length
 
                             return (
                                 <div className="flex justify-center gap-2">
@@ -147,104 +147,117 @@ export default function ClubMarket({
 
                 <div className="flex flex-col justify-between items-center w-full">
                     <Timeline className="w-full">
-                        {[1, 2, 3, 4, 5, 6].map((term) => (
-                            <TimelineItem key={term}>
-                                <TimelineConnector />
-                                <div className="flex gap-5 items-center">
-                                    <TimelineHeader className="items-start">
-                                        <TimelineIcon
-                                            color={auth.user.bookingConfigs.flatMap(bC => bC.associated_terms).includes(term) ? "green" : "red"}
-                                            className="shadow-xl"
-                                            variant="ghost"
-                                        >
-                                            <Typography
-                                                variant="h3"
-                                                className="w-10 h-10 text-center"
+                        {[1, 2, 3, 4, 5, 6].map((term) => {
+
+                            const availableToWhichYearGroups = Object.values(availableClubs)
+                                .flatMap(c => c.club_instances)
+                                .filter(i => i.half_term == term)
+                                .flatMap(i => i.year_groups)
+                                .map(t => Number(t.year))
+
+
+                            return (
+                                <TimelineItem key={term}>
+                                    <TimelineConnector />
+                                    <div className="flex gap-5 items-center">
+                                    
+
+                                        <TimelineHeader className="items-start">
+                                            <TimelineIcon
+                                                color={auth.user.bookingConfigs.flatMap(bC => bC.associated_terms).includes(term) ? "green" : "red"}
+                                                className="shadow-xl"
+                                                variant="ghost"
                                             >
-                                                {term}
-                                            </Typography>
-                                        </TimelineIcon>
+                                                <Typography
+                                                    variant="h3"
+                                                    className="w-10 h-10 text-center"
+                                                >
+                                                    {term}
+                                                </Typography>
+                                            </TimelineIcon>
 
 
-                                        <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-3 gap-4 items-center">
-                                            <Typography
-                                                variant="h3"
-                                                color="blue-gray"
-                                                className="leading-none uppercase tracking-widest text-center">
-                                                Term {term} - {year[`term${term}_name`]}
-                                            </Typography>
+                                            <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-3 gap-4 items-center">
+                                                <Typography
+                                                    variant="h3"
+                                                    color="blue-gray"
+                                                    className="leading-none uppercase tracking-widest text-center">
+                                                    Term {term} - {year[`term${term}_name`]}
+                                                </Typography>
 
 
-                                            {
+                                                {
 
-                                                auth.user.bookingConfigs.flatMap(bC => bC.associated_terms).includes(term) ?
-                                                    <>
-                                                        <div className="flex justify-center">
-                                                            <ChipWithStatus
-                                                                color="green"
-                                                                text="Bookings Open"
-                                                                tooltipContent="You are currently able to book clubs for this term"
-                                                                className=""
-                                                            />
-                                                        </div>
-                                                        <p className="text-500 text-center">
-                                                            Bookings for this term ends in &nbsp;
-                                                            <strong className="font-bold">
-                                                                <CountdownTimer
-                                                                    targetDate={
-                                                                        [...auth.user.bookingConfigs.filter(cBc =>
-                                                                            cBc.associated_terms.includes(term)
-                                                                        )].reverse()[0].ends_at
-                                                                    }
-                                                                    className="font-bold"
+                                                    auth.user.bookingConfigs.flatMap(bC => bC.associated_terms).includes(term) && availableToWhichYearGroups.includes(Number(auth.user.year)) ?
+                                                        <>
+                                                            <div className="flex justify-center">
+                                                                <ChipWithStatus
+                                                                    color="green"
+                                                                    text="Bookings Open"
+                                                                    tooltipContent="You are currently able to book clubs for this term"
+                                                                    className=""
                                                                 />
-                                                            </strong>
-                                                            &nbsp;
-                                                            ({
-                                                                [...auth.user.bookingConfigs.filter(cBc =>
-                                                                    cBc.associated_terms.includes(term)
-                                                                )].reverse()[0].ends_at
-                                                            })
-                                                        </p>
-                                                    </>
-                                                    :
-                                                    <>
-                                                        <div className="flex justify-center">
-                                                            <ChipWithStatus
-                                                                color="red"
-                                                                text="Bookings Closed"
-                                                                tooltipContent="Bookings are currently closed for this term"
-                                                            />
-                                                        </div>
-                                                        <p className="text-red-500 text-center">
-                                                            {
-                                                                auth.user.futureBookingConfigs.filter(fBc =>
-                                                                    fBc.associated_terms.includes(term)
-                                                                ).slice(0, 1).map(fBc => (
-                                                                    <>Bookings for this term next opens in <strong className="font-bold">
-                                                                        <CountdownTimer
-                                                                            targetDate={fBc.scheduled_at}
-                                                                            className="font-bold"
-                                                                        /></strong></>
-                                                                ))
-                                                            }
-                                                        </p>
-                                                    </>
-                                            }
-                                        </div>
-                                    </TimelineHeader>
+                                                            </div>
+                                                            <p className="text-500 text-center">
+                                                                Bookings for this term ends in &nbsp;
+                                                                <strong className="font-bold">
+                                                                    <CountdownTimer
+                                                                        targetDate={
+                                                                            [...auth.user.bookingConfigs.filter(cBc =>
+                                                                                cBc.associated_terms.includes(term)
+                                                                            )].reverse()[0].ends_at
+                                                                        }
+                                                                        className="font-bold"
+                                                                    />
+                                                                </strong>
+                                                                &nbsp;
+                                                                ({
+                                                                    [...auth.user.bookingConfigs.filter(cBc =>
+                                                                        cBc.associated_terms.includes(term)
+                                                                    )].reverse()[0].ends_at
+                                                                })
+                                                            </p>
+                                                        </>
+                                                        :
+                                                        <>
+                                                            <div className="flex justify-center">
+                                                                <ChipWithStatus
+                                                                    color="red"
+                                                                    text="Bookings Closed"
+                                                                    tooltipContent="Bookings are currently closed for this term"
+                                                                />
+                                                            </div>
+                                                            <p className="text-red-500 text-center">
+                                                                {
+                                                                    auth.user.futureBookingConfigs.filter(fBc =>
+                                                                        fBc.associated_terms.includes(term)
+                                                                    ).slice(0, 1).map(fBc => (
+                                                                        <>
+                                                                        Bookings for this term next opens in <strong className="font-bold">
+                                                                            <CountdownTimer
+                                                                                targetDate={fBc.scheduled_at}
+                                                                                className="font-bold"
+                                                                            /></strong></>
+                                                                    ))
+                                                                }
+                                                            </p>
+                                                        </>
+                                                }
+                                            </div>
+                                        </TimelineHeader>
 
 
-                                </div>
-                                <TimelineBody className={` justify-center m-4 ${false ? 'opacity-50' : 'opacity-100'} w-full`}>
-                                    <Typography className="text-2xl text-center mb-10">
-                                        This term starts on {year[`term${term}_start`]}
-                                    </Typography>
-                                    <TermChoiceCard term={term} csrf={csrf} days={auth.user.days[0].days_array} />
-                                    <br />
-                                </TimelineBody>
-                            </TimelineItem>
-                        ))}
+                                    </div>
+                                    <TimelineBody className={` justify-center m-4 ${false ? 'opacity-50' : 'opacity-100'} w-full`}>
+                                        <Typography className="text-2xl text-center mb-10">
+                                            This term starts on {year[`term${term}_start`]}
+                                        </Typography>
+                                        <TermChoiceCard term={term} csrf={csrf} days={auth.user.days[0].days_array} />
+                                        <br />
+                                    </TimelineBody>
+                                </TimelineItem>)
+
+                        })}
                     </Timeline>
                 </div>
             </div>

@@ -49,37 +49,43 @@ class Club extends Model
     {
         $year = $user->year;
 
-        /**
-         * Gets all the active booking configurations
-         */
+        // Gets all the active booking configurations
         $activeBookingConfigs = $user->getAllActiveBookingConfigs();
-        
-        /**
-         * Clubs only from this academic year. 
-         */
-        $currentAcademcicYearId = CurrentAcademicYear::first()->academic_year_id;
+
+        // Clubs only from this academic year. 
+        $currentAcademicYearId = CurrentAcademicYear::first()->academic_year_id;
 
         $clubs = self::with([
             'clubInstances' => function ($query) use ($year) {
                 $query->whereHas('yearGroups', function ($q) use ($year) {
                     $q->where('year_group_club.year', $year);
                 })
-                ->select(['id', 'club_id', 'half_term', 'capacity', 'day_of_week', 'created_at', 'updated_at']); // Only select necessary columns
+                ->with(['yearGroups' => function ($query) {
+                    $query->select('year_groups.year'); // Replace 'year_groups' with your actual table name
+                }]); // Eager load the yearGroups relationship
+                    // ->select([
+                    //     'id',
+                    //     'club_id',
+                    //     'half_term',
+                    //     'capacity',
+                    //     'day_of_week',
+                    //     'created_at',
+                    //     'updated_at'
+                    // ]); // Only select necessary columns
             },
         ])
-        ->where('academic_year_id', $currentAcademcicYearId) // Filtering based on the academic_year_id
-        ->whereHas('clubInstances', function ($query) use ($year) {
-            $query->whereHas('yearGroups', function ($q) use ($year) {
-                $q->where('year_group_club.year', $year);
-            });
-        })
-        ->get();
-    
+            ->where('academic_year_id', $currentAcademicYearId) // Filtering based on the academic_year_id
+            ->whereHas('clubInstances', function ($query) use ($year) {
+                $query->whereHas('yearGroups', function ($q) use ($year) {
+                    $q->where('year_group_club.year', $year);
+                });
+            })
+            ->get();
+
         // Filter club instances based on the criteria
         $clubs->each(function ($club) use ($user, $activeBookingConfigs) {
             $filteredClubInstances = $club->clubInstances->filter(function ($clubInstance) use ($activeBookingConfigs) {
                 foreach ($activeBookingConfigs as $bookingConfig) {
-
                     if ($bookingConfig->canClubInstanceBook($clubInstance->id)) {
                         return true;
                     }
@@ -92,7 +98,9 @@ class Club extends Model
         return $clubs;
     }
 
-    public static function allAvailable() {
+
+    public static function allAvailable()
+    {
         return self::with('clubInstances')->get();
     }
 
