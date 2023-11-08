@@ -99,6 +99,30 @@ export default function Authenticated({ user, header, children }) {
                                             Profile
                                         </Dropdown.Link>
                                         <Dropdown.Link
+                                            href={route("club.market")}
+                                        // active={route().current("club.market")}
+                                        >
+                                            Club Market
+                                        </Dropdown.Link>
+
+                                        {
+                                            /**
+                                             * Only show this if the user is admin. Non-admins won't get access to this
+                                             * route (and related routes) regardless. But don't show regular user link
+                                             * if they're not supposed to access it anyway.
+                                             */
+                                            user.role === "1" && (
+                                                <Dropdown.Link
+                                                    href={route("admin-board")}
+                                                // active={route().current(
+                                                //     "admin-board",
+                                                // )}
+                                                >
+                                                    Admin
+                                                </Dropdown.Link>
+                                            )
+                                        }
+                                        <Dropdown.Link
                                             href={route("logout")}
                                             method="post"
                                             as="button"
@@ -179,6 +203,30 @@ export default function Authenticated({ user, header, children }) {
                         </div>
 
                         <div className="mt-3 space-y-1">
+                            <ResponsiveNavLink
+                                href={route("club.market")}
+                            // active={route().current("club.market")}
+                            >
+                                Club Market
+                            </ResponsiveNavLink>
+
+                            {
+                                /**
+                                 * Only show this if the user is admin. Non-admins won't get access to this
+                                 * route (and related routes) regardless. But don't show regular user link
+                                 * if they're not supposed to access it anyway.
+                                 */
+                                user.role === "1" && (
+                                    <ResponsiveNavLink
+                                        href={route("admin-board")}
+                                    // active={route().current(
+                                    //     "admin-board",
+                                    // )}
+                                    >
+                                        Admin
+                                    </ResponsiveNavLink>
+                                )
+                            }
                             <ResponsiveNavLink href={route("profile.edit")}>
                                 Profile
                             </ResponsiveNavLink>
