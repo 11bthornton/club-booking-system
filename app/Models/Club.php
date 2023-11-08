@@ -37,7 +37,8 @@ class Club extends Model
      */
     public static function getAllWithInstances()
     {
-        return self::with('clubInstances')->get();
+        return self::with('clubInstances.yearGroups')->get();
+
     }
 
 

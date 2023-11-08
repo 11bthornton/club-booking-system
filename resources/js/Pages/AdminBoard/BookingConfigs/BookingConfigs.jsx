@@ -11,6 +11,7 @@ import {
     List,
     ListItem,
     ListItemPrefix,
+    Tooltip,
     Typography
 } from "@material-tailwind/react";
 
@@ -47,6 +48,9 @@ export default function BookingConfigs({ auth, scheduleData, availableDays, club
         return daysInWeek.indexOf(a) - daysInWeek.indexOf(b);
     }
 
+    /**
+     * For Clearing all the clubs from selections
+     */
     const toggleClear = () => {
         setData({
             ...data,
@@ -70,7 +74,13 @@ export default function BookingConfigs({ auth, scheduleData, availableDays, club
         setData({
             ...data,
             clubs: clubData
-                .flatMap((club) => club.club_instances)
+                .flatMap(club => club.club_instances)
+                .filter(club => {
+                    return data.year_groups.some(
+                        includedYear => club.year_groups.flatMap(y => Number(y.year))
+                            .includes(includedYear)
+                    );
+                })
                 .map((i) => i.id),
         });
     };
@@ -79,9 +89,13 @@ export default function BookingConfigs({ auth, scheduleData, availableDays, club
         let newClubs = [...(data.clubs || [])];
 
         let clubsToAdd = clubData
-            .flatMap((club) => club.club_instances)
-            .filter((instance) => instance.half_term == term)
-            .map((i) => i.id);
+            .flatMap(club => club.club_instances)
+            .filter(instance => instance.half_term == term)
+            .filter(instance =>
+                data.year_groups.some(includedYear => instance.year_groups.map(y => Number(y.year)).includes(includedYear))
+            )
+            .map(i => i.id);
+
 
         clubsToAdd.forEach((toAdd) => {
             // console.log("toadd", toAdd);
@@ -100,14 +114,47 @@ export default function BookingConfigs({ auth, scheduleData, availableDays, club
 
     const toggleYear = (year) => {
         let newYearGroups = [...(data.year_groups || [])]; // Ensure it's an array
+        const clubsToToggle = []
         if (newYearGroups.includes(year)) {
             // Remove year if it's already in the array
             newYearGroups = newYearGroups.filter((y) => y !== year);
+
+            const clubsWithOnlyOneyear = clubData.flatMap(c => c.club_instances).filter(cI => cI.year_groups.length == 1);
+
+            console.log("clubs only onw year", clubsWithOnlyOneyear)
+
+            clubsWithOnlyOneyear.forEach(cI => {
+
+                if (Number(cI.year_groups[0].year) == year) {
+
+                    if (data.clubs.includes(cI.id)) {
+
+                        clubsToToggle.push(cI.id);
+                    }
+                }
+
+            })
+
         } else {
             // Add year to array if not included
             newYearGroups.push(year);
+            console.log(newYearGroups)
         }
-        setData({ ...data, year_groups: newYearGroups });
+        console.log("Okay we getting here", clubsToToggle)
+        setData({
+            ...data,
+            year_groups: newYearGroups,
+            clubs: data.clubs.filter(clubId => {
+                if (clubsToToggle.includes(clubId)) {
+                    return false;
+                }
+
+                return true
+            })
+        });
+
+
+        // setData("clubs", newClubs);
     };
 
 
@@ -178,6 +225,11 @@ export default function BookingConfigs({ auth, scheduleData, availableDays, club
                         onChange={(e) => setData("name", e.target.value)}
                         placeholder="Name your configuration"
                     />
+                    <p className="text-sm ml-3 text-red-600 font-bold">
+                        {
+                            data.start_time ? "" : "Name still required"
+                        }
+                    </p>
                     {
                         errors.name &&
                         <Alert className="mt-4" color="red" variant="ghost">
@@ -219,20 +271,37 @@ export default function BookingConfigs({ auth, scheduleData, availableDays, club
                                 When would you like this open period to{" "}
                                 <strong className="font-bold">start</strong>?
                             </h5>
-                            <div>
-                                <input
-                                    type="date"
-                                    id="start-date"
-                                    name="start_date" // matching the name to formData keys
-                                    value={data.start_date || ""}
-                                    onChange={handleInputChange}
-                                />
-                                <input
-                                    type="time"
-                                    id="start-time"
-                                    name="start_time" // you'd add this to your formData if needed
-                                    onChange={handleInputChange}
-                                />
+                            <div className="flex">
+                                <div className="flex flex-col">
+
+                                    <input
+                                        type="date"
+                                        id="start-date"
+                                        name="start_date" // matching the name to formData keys
+                                        value={data.start_date || ""}
+                                        onChange={handleInputChange}
+                                    />
+                                    <p className="text-sm ml-1 text-red-600 font-bold">
+                                        {
+                                            data.start_date ? "" : "Start date required"
+                                        }
+                                    </p>
+                                </div>
+                                <div className="flex flex-col">
+
+                                    <input
+                                        type="time"
+                                        id="start-time"
+                                        className="w-24"
+                                        name="start_time" // you'd add this to your formData if needed
+                                        onChange={handleInputChange}
+                                    />
+                                    <p className="text-sm ml-1 text-red-600 font-bold">
+                                        {
+                                            data.start_time ? "" : "Start  time required"
+                                        }
+                                    </p>
+                                </div>
                             </div>
                         </div>
 
@@ -241,20 +310,36 @@ export default function BookingConfigs({ auth, scheduleData, availableDays, club
                                 When would you like this open period to{" "}
                                 <strong className="font-bold">end</strong>?
                             </h5>
-                            <div>
-                                <input
-                                    type="date"
-                                    id="end-date"
-                                    name="end_date" // matching the name to formData keys
-                                    value={data.end_date || ""}
-                                    onChange={handleInputChange}
-                                />
-                                <input
-                                    type="time"
-                                    id="end-time"
-                                    name="end_time" // you'd add this to your formData if needed
-                                    onChange={handleInputChange}
-                                />
+                            <div className="flex">
+                                <div className="flex flex-col">
+                                    <input
+                                        type="date"
+                                        id="end-date"
+                                        name="end_date" // matching the name to formData keys
+                                        value={data.end_date || ""}
+                                        onChange={handleInputChange}
+                                    />
+                                    <p className="text-sm ml-1 text-red-600 font-bold">
+                                        {
+                                            data.end_date ? "" : "End date required"
+                                        }
+                                    </p>
+                                </div>
+                                <div className="flex flex-col">
+
+                                    <input
+                                        type="time"
+                                        id="end-time"
+                                        name="end_time" // you'd add this to your formData if needed
+                                        onChange={handleInputChange}
+                                        className="w-24"
+                                    />
+                                    <p className="text-sm ml-1 text-red-600 font-bold">
+                                        {
+                                            data.end_time ? "" : "End time required"
+                                        }
+                                    </p>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -287,10 +372,22 @@ export default function BookingConfigs({ auth, scheduleData, availableDays, club
                     <Typography variant="h5" className="font-bold ">
                         Which year groups should this apply to?
                     </Typography>
+
                     <p>
                         You'll have the option to add / remove individual students
                         later, but you can bulk-include year groups here.
                     </p>
+
+                    <div className="flex justify-end">
+                        <Button
+                            className="mt-2"
+                            variant="outlined"
+                            size="sm"
+                            onClick={() => setData("year_groups", [7,8,9,10,11])}
+                        >
+                            Add All
+                        </Button>
+                    </div>
                     <List>
                         {[7, 8, 9, 10, 11].map((year) => (
                             <ListItem key={year} className="p-0">
@@ -329,6 +426,11 @@ export default function BookingConfigs({ auth, scheduleData, availableDays, club
                             You need to select at least one year.
                         </Alert>
                     }
+                    <p className="text-sm ml-3 text-red-600 font-bold">
+                        {
+                            data.year_groups.length ? "" : "You need to select at least one year group"
+                        }
+                    </p>
                 </div>
                 <div className="p-4 sm:p-8 bg-white shadow sm:rounded-lg mt-4 ">
 
@@ -348,9 +450,12 @@ export default function BookingConfigs({ auth, scheduleData, availableDays, club
                             <Checkbox
                                 onChange={toggleAll}
                                 checked={clubData
-                                    .flatMap((club) => club.club_instances)
-                                    .map((i) => i.id)
-                                    .every((club) => data.clubs.includes(club))}
+                                    .flatMap(club => club.club_instances)
+                                    .filter(cI => (
+                                        data.year_groups.some(includedYear => cI.year_groups.map(y => Number(y.year)).includes(includedYear))
+                                    ))
+                                    .map(i => i.id)
+                                    .every(club => data.clubs.includes(club))}
                             />
                         </div>
 
@@ -376,13 +481,17 @@ export default function BookingConfigs({ auth, scheduleData, availableDays, club
                                         <td colSpan={availableDaysForBooking.length}>
                                             <Checkbox
                                                 checked={clubData
-                                                    .flatMap((club) => club.club_instances)
+                                                    .flatMap(club => club.club_instances)
                                                     .filter(
-                                                        (instance) =>
+                                                        instance =>
                                                             instance.half_term == term,
                                                     )
-                                                    .map((i) => i.id)
-                                                    .every((club) =>
+                                                    .filter(
+                                                        instance => data.year_groups.some(includedYear => instance.year_groups.map(y => Number(y.year)).includes(includedYear))
+
+                                                    )
+                                                    .map(i => i.id)
+                                                    .every(club =>
                                                         data.clubs.includes(club),
                                                     )}
                                                 onChange={() => toggleTermSelect(term)}
@@ -421,7 +530,7 @@ export default function BookingConfigs({ auth, scheduleData, availableDays, club
                                 </tr>
                             </thead>
                             <tbody>
-                                {clubData.filter(club => true).map((club) => (
+                                {clubData.map(club => (
                                     <tr>
                                         <td>
                                             <Typography
@@ -434,9 +543,14 @@ export default function BookingConfigs({ auth, scheduleData, availableDays, club
                                                         variant="text"
                                                         onClick={() => {
                                                             let clubsToAdd =
-                                                                club.club_instances.map(
-                                                                    (i) => i.id,
-                                                                );
+                                                                club.club_instances
+                                                                    .filter(cI => (
+                                                                        data.year_groups.some(includedYear => cI.year_groups.map(y => Number(y.year)).includes(includedYear))
+
+                                                                    ))
+                                                                    .map(
+                                                                        i => i.id,
+                                                                    );
                                                             let newClubs = [
                                                                 ...(data.clubs || []),
                                                             ];
@@ -471,7 +585,8 @@ export default function BookingConfigs({ auth, scheduleData, availableDays, club
                                                             instance.day_of_week === day,
                                                     );
 
-                                                return clubInstance ? (
+
+                                                return clubInstance && data.year_groups.some(includedYear => clubInstance.year_groups.flatMap(y => Number(y.year)).includes(includedYear)) ? (
                                                     <td key={`${term}-${day}`}>
                                                         <Checkbox
                                                             defaultChecked={true}
@@ -493,6 +608,11 @@ export default function BookingConfigs({ auth, scheduleData, availableDays, club
                                 ))}
                             </tbody>
                         </table>
+                        <p className="text-sm ml-3 text-red-600 font-bold">
+                            {
+                                data.clubs.length ? "" : "You need to select at least one club instance"
+                            }
+                        </p>
                     </div>
                     {
                         errors.clubs &&
@@ -534,27 +654,40 @@ function ViewScheduled({ isOpen, handleOpen, scheduleData }) {
                 <Typography className="p-4 font-bold" variant="h5">
                     {liveConfigurations.length} Live Configurations
                 </Typography>
-                {
-                    liveConfigurations.length ?
-                        <Chip className="mr-3"
-                            value="Live"
-                            color="green"
-                        >
-                        </Chip>
-                        : Object.values(scheduleData).length ?
+                <Tooltip
+                    content={
+                        liveConfigurations.length ?
+                            "Students can currently book clubs"
+
+                            : Object.values(scheduleData).length ?
+                                "Students can't currently book clubs but they will soon be able to"
+                                :
+                                "No booking configs created. Use the form below to allow students to book clubs."
+
+                    }>
+                    {
+                        liveConfigurations.length ?
                             <Chip className="mr-3"
-                                value="Scheduled"
-                                color="amber"
-                            >
-                            </Chip> :
-                            <Chip className="mr-3"
-                                value="Offline"
-                                color="red"
+                                value="Live"
+                                color="green"
                             >
                             </Chip>
+                            : Object.values(scheduleData).length ?
+                                <Chip className="mr-3"
+                                    value="Scheduled"
+                                    color="amber"
+                                >
+                                </Chip> :
+                                <Chip className="mr-3"
+                                    value="Offline"
+                                    color="red"
+                                >
+                                </Chip>
 
-                }
+                    }
+                </Tooltip>
             </div>
+
             <table className="w-full  table-auto text-center">
                 {
                     // JSON.stringify(scheduleData)
@@ -615,9 +748,11 @@ function ViewScheduled({ isOpen, handleOpen, scheduleData }) {
     );
 }
 
+
 function ScheduleStatusChip({ data }) {
     return (
         <div className="flex gap-2 justify-center items-center ">
+
             <Chip
                 variant="ghost"
                 color={data.isLive ? "green" : "amber"}

@@ -57,65 +57,8 @@ class ClubInstance extends Model
     }
 
     // Relationship for incompatibility
-    public function incompatibleForward()
-    {
-        return $this->belongsToMany(
-            ClubInstance::class,
-            'incompatible_clubs',
-            'club_instance_id_1',
-            'club_instance_id_2'
-        );
-    }
-
-    public function incompatibleReverse()
-    {
-        return $this->belongsToMany(
-            ClubInstance::class,
-            'incompatible_clubs',
-            'club_instance_id_2',
-            'club_instance_id_1'
-        );
-    }
-
-    protected $appends = ['incompatible_club_ids', 'must_go_with_club_ids'];
-
-    public function getIncompatibleClubIdsAttribute()
-    {
-        $forward = $this->incompatibleForward()->pluck('club_instances.id')->toArray();
-        $reverse = $this->incompatibleReverse()->pluck('club_instances.id')->toArray();
-
-        return array_merge($forward, $reverse);
-    }
-
-    // Relationships for "must go with" clubs
-    public function mustGoWithForward()
-    {
-        return $this->belongsToMany(
-            ClubInstance::class,
-            'must_go_with_clubs',
-            'club_instance_id_1',
-            'club_instance_id_2'
-        );
-    }
-
-    public function mustGoWithReverse()
-    {
-        return $this->belongsToMany(
-            ClubInstance::class,
-            'must_go_with_clubs',
-            'club_instance_id_2',
-            'club_instance_id_1'
-        );
-    }
-
-
-    public function getMustGoWithClubIdsAttribute()
-    {
-        $forward = $this->mustGoWithForward()->pluck('club_instances.id')->toArray();
-        $reverse = $this->mustGoWithReverse()->pluck('club_instances.id')->toArray();
-
-        return array_merge($forward, $reverse);
-    }
+    
+   
 
 
     public static function getClubsToChangeIfBooked($user, $clubToBook)
