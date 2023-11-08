@@ -114,13 +114,7 @@ export default function ClubMarket({
                                                 {term}
                                             </Typography>
                                         </TimelineIcon>
-                                        {/* <Typography
-                                            variant="h3"
-                                            color="blue-gray"
-                                            className="leading-none uppercase tracking-widest"
-                                        >
-                                            Term {term} 
-                                        </Typography> */}
+                                        
                                         <Typography
                                             variant="h3"
                                             color="blue-gray"
@@ -129,9 +123,7 @@ export default function ClubMarket({
                                         </Typography>
                                     </TimelineHeader>
                                     {
-                                        /**
-                                         * Need to do some filtering.
-                                         */
+                                       
                                         auth.user.bookingConfigs.flatMap(bC => bC.associated_terms).includes(term) ?
                                             <>
                                                 <ChipWithStatus
@@ -171,7 +163,7 @@ export default function ClubMarket({
                                                     {
                                                         auth.user.futureBookingConfigs.filter(fBc =>
                                                             fBc.associated_terms.includes(term)
-                                                        ).map(fBc => (
+                                                        ).slice(0,1).map(fBc => (
                                                             <>Bookings for this term next opens in <strong className="font-bold">
                                                                 <CountdownTimer
                                                                     targetDate={fBc.scheduled_at}
