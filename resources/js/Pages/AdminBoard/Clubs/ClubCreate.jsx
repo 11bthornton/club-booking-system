@@ -14,6 +14,48 @@ import { Transition } from "@headlessui/react";
 
 export default function ClubCreate({ auth, availableDays, club }) {
 
+    const populateData = () => {
+        return ({
+            name: club.name,
+            description: club.description,
+            rule: club.rule,
+            ruleChoice: "",
+            is_paid: club.is_paid,
+            instances: Array.from({ length: availableDaysForBooking.length * 6 }, (_, index) =>
+                availableDaysForBooking[index % availableDaysForBooking.length]
+            ).map((day_of_week, i) => {
+
+                const half_term = Math.floor(i / availableDaysForBooking.length) + 1;
+
+                const potentiallyExistingClub = club.club_instances.filter(instance =>
+                    instance.day_of_week == day_of_week && instance.half_term == half_term
+                )[0];
+
+                if (potentiallyExistingClub) {
+                    return {
+                        half_term: half_term,
+                        day_of_week: day_of_week,
+                        year_groups: potentiallyExistingClub.year_groups.map(y => Number(y.year)),
+                        capacity: potentiallyExistingClub.capacity, // null means unlimited
+                    };
+                } else {
+
+                    return ({
+                        half_term: half_term,
+                        day_of_week: day_of_week,
+                        year_groups: [],
+                        capacity: null, // null means unlimited
+                    });
+                }
+
+
+            }),
+            must_do_all: club.must_do_all,
+            max_per_term: club.max_per_term,
+            max_per_year: club.max_per_year
+        })
+    }
+
     const [defaultCapacity, setDefaultCapacity] = useState(20);
 
     // Really this is the number of terms. 
@@ -47,45 +89,7 @@ export default function ClubCreate({ auth, availableDays, club }) {
         reset,
         processing,
         recentlySuccessful,
-    } = club ? useForm({
-        name: club.name,
-        description: club.description,
-        rule: club.rule,
-        ruleChoice: "",
-        is_paid: club.is_paid,
-        instances: Array.from({ length: availableDaysForBooking.length * 6 }, (_, index) =>
-            availableDaysForBooking[index % availableDaysForBooking.length]
-        ).map((day_of_week, i) => {
-
-            const half_term = Math.floor(i / availableDaysForBooking.length) + 1;
-
-            const potentiallyExistingClub = club.club_instances.filter(instance =>
-                instance.day_of_week == day_of_week && instance.half_term == half_term
-            )[0];
-
-            if (potentiallyExistingClub) {
-                return {
-                    half_term: half_term,
-                    day_of_week: day_of_week,
-                    year_groups: potentiallyExistingClub.year_groups.map(y => Number(y.year)),
-                    capacity: potentiallyExistingClub.capacity, // null means unlimited
-                };
-            } else {
-
-                return ({
-                    half_term: half_term,
-                    day_of_week: day_of_week,
-                    year_groups: [],
-                    capacity: null, // null means unlimited
-                });
-            }
-
-
-        }),
-        must_do_all: club.must_do_all,
-        max_per_term: club.max_per_term,
-        max_per_year: club.max_per_year
-    }) : useForm({
+    } = club ? useForm(populateData()) : useForm({
         name: "",
         description: "",
         rule: "",
@@ -104,47 +108,12 @@ export default function ClubCreate({ auth, availableDays, club }) {
         max_per_year: null
     })
 
+    
+        
+
     useEffect(() => {
         if (club) {
-            setData({
-                name: club.name,
-                description: club.description,
-                rule: club.rule,
-                ruleChoice: "",
-                is_paid: club.is_paid,
-                instances: Array.from({ length: availableDaysForBooking.length * 6 }, (_, index) =>
-                    availableDaysForBooking[index % availableDaysForBooking.length]
-                ).map((day_of_week, i) => {
-
-                    const half_term = Math.floor(i / availableDaysForBooking.length) + 1;
-
-                    const potentiallyExistingClub = club.club_instances.filter(instance =>
-                        instance.day_of_week == day_of_week && instance.half_term == half_term
-                    )[0];
-
-                    if (potentiallyExistingClub) {
-                        return {
-                            half_term: half_term,
-                            day_of_week: day_of_week,
-                            year_groups: potentiallyExistingClub.year_groups.map(y => Number(y.year)),
-                            capacity: potentiallyExistingClub.capacity, // null means unlimited
-                        };
-                    } else {
-
-                        return ({
-                            half_term: half_term,
-                            day_of_week: day_of_week,
-                            year_groups: [],
-                            capacity: null, // null means unlimited
-                        });
-                    }
-
-
-                }),
-                must_do_all: club.must_do_all,
-                max_per_term: club.max_per_term,
-                max_per_year: club.max_per_year
-            })
+            setData(populateData())
         }
     }, [club])
 
