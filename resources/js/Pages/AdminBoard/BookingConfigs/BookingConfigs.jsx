@@ -227,7 +227,7 @@ export default function BookingConfigs({ auth, scheduleData, availableDays, club
                     />
                     <p className="text-sm ml-3 text-red-600 font-bold">
                         {
-                            data.start_time ? "" : "Name still required"
+                            data.name ? "" : "Name still required"
                         }
                     </p>
                     {
@@ -292,7 +292,7 @@ export default function BookingConfigs({ auth, scheduleData, availableDays, club
                                     <input
                                         type="time"
                                         id="start-time"
-                                        className="w-24"
+                                        className="w-30"
                                         name="start_time" // you'd add this to your formData if needed
                                         onChange={handleInputChange}
                                     />
@@ -332,7 +332,7 @@ export default function BookingConfigs({ auth, scheduleData, availableDays, club
                                         id="end-time"
                                         name="end_time" // you'd add this to your formData if needed
                                         onChange={handleInputChange}
-                                        className="w-24"
+                                        className="w-30"
                                     />
                                     <p className="text-sm ml-1 text-red-600 font-bold">
                                         {
