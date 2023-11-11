@@ -12,26 +12,26 @@ const appName = import.meta.env.VITE_APP_NAME || "Laravel";
 
 // import { ThemeProvider } from '@material-tailwind/react';
 
-import { Inertia } from "@inertiajs/inertia";
+// import { Inertia } from "@inertiajs/inertia";
 
 // This will run globally for all Inertia responses
-Inertia.on("success", (event) => {
-  console.log("Event:", event.detail);
+// Inertia.on("success", (event) => {
+//   console.log("Event:", event.detail);
 
-  // If it exists, destructure the xhr object.
-  const { xhr } = event || {};
+//   // If it exists, destructure the xhr object.
+//   const { xhr } = event || {};
 
-  if (xhr) {
-    const newCsrfToken = xhr.getResponseHeader("X-CSRF-TOKEN");
-    if (newCsrfToken) {
-      document
-        .querySelector('meta[name="csrf-token"]')
-        .setAttribute("content", newCsrfToken);
-    }
-  } else {
-    console.warn("xhr object not found in the event");
-  }
-});
+//   if (xhr) {
+//     const newCsrfToken = xhr.getResponseHeader("X-CSRF-TOKEN");
+//     if (newCsrfToken) {
+//       document
+//         .querySelector('meta[name="csrf-token"]')
+//         .setAttribute("content", newCsrfToken);
+//     }
+//   } else {
+//     console.warn("xhr object not found in the event");
+//   }
+// });
 
 // Your createInertiaApp call or equivalent setup here
 
@@ -67,8 +67,7 @@ createInertiaApp({
 
 
 import React from 'react';
-import { useForm } from '@inertiajs/inertia-react';
-import AuthenticatedLayout from "./Layouts/AuthenticatedLayout";
+
 import { Button, Typography } from "@material-tailwind/react";
 
 class ErrorBoundary extends React.Component {
@@ -94,10 +93,10 @@ class ErrorBoundary extends React.Component {
     // Send a POST request to the server
     axios.post('/report-error', errorData)
       .then(() => {
-        console.log("Successfully Submitted");
+        // console.log("Successfully Submitted");
       })
       .catch(() => {
-        console.log("There was an error submitting the form");
+        // console.log("There was an error submitting the form");
       });
   }
 

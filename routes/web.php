@@ -220,6 +220,8 @@ Route::middleware(['auth', 'is.admin'])->group(function () {
 
 
     Route::post('/admin/reset', [SystemController::class, 'reset'])->name("admin.reset");
+
+    Route::get('/admin/how-to', function() { die("todo!"); })->name("admin.how-to");
 });
 
 Route::post('/report-error', [JSErrorLogController::class, 'store'])->name('report.error');

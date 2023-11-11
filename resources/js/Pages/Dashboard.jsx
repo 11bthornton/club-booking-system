@@ -89,7 +89,7 @@ export default function Dashboard({
                                     Clicking on the button at the bottom of each club will then display a list of clubs that are eligible for you to select. If you choose to select a club, you will first be shown a confirmation that clearly spells
                                     out how this change will affect your current bookings (if any). Hitting confirm will update the page.
                                 </Typography>
-                                <div className="flex gap-3 mt-2">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 justify-center items-center w-full">
                                     <img src="/options.png" alt="" width={400} />
                                     <img src="/confirm.png" alt="" width={400} />
 

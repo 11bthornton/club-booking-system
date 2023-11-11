@@ -155,6 +155,7 @@ export default function ClubMarket({
                                 .flatMap(i => i.year_groups)
                                 .map(t => Number(t.year))
 
+                                const live = auth.user.bookingConfigs.flatMap(bC => bC.associated_terms).includes(term) && availableToWhichYearGroups.includes(Number(auth.user.year));
 
                             return (
                                 <TimelineItem key={term}>
@@ -164,7 +165,7 @@ export default function ClubMarket({
 
                                         <TimelineHeader className="items-start">
                                             <TimelineIcon
-                                                color={auth.user.bookingConfigs.flatMap(bC => bC.associated_terms).includes(term) ? "green" : "red"}
+                                                color={live ? "green" : "red"}
                                                 className="shadow-xl"
                                                 variant="ghost"
                                             >
@@ -188,7 +189,7 @@ export default function ClubMarket({
 
                                                 {
 
-                                                    auth.user.bookingConfigs.flatMap(bC => bC.associated_terms).includes(term) && availableToWhichYearGroups.includes(Number(auth.user.year)) ?
+                                                    live ?
                                                         <>
                                                             <div className="flex justify-center">
                                                                 <ChipWithStatus

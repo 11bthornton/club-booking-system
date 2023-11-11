@@ -32,16 +32,62 @@ class ClubController extends Controller
                             if (!is_numeric($value)) {
                                 return;
                             }
-                
+
                             $maxPerTerm = $request->input('max_per_term');
-                
+
                             if ($maxPerTerm !== null && $value < $maxPerTerm) {
                                 $fail("The $attribute must be greater than or equal to max_per_term.");
                             }
                         },
                     ],
                     'must_do_all' => 'boolean|required',
-                    'instances' => 'required|array',
+                    'instances' => [
+                        'required',
+                        'array',
+                        function ($attribute, $value, $fail) use ($request) {
+                            if ($request->input('must_do_all')) {
+                                $firstCapacity = null;
+                                $isFirstCapacitySet = false;
+
+                                foreach ($value as $instance) {
+                                    // Check if year_groups is not empty
+                                    if (!empty($instance['year_groups'])) {
+                                        if (!$isFirstCapacitySet) {
+                                            $firstCapacity = $instance['capacity'] ?? null;
+                                            $isFirstCapacitySet = true;
+                                        } else if (($instance['capacity'] ?? null) !== $firstCapacity) {
+                                            $fail("All capacities must be the same for instances that are actually running (when eligible to one or more year groups) when must_do_all is true.");
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        function ($attribute, $value, $fail) use ($request) {
+                            if ($request->input('must_do_all')) {
+                                // First, check if the array is not empty and has more than one element
+                                if (!empty($value) && count($value) > 1) {
+                                    // Sort and store the first year group array
+                                    $firstYearGroups = $value[0]['year_groups'] ?? [];
+                                    sort($firstYearGroups);
+
+                                    // Iterate from the second element onwards
+                                    foreach (array_slice($value, 1) as $instance) {
+                                        // Sort the current year group array
+                                        $currentYearGroups = $instance['year_groups'] ?? [];
+                                        sort($currentYearGroups);
+
+                                        // Compare the sorted arrays
+                                        if ($firstYearGroups !== $currentYearGroups) {
+                                            $fail("The list of eligible year groups per instance must be the same when must_do_all is true and they are non empty.");
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                        },
+
+                    ],
                     'instances.*.half_term' => 'required|integer',
                     'instances.*.day_of_week' => 'required|string|in:Monday,Tuesday,Wednesday,Thursday,Friday,Saturday,Sunday',
                     'instances.*.year_groups' => 'array',
@@ -79,11 +125,12 @@ class ClubController extends Controller
 
             } catch (\Exception $e) {
                 throw $e;
-                
+
             }
         });
     }
-    public function createIndex() {
+    public function createIndex()
+    {
 
         $clubs = Club::getAllWithInstances();
 
@@ -117,7 +164,8 @@ class ClubController extends Controller
         ]);
     }
 
-    public function delete($id) {
+    public function delete($id)
+    {
         $clubToDelete = Club::findOrFail($id);
 
         $clubToDelete->delete();
@@ -148,16 +196,62 @@ class ClubController extends Controller
                         if (!is_numeric($value)) {
                             return;
                         }
-            
+
                         $maxPerTerm = $request->input('max_per_term');
-            
+
                         if ($maxPerTerm !== null && $value < $maxPerTerm) {
                             $fail("The $attribute must be greater than or equal to max_per_term.");
                         }
                     },
                 ],
                 'must_do_all' => 'boolean|required',
-                'instances' => 'required|array',
+                'instances' => [
+                    'required',
+                    'array',
+                    function ($attribute, $value, $fail) use ($request) {
+                        if ($request->input('must_do_all')) {
+                            $firstCapacity = null;
+                            $isFirstCapacitySet = false;
+
+                            foreach ($value as $instance) {
+                                // Check if year_groups is not empty
+                                if (!empty($instance['year_groups'])) {
+                                    if (!$isFirstCapacitySet) {
+                                        $firstCapacity = $instance['capacity'] ?? null;
+                                        $isFirstCapacitySet = true;
+                                    } else if (($instance['capacity'] ?? null) !== $firstCapacity) {
+                                        $fail("All capacities must be the same for instances that are actually running (when eligible to one or more year groups) when must_do_all is true.");
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    function ($attribute, $value, $fail) use ($request) {
+                        if ($request->input('must_do_all')) {
+                            // First, check if the array is not empty and has more than one element
+                            if (!empty($value) && count($value) > 1) {
+                                // Sort and store the first year group array
+                                $firstYearGroups = $value[0]['year_groups'] ?? [];
+                                sort($firstYearGroups);
+
+                                // Iterate from the second element onwards
+                                foreach (array_slice($value, 1) as $instance) {
+                                    // Sort the current year group array
+                                    $currentYearGroups = $instance['year_groups'] ?? [];
+                                    sort($currentYearGroups);
+
+                                    // Compare the sorted arrays
+                                    if ($firstYearGroups !== $currentYearGroups) {
+                                        $fail("The list of eligible year groups per instance must be the same when must_do_all is true and they are non empty.");
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    },
+
+                ],
                 'instances.*.half_term' => 'required|integer',
                 'instances.*.day_of_week' => 'required|string|in:Monday,Tuesday,Wednesday,Thursday,Friday,Saturday,Sunday',
                 'instances.*.year_groups' => 'array',
@@ -177,10 +271,10 @@ class ClubController extends Controller
                 // Check if the instance already exists
                 if ($existingInstances->has($instanceKey)) {
                     $existingInstance = $existingInstances->get($instanceKey);
-            
+
                     // Sync year groups for the existing instance
                     $existingInstance->yearGroups()->sync($instanceData['year_groups']);
-            
+
                     // Delete the existing instance if year_groups is empty
                     if (empty($instanceData['year_groups'])) {
                         $existingInstance->delete();
@@ -191,7 +285,7 @@ class ClubController extends Controller
                 } elseif (!empty($instanceData['year_groups'])) {
                     // Create a new instance only if year_groups is not empty
                     $newInstance = $club->clubInstances()->create($instanceData);
-            
+
                     // Sync year groups for the new instance
                     $newInstance->yearGroups()->sync($instanceData['year_groups']);
                 }
@@ -204,7 +298,8 @@ class ClubController extends Controller
         $this->show($id);
     }
 
-    public function index() {
+    public function index()
+    {
         $clubs = Club::getAllWithInstances();
 
         return Inertia::render('AdminBoard/Clubs/ClubsView', [
@@ -212,14 +307,14 @@ class ClubController extends Controller
         ]);
     }
 
-    protected $mainRules  = [
+    protected $mainRules = [
         'name' => 'required|string',
         'description' => 'required|string',
         'rule' => 'required|string',
         'is_paid' => 'required|boolean',
-    ];    
+    ];
 
-    
+
 
 
 

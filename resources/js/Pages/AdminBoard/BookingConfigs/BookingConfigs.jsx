@@ -171,7 +171,15 @@ export default function BookingConfigs({ auth, scheduleData, availableDays, club
             <Head title="Admin Dashboard" />
 
             <div className="container mx-auto pb-10">
+            <div className="mb-4 mt-9">
+                    <h2 className="text-3xl mb-1">
+                        Clubs Overview 
+                    </h2>
 
+                    <p className="mt-1 text-sm text-gray-600">
+                        All the clubs for the ongoing academic year.
+                    </p>
+                </div>
                 <div className="bg-white  bg-white shadow sm:rounded-lg mt-4">
                     <ViewScheduled scheduleData={scheduleData} />
                 </div>

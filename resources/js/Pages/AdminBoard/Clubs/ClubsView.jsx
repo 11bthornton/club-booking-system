@@ -1,32 +1,16 @@
-import React, { useState } from "react";
-import { DataGrid, GridToolbar } from "@mui/x-data-grid";
+import React from "react";
+import { DataGrid } from "@mui/x-data-grid";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head } from "@inertiajs/react";
-import toast from "react-hot-toast";
 
-import { makeStyles } from "@mui/styles";
 import { useForm } from "@inertiajs/inertia-react";
-import { faDownload, faEdit } from "@fortawesome/free-solid-svg-icons";
+import { faEdit } from "@fortawesome/free-solid-svg-icons";
 import moment from "moment/moment";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faDollarSign, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { faDollarSign } from "@fortawesome/free-solid-svg-icons";
 import { Link } from "@inertiajs/inertia-react";
 
 import { Button } from "@material-tailwind/react";
-
-const useStyles = makeStyles({
-    root: {
-        "& .MuiDataGrid-row": {
-            cursor: "pointer",
-        },
-        "& .MuiDataGrid-cell": {
-            borderBottom: "1px solid #E0E0E0",
-        },
-        "& .MuiDataGrid-columnsContainer": {
-            backgroundColor: "#F5F5F5",
-        },
-    },
-});
 
 export default function ClubView({ auth, clubs, year }) {
 
@@ -46,14 +30,6 @@ export default function ClubView({ auth, clubs, year }) {
                 return moment(params.value).format("YYYY-MM-DD HH:mm:ss");
             },
         },
-        // {
-        //     field: 'updated_at',
-        //     headerName: 'Updated At',
-        //     width: 200,
-        //     renderCell: (params) => {
-        //         return moment(params.value).format('YYYY-MM-DD HH:mm:ss');
-        //     }
-        // },
         {
             field: "instances",
             headerName: "Edit",
@@ -115,38 +91,11 @@ export default function ClubView({ auth, clubs, year }) {
                     >
                         Delete
                     </Button>
-
-
-
                 </div>
             ),
         },
-        // {
-        //     field: 'openForBookings',
-        //     headerName: 'Open for Bookings',
-        //     headerAlign: 'center',  // you can set this to 'left', 'right', or 'center'
-        //     align: "center",
-        //     renderHeader: () => (
-        //         <span>Open <strong>all</strong> for Bookings</span>
-        //     ),
-        //     width: 180,
-        //     renderCell: (params) => {
-        //         return (
-        //             <Switch
-        //                 checked={params.value}
-        //                 onChange={() => handleToggle(params)}
-        //                 color="primary"
-        //             />
-        //         );
-        //     }
-        // },
+
     ];
-
-
-
-
-
-
 
     return (
         <AuthenticatedLayout
@@ -160,8 +109,8 @@ export default function ClubView({ auth, clubs, year }) {
             <Head title="View Clubs" />
             <div className="container mx-auto p-6  mt-5 rounded-lg ">
 
-                <div className="bg-white p-5 shadow-lg mb-4 rounded-lg ">
-                    <h2 className="text-4xl font-bold text-gray-900">
+                <div className="mb-4">
+                    <h2 className="text-3xl mb-1">
                         Clubs Overview - {year.year_start} / {year.year_end}
                     </h2>
 

@@ -36,10 +36,9 @@ export default function SystemSchedulerCard({ clubData, scheduleData, availableD
     const handleViewDialog = () => setViewDialogOpen(!isViewDialogOpen);
 
     return (
-        <Card className="w-full shadow-none">
+        <Card className="w-full shadow-lg">
             <CardBody>
                 
-
                 <ViewScheduled
                     isOpen={isViewDialogOpen}
                     handleOpen={handleViewDialog}
