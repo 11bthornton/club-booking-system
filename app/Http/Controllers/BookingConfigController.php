@@ -9,12 +9,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redirect;
-use Illuminate\Support\Facades\Validator;
 use App\Rules\ValidBookingScheduleTime;
 
 use App\Models\ClubInstance;
 use App\Models\YearGroup;
-use App\Models\User;
 use Inertia\Inertia;
 
 class BookingConfigController extends Controller
