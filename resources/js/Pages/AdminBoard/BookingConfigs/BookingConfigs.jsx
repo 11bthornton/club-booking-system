@@ -273,7 +273,7 @@ export default function BookingConfigs({ auth, scheduleData, availableDays, club
                         whatever the time is at Bethany on that day.
                     </Alert>
 
-                    <div className="flex gap-4 justify-center mt-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 justify-center mt-6">
                         <div className="flex flex-col items-center gap-10 mb-4 p-5 border-dashed border-2 rounded-xl">
                             <h5 className="text-2xl">
                                 When would you like this open period to{" "}
@@ -381,11 +381,7 @@ export default function BookingConfigs({ auth, scheduleData, availableDays, club
                         Which year groups should this apply to?
                     </Typography>
 
-                    <p>
-                        You'll have the option to add / remove individual students
-                        later, but you can bulk-include year groups here.
-                    </p>
-
+                    
                     <div className="flex justify-end">
                         <Button
                             className="mt-2"
@@ -477,16 +473,16 @@ export default function BookingConfigs({ auth, scheduleData, availableDays, club
                     <div className="overflow-x-auto overflow-y-none p-3">
                         <table className="w-full  table-auto text-center ">
                             <thead>
-                                <tr>
-                                    <td></td>
+                                <tr >
+                                    <td key={null}></td>
                                     {[1, 2, 3, 4, 5, 6].map((term) => (
-                                        <td colSpan={availableDaysForBooking.length}>Term {term}</td>
+                                        <td colSpan={availableDaysForBooking.length} key={term}>Term {term}</td>
                                     ))}
                                 </tr>
                                 <tr>
-                                    <td>Select all in Term</td>
+                                    <td key={`title`}>Select all in Term</td>
                                     {[1, 2, 3, 4, 5, 6].map((term) => (
-                                        <td colSpan={availableDaysForBooking.length}>
+                                        <td colSpan={availableDaysForBooking.length} key={`termselect-${term}`}>
                                             <Checkbox
                                                 checked={clubData
                                                     .flatMap(club => club.club_instances)
@@ -524,6 +520,7 @@ export default function BookingConfigs({ auth, scheduleData, availableDays, club
                                                     ? "bg-gray-400"
                                                     : "bg-gray-100"
                                                     }`}
+                                                    key={`termday-${term}-${day}`}
                                             >
                                                 <Typography
                                                     variant="small"
@@ -539,7 +536,7 @@ export default function BookingConfigs({ auth, scheduleData, availableDays, club
                             </thead>
                             <tbody>
                                 {clubData.map(club => (
-                                    <tr>
+                                    <tr key={club.id}>
                                         <td>
                                             <Typography
                                                 variant="small"

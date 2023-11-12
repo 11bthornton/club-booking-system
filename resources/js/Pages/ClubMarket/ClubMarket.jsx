@@ -8,6 +8,7 @@ import { useAvailableClubs } from "@/ClubContext";
 import {
     Alert,
     Chip,
+    Tooltip,
     Typography,
     Timeline,
     TimelineItem,
@@ -58,12 +59,28 @@ export default function ClubMarket({
             <div className="container mx-auto flex flex-col mt-5 px-4 sm:px-6">
 
 
-                <Typography variant="h2" className="mb-1">
-                    Select your clubs
-                </Typography>
-                <Typography variant="h5" className="mb-4">
-                    For the academic year 20{year.year_start} - 20{year.year_end}
-                </Typography>
+                <div className="flex justify-between items-start">
+                    <div>
+                        <Typography variant="h2" className="mb-1">
+                            Select your clubs
+                        </Typography>
+                        <Typography variant="h5" className="mb-4">
+                            For the academic year 20{year.year_start} - 20{year.year_end}
+                        </Typography>
+                    </div>
+                    {
+                        auth.user.bookingConfigs.length &&
+                        <Tooltip
+                            content="You can book clubs for one or more terms! Make sure to scroll all the way down "
+                        >
+                            <Chip
+                                value="Live"
+                                color="green"
+                            />
+                        </Tooltip>
+                    }
+
+                </div>
 
                 {
                     auth.user.bookingConfigs.length ?
@@ -155,13 +172,13 @@ export default function ClubMarket({
                                 .flatMap(i => i.year_groups)
                                 .map(t => Number(t.year))
 
-                                const live = auth.user.bookingConfigs.flatMap(bC => bC.associated_terms).includes(term) && availableToWhichYearGroups.includes(Number(auth.user.year));
+                            const live = auth.user.bookingConfigs.flatMap(bC => bC.associated_terms).includes(term) && availableToWhichYearGroups.includes(Number(auth.user.year));
 
                             return (
                                 <TimelineItem key={term}>
                                     <TimelineConnector />
                                     <div className="flex gap-5 items-center">
-                                    
+
 
                                         <TimelineHeader className="items-start">
                                             <TimelineIcon
@@ -234,11 +251,11 @@ export default function ClubMarket({
                                                                         fBc.associated_terms.includes(term)
                                                                     ).slice(0, 1).map(fBc => (
                                                                         <>
-                                                                        Bookings for this term next opens in <strong className="font-bold">
-                                                                            <CountdownTimer
-                                                                                targetDate={fBc.scheduled_at}
-                                                                                className="font-bold"
-                                                                            /></strong></>
+                                                                            Bookings for this term next opens in <strong className="font-bold">
+                                                                                <CountdownTimer
+                                                                                    targetDate={fBc.scheduled_at}
+                                                                                    className="font-bold"
+                                                                                /></strong></>
                                                                     ))
                                                                 }
                                                             </p>
@@ -246,10 +263,8 @@ export default function ClubMarket({
                                                 }
                                             </div>
                                         </TimelineHeader>
-
-
                                     </div>
-                                    <TimelineBody className={` justify-center m-4 ${false ? 'opacity-50' : 'opacity-100'} w-full`}>
+                                    <TimelineBody className={` pr-12 justify-center m-4 ${false ? 'opacity-50' : 'opacity-100'} w-full`}>
                                         <Typography className="text-2xl text-center mb-10">
                                             This term starts on {year[`term${term}_start`]}
                                         </Typography>
