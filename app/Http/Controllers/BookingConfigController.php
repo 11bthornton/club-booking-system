@@ -21,13 +21,14 @@ class BookingConfigController extends Controller
     {
         $rules = [
             'name' => 'required|string|min:3',
-            'start_date' => 'required|date',
-            'end_date' => 'required|date',
+            'start_date' => 'required|date_format:Y-m-d',
+            'end_date' => 'required|date_format:Y-m-d',
             'start_time' => 'required|date_format:H:i',
             'end_time' => ['required', 'date_format:H:i', new ValidBookingScheduleTime],
             'year_groups' => 'required|array|min:1',
             'year_groups.*' => 'in:7,8,9,10,11',
             'clubs' => 'required|array|min:1',
+            'clubs.*' => ['required', 'exists:club_instances,id'],
         ];
     
         $data = $request->validate($rules);
@@ -35,7 +36,6 @@ class BookingConfigController extends Controller
         DB::beginTransaction();
 
         try {
-
 
             $startDate = \Carbon\Carbon::parse($data['start_date'] . ' ' . $data['start_time']);
             $endDate = \Carbon\Carbon::parse($data['end_date'] . ' ' . $data['end_time']);

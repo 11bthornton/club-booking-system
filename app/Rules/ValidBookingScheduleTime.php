@@ -13,7 +13,7 @@ class ValidBookingScheduleTime implements Rule
         $startDate = Carbon::parse(request('start_date') . ' ' . request('start_time'));
         $endDate = Carbon::parse(request('end_date') . ' ' . request('end_time'));
 
-        return $endDate->gte($startDate);
+        return $endDate->gt($startDate);
     }
 
     public function message()

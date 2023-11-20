@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Club;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -9,18 +10,19 @@ use Illuminate\Database\Eloquent\Factories\Factory;
  */
 class ClubInstanceFactory extends Factory
 {
+
     public function definition()
     {
         $availableDays = ['Wednesday', 'Friday'];
-    
-        $validClubs = \App\Models\Club::all()->filter(function ($club) use ($availableDays) {
+
+        $validClubs = Club::all()->filter(function ($club) use ($availableDays) {
             $daysAlreadyChosen = $club->clubInstances->pluck('day_of_week')->toArray();
             $remainingDays = array_diff($availableDays, $daysAlreadyChosen);
             return !empty($remainingDays);
         });
-    
+
         if ($validClubs->isEmpty()) {
-            $club = factory(\App\Models\Club::class)->create();
+            $club = Club::factory()->create();
             $selectedDay = $this->faker->randomElement($availableDays);
         } else {
             $club = $validClubs->random();
@@ -28,7 +30,7 @@ class ClubInstanceFactory extends Factory
             $remainingAvailableDays = array_diff($availableDays, $daysAlreadyChosen);
             $selectedDay = $this->faker->randomElement($remainingAvailableDays);
         }
-    
+
         return [
             'club_id' => $club->id,
             'half_term' => $this->faker->numberBetween(1, 6),
@@ -38,7 +40,26 @@ class ClubInstanceFactory extends Factory
             'updated_at' => now(),
         ];
     }
-    
 
+    public function onDay($day): static
+    {
+        return $this->state(fn(array $attributes) => [
+            'day_of_week' => $day
+        ]);
+    }
+
+    public function inTerm($term): static
+    {
+        return $this->state(fn(array $attributes) => [
+            'half_term' => $term
+        ]);
+    }
+
+    public function withCapacity($capacity): static
+    {
+        return $this->state(fn(array $attributes) => [
+            'capacity' => $capacity
+        ]);
+    }
 
 }
