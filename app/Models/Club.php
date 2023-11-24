@@ -74,7 +74,7 @@ class Club extends Model
                     // ]); // Only select necessary columns
             },
         ])
-            ->where('academic_year_id', $currentAcademicYearId) // Filtering based on the academic_year_id
+            // ->where('academic_year_id', $currentAcademicYearId) // Filtering based on the academic_year_id
             ->whereHas('clubInstances', function ($query) use ($year) {
                 $query->whereHas('yearGroups', function ($q) use ($year) {
                     $q->where('year_group_club.year', $year);
@@ -97,7 +97,6 @@ class Club extends Model
 
         return $clubs;
     }
-
 
     public static function allAvailable()
     {

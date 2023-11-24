@@ -17,6 +17,16 @@
             <directory>app</directory>
         </include>
     </source>
+
+    <coverage>
+        <report>
+        <html outputDirectory="coverage-html" />
+        <clover outputFile="coverage-clover.xml" />
+        <!-- Other formats can be added here -->
+    </report>
+
+    </coverage>
+
     <php>
         <env name="APP_ENV" value="testing"/>
         <env name="BCRYPT_ROUNDS" value="4"/>

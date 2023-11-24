@@ -124,6 +124,7 @@ class BookingController extends Controller
                 $maxPerTerm = $clubToBook->club->max_per_term;
                 $maxPerYear = $clubToBook->club->max_per_year;
 
+
                 /**
                  * The `must_do_all` club instances are all booked together, so they're never partially
                  * booked by the user. This is an invariant that's upheld. This is why only one club
@@ -138,6 +139,9 @@ class BookingController extends Controller
                     })->where('user_id', $user->id);
 
                     if ($existingBookings->count() >= $maxPerTerm) {
+                        
+                        // dd($clubToBook);
+
                         $clubsToDelete = array_merge($clubsToDelete, $this->simulateDeleteBooking($existingBookings->first(), $user));
                     }
                 }
@@ -146,14 +150,14 @@ class BookingController extends Controller
                  * Same as above but since this is per year don't need the extra checks.
                  */
                 if ($maxPerYear) {
-                    $existingBookings = UserClub::whereHas('clubInstance', function ($query) use ($club, $clubToBook) {
+                    $existingBookings = UserClub::whereHas('clubInstance', function ($query) use ($club) {
                         $query
                             ->where('club_id', $club->id);
-                        // ->where('half_term', $clubToBook->half_term)
-                        // ->whereNot('day_of_week', $clubToBook->day_of_week);
+                            // ->where('half_term', $clubToBook->half_term)
+                            // ->whereNot('day_of_week', $clubToBook->day_of_week);
                     })->where('user_id', $user->id);
 
-                    if ($existingBookings->count() >= $maxPerTerm) {
+                    if ($existingBookings->count() >= $maxPerYear) {
                         $clubsToDelete = array_merge($clubsToDelete, $this->simulateDeleteBooking($existingBookings->first(), $user));
                     }
                 }
@@ -255,6 +259,7 @@ class BookingController extends Controller
 
     public function bookClubStudent(Request $request, $id) {
 
+        // dd($request->user());
         return $this->bookForUser($request->user(), $id);
     }
 

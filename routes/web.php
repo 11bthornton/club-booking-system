@@ -88,7 +88,7 @@ Route::middleware(['auth', 'system.is.setup'])->group(function () {
 
     Route::post('/club-market/{id}', [BookingController::class, 'bookClubStudent'])->name("clubs.book");
 
-    Route::delete('/club/{id}', [BookingController::class, 'deleteBookingStudent']);
+    Route::delete('/club/{id}', [BookingController::class, 'deleteBookingStudent'])->name("bookings.delete");
 
     /**
      * Believe this is redundant. 

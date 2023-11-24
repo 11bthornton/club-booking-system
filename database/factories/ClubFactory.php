@@ -100,8 +100,33 @@ class ClubFactory extends Factory
                 ]);
             
                 foreach($clubInstance['yearGroups'] as $yearGroup) {
-                    YearGroupClub::factory()->forYear($yearGroup)->forClubInstance($clubInstance->id);
+                    YearGroupClub::factory()->forYear($yearGroup)->forClubInstance($clubInstance->id)->create();
                 }
+            }
+        });
+    }
+
+    public function withBulkInstances(array $terms, array $days, array $yearGroups, $capacity = null) {
+        return $this->afterCreating(function(Club $club) use ($terms, $days, $yearGroups, $capacity) {
+            foreach($terms as $term) {
+                
+                foreach($days as $day) {
+
+                    $clubInstance = ClubInstance::factory()
+                        ->inTerm($term)
+                        ->onDay($day)
+                        ->withCapacity($capacity)
+                        ->create([
+                            'club_id' => $club->id
+                        ]);
+
+                    foreach($yearGroups as $yearGroup) {
+                        YearGroupClub::factory()->forYear($yearGroup)->forClubInstance($clubInstance)->create();
+                    }
+
+
+                }
+                
             }
         });
     }
