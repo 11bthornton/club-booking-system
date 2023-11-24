@@ -45,4 +45,16 @@ class BookingConfigFactory extends Factory
             }
         });
     }
+
+    public function withFutureDates(): static
+    {
+
+        $startDate = \Carbon\Carbon::parse("2422-5-15 00:00");
+        $endDate = \Carbon\Carbon::parse("2950-5-15 00:00");
+
+        return $this->state(fn(array $attributes) => [
+            'scheduled_at' => $startDate,
+            'ends_at' => $endDate,
+        ]);
+    }
 }
