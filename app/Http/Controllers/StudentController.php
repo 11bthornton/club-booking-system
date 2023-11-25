@@ -35,6 +35,7 @@ class StudentController extends Controller
      */
     public function index()
     {
+
         $students = User::getStudents()->each->append('organized_by_term');
 
         return Inertia::render('AdminBoard/Students/Students', [
@@ -49,6 +50,10 @@ class StudentController extends Controller
     {
 
         $student = User::findOrFail($id);
+
+        if($student->role) {
+            return Redirect::route("admin.students");
+        }
 
         $availableClubs = Club::allAvailable();
 
