@@ -148,6 +148,14 @@ export default function ClubCreate({ auth, availableDays, club }) {
 
             <form>
 
+                {
+                    JSON.stringify(errors)
+                }
+                <br />
+                {
+                    // JSON.stringify(data)
+                }
+
                 <div className="container mx-auto flex-col gap-4">
 
                     <div className="bg-white mt-4 p-6 rounded-lg shadow-sm">

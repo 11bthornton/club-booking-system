@@ -123,9 +123,9 @@ class ClubController extends Controller
                     ],
                     'instances.*.half_term' => 'required|integer',
                     'instances.*.day_of_week' => 'required|string|in:Monday,Tuesday,Wednesday,Thursday,Friday,Saturday,Sunday',
-                    'instances.*.year_groups' => 'required|array',
+                    'instances.*.year_groups' => 'array',
                     'instances.*.year_groups.*' => [
-                        'required',
+                        // 'required',
                         // 'distinct',
                         'exists:year_groups,year' // ensures each year group exists in the year_groups table
                     ],
