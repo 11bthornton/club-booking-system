@@ -1,8 +1,12 @@
 import TextInput from "@/Components/TextInput";
 
+import { useState } from "react";
+
 import { Alert, Checkbox, Input, Textarea } from "@material-tailwind/react";
 
 export default function NameDescriptionAndRules({ data, setData, errors }) {
+
+    
 
     return (
         <div className="bg-white mt-4 p-6 rounded-lg shadow-sm">
@@ -80,40 +84,77 @@ export default function NameDescriptionAndRules({ data, setData, errors }) {
                     How many times can a student pick this club per <strong>term</strong>? (Leave blank for unlimited)
 
                 </p>
+                <div className="flex w-full items-center gap-40">
+
                 <div className="w-32 mt-2">
                     <Input
                         id="max-per-term"
                         name="max-per-term"
+                        disabled={data.max_per_term == null}
 
                         type="number"
-                        disabled={data.must_do_all}
-                        placeholder="Unlimited"
+                        placeholder={ data.max_per_year == null ? "Unlimited" : ""}
+                        
                         value={data.max_per_term}
                         onChange={(e) => setData("max_per_term", e.target.value ? Number(e.target.value) : null)} />
+                </div>
+                <div className="flex items-center mt-2">
+                        <em>Or unlimited</em>
+                        <Checkbox
+                            checked={data.max_per_term == null}
+                            onChange={() => {
+                                if(data.max_per_term == null) {
+                                    setData("max_per_term", 1);
+                                } else {
+                                    setData("max_per_term", null);
+                                }
+                            }}
+                        />
+                    </div>
                 </div>
                 <p className="text-sm text-gray-600 mt-4">
                     How many times can a student pick this club per <strong>year</strong>? (Leave blank for unlimited)
 
                 </p>
-                <div className="w-32 mt-2">
-                    <Input
-                        id="max-per-year"
-                        name="max-per-year"
+                <div className="flex w-full items-center gap-40">
+                    <div className="w-32 mt-2">
+                        <Input
+                            id="max-per-year"
+                            name="max-per-year"
 
-                        type="number"
-                        disabled={data.must_do_all}
+                            type="number"
+                            disabled={data.max_per_year == null}
 
-                        placeholder="Unlimited"
-                        value={data.max_per_year}
-                        onChange={(e) => setData("max_per_year", e.target.value ? Number(e.target.value) : null)} />
+                            placeholder={ data.max_per_year == null ? "Unlimited" : ""}
+                            value={data.max_per_year}
+                            onChange={(e) => setData("max_per_year", e.target.value ? Number(e.target.value) : null)} />
+                    </div>
+                    <div className="flex items-center mt-2">
+                        <em>Or unlimited</em>
+                        <Checkbox
+                            checked={data.max_per_year == null}
+                            onChange={() => {
+                                if(data.max_per_year == null) {
+                                    setData("max_per_year", 1);
+                                } else {
+                                    setData("max_per_year", null);
+                                }
+                            }}
+                        />
+                    </div>
                 </div>
-                <p className="text-sm text-gray-600 mt-4">
+                <p className="text-sm text-red-600 mt-4 font-bold">
                     Do the students have to do all of the below clubs? (Overrides max per year and max per term settings).
+                    If students must commit to all days/terms, you must select this option otherwise students will be allowed to pick and choose their commitment to this club.
                 </p>
                 <Checkbox
                     label="Yes"
                     checked={data.must_do_all}
-                    onChange={() => { setData("must_do_all", !data.must_do_all); }}
+                    onChange={() => {
+                        setData("must_do_all", !data.must_do_all); 
+                        // setData("max_per_term", null);
+                        // setData("max_per_year", null);
+                    }}
                 >
 
                 </Checkbox>

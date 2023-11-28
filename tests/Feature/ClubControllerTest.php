@@ -529,6 +529,7 @@ class ClubControllerTest extends TestCase
             'description' => $club->description,
             'rule' => $club->rule,
             'is_paid' => $club->is_paid,
+            'must_do_all' => false,
             'instances' => [
                 [
                     'half_term' => 1,
@@ -539,8 +540,8 @@ class ClubControllerTest extends TestCase
             ]
         ]);
 
-
         $this->assertDatabaseHas('clubs', [
+            'id' => $club->id,
             'name' => "New Name"
         ]);
 

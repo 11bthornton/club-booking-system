@@ -107,35 +107,35 @@ export default function ClubCreate({ auth, availableDays, club }) {
     }, [club]);
 
     // Max can only be positive, so enforce this client-side
-    useEffect(() => {
+    // useEffect(() => {
 
-        if (data.max_per_term && data.max_per_term < 1) {
-            setData("max_per_term", 1);
-        }
+    //     if (data.max_per_term && data.max_per_term < 1) {
+    //         setData("max_per_term", 1);
+    //     }
 
-    }, [data.max_per_term]);
+    // }, [data.max_per_term]);
 
-    // Max can only be positive, so enforce this client-side
-    useEffect(() => {
+    // // Max can only be positive, so enforce this client-side
+    // useEffect(() => {
 
-        if (data.max_per_year && data.max_per_year < 1) {
-            setData("max_per_year", 1);
-        }
+    //     if (data.max_per_year && data.max_per_year < 1) {
+    //         setData("max_per_year", 1);
+    //     }
 
-    }, [data.max_per_year]);
+    // }, [data.max_per_year]);
 
-    useEffect(() => {
-        console.log(data.must_do_all);
+    // useEffect(() => {
+    //     console.log(data.must_do_all);
 
-        if (data.must_do_all) {
-            setData(prevState => ({
-                ...prevState,
-                max_per_term: 0,
-                max_per_year: 0
-            }));
-        }
+    //     if (data.must_do_all) {
+    //         setData(prevState => ({
+    //             ...prevState,
+    //             max_per_term: 0,
+    //             max_per_year: 0
+    //         }));
+    //     }
 
-    }, [data.must_do_all]);
+    // }, [data.must_do_all]);
 
     return (
         <AuthenticatedLayout
@@ -148,13 +148,13 @@ export default function ClubCreate({ auth, availableDays, club }) {
 
             <form>
 
-                {
+                {/* {
                     JSON.stringify(errors)
                 }
                 <br />
                 {
-                    // JSON.stringify(data)
-                }
+                    JSON.stringify(data)
+                } */}
 
                 <div className="container mx-auto flex-col gap-4">
 
