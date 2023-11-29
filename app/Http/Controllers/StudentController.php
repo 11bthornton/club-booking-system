@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Http\Requests\StudentStoreRequest;
 use App\Imports\UsersImport;
 use App\Models\Club;
 use App\Models\User;
@@ -149,12 +150,14 @@ class StudentController extends Controller
         return Redirect::route("admin.students");
     }
 
-    public function store(Request $request)
+    public function store(StudentStoreRequest $request)
     {
 
         $user = new User;
-        $user->fill($request->all());
+
+        $user->fill($request->toArray());
         $user->role = 0;
+        
         $user->save();
         back();
 

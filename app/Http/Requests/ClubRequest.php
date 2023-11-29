@@ -103,7 +103,7 @@ class ClubRequest extends FormRequest
                                 sort($currentYearGroups);
 
                                 // Compare the sorted arrays
-                                if ($firstYearGroups !== $currentYearGroups) {
+                                if ($firstYearGroups && $currentYearGroups && ($firstYearGroups !== $currentYearGroups)) {
                                     $fail("The list of eligible year groups per instance must be the same when must_do_all is true and they are non empty.");
                                     break;
                                 }

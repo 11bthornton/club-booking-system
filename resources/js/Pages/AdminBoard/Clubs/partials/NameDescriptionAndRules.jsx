@@ -81,7 +81,7 @@ export default function NameDescriptionAndRules({ data, setData, errors }) {
                         Max per year must be greater or equal to max per term.
                     </Alert>}
                 <p className="text-sm text-gray-600">
-                    How many times can a student pick this club per <strong>term</strong>? (Leave blank for unlimited)
+                    How many times can a student pick this club per <strong>term</strong>? 
 
                 </p>
                 <div className="flex w-full items-center gap-40">
@@ -113,7 +113,7 @@ export default function NameDescriptionAndRules({ data, setData, errors }) {
                     </div>
                 </div>
                 <p className="text-sm text-gray-600 mt-4">
-                    How many times can a student pick this club per <strong>year</strong>? (Leave blank for unlimited)
+                    How many times can a student pick this club per <strong>year</strong>?
 
                 </p>
                 <div className="flex w-full items-center gap-40">

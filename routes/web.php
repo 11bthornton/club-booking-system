@@ -166,7 +166,7 @@ Route::middleware(['auth', 'is.admin'])->group(function () {
     Route::post('/admin/admins', [AdminController::class, 'store'])->name("admin.admins.store");
 
 
-    Route::post("/admin/club/{id}", [AdminController::class, 'bookForUser'])->name('admin.clubs.book');
+    // Route::post("/admin/club/{id}", [AdminController::class, 'bookForUser'])->name('admin.clubs.book');
     Route::get('/admin/clubs/{id}', [ClubController::class, 'show'])->name('admin.clubs.index');
     Route::put('/admin/clubs/{id}/update', [ClubController::class, 'update'])->name('admin.clubs.update');
     // Route::put('/admin/clubs/{id}', [ClubController::class, 'update']);
@@ -216,7 +216,7 @@ Route::middleware(['auth', 'is.admin'])->group(function () {
 
     Route::get('/admin/simulate-book/{clubInstanceId}/student/{studentId}', [BookingController::class, 'simulateBookAdminMode'])->name("admin.book.simulate");
     Route::post('/admin/book-for-student/{clubInstanceId}/student/{studentId}', [BookingController::class, 'bookClubForStudentAsAdmin'])->name("admin.clubs.book");
-    Route::delete('/admin/delete-for-student/{clubInstanceId}/student/{studentId}', [BookingController::class, 'deleteClubForStudentAsAdmin'])->name("admin.clubs.book");
+    Route::delete('/admin/delete-for-student/{clubInstanceId}/student/{studentId}', [BookingController::class, 'deleteClubForStudentAsAdmin'])->name("admin.clubs.delete");
 
 
     Route::post('/admin/reset', [SystemController::class, 'reset'])->name("admin.reset");

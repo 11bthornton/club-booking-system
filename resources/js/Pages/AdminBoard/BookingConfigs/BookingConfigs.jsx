@@ -208,7 +208,7 @@ export default function BookingConfigs({ auth, scheduleData, availableDays, club
                         color="green"
                         className="mb-2 mt-4"
                     >
-                        Club successfully saved!
+                        Booking config successfully saved!
                     </Alert>
                 </Transition>
                 {

@@ -109,6 +109,53 @@ class StudentControllerTest extends TestCase
 
     public function testStoreOfIndividualUser(): void
     {
-        
+        $response = $this->post(route("admin.students.store"), [
+            "username" => "testusername",
+            "year" => "8",
+            "password" => "testpassword"
+        ]);
+
+        $response->assertSuccessful();
+
+        $this->assertDatabaseHas('users', [
+            "username" => "testusername",
+            "year" => "8",
+        ]);
+    }
+
+    public function testInvalidStoreOfIndividualUser(): void
+    {
+        $response = $this->post(route("admin.students.store"), [
+            "username" => "testuser",
+            "year" => "8",
+            "password" => "testpassword"
+        ]);
+
+        $response->assertRedirect();
+
+        $this->assertDatabaseMissing("users", [
+            "username" => "testuser",
+            "year" => "8",
+            "password" => "testpassword"
+        ]);
+    }
+
+    public function testInvalidStoreOfIndividualUserFromStudent(): void
+    {
+        $this->actingAs($this->testStudent);
+
+        $response = $this->post(route("admin.students.store"), [
+            "username" => "testuserasds",
+            "year" => "8",
+            "password" => "testpassword"
+        ]);
+
+        $response->assertRedirect();
+    
+        $this->assertDatabaseMissing("users", [
+            "username" => "testuserasds",
+            "year" => "8",
+            "password" => "testpassword"
+        ]);
     }
 }
