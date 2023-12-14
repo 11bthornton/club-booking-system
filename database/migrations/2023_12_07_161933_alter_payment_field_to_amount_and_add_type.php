@@ -6,14 +6,14 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-
     /**
-     * Run the migrations. 
+     * Run the migrations.
      */
     public function up(): void
     {
         Schema::table('clubs', function (Blueprint $table) {
-            $table->integer('is_paid')->default(false);
+            // Add a new string column for payment_type
+            $table->string('payment_type')->nullable();
         });
     }
 
@@ -23,7 +23,9 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('clubs', function (Blueprint $table) {
-            //
+            // Remove the payment_type column
+            $table->dropColumn('payment_type');
         });
     }
 };
+

@@ -29,6 +29,7 @@ export default function ClubMarket({
     csrf,
     year
 }) {
+    
     const { availableClubs, alreadyBooked, setAvailableClubs, setAlreadyBooked } =
         useAvailableClubs();
 
@@ -131,7 +132,7 @@ export default function ClubMarket({
 
                 </Typography>
 
-                <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 justify-center items-center mb-8 gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 justify-center items-center mb-8 gap-2">
                     {
                         Object.values(alreadyBooked).map((bookings, term) => {
 
@@ -140,7 +141,7 @@ export default function ClubMarket({
                             const countBooked = Object.values(bookings).filter(booking => booking).length
 
                             return (
-                                <div className="flex justify-center gap-2">
+                                <div className="flex justify-center gap-10">
                                     <Chip
                                         variant="ghost"
                                         icon={
@@ -150,6 +151,7 @@ export default function ClubMarket({
                                                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                             </svg>
                                         }
+                                        className="mr-5"
                                         value={`Term ${term + 1}  - ${countBooked}/${length} booked`}
                                         color={!countBooked ? "red" : stillNeedsToBook ? "orange" : "green"}
                                     >
@@ -165,6 +167,8 @@ export default function ClubMarket({
                 <div className="flex flex-col justify-between items-center w-full">
                     <Timeline className="w-full">
                         {[1, 2, 3, 4, 5, 6].map((term) => {
+
+                            // console.log(availableClubs);
 
                             const availableToWhichYearGroups = Object.values(availableClubs)
                                 .flatMap(c => c.club_instances)
@@ -266,7 +270,7 @@ export default function ClubMarket({
                                     </div>
                                     <TimelineBody className={` pr-12 justify-center m-4 ${false ? 'opacity-50' : 'opacity-100'} w-full`}>
                                         <Typography className="text-2xl text-center mb-10">
-                                            This term starts on {year[`term${term}_start`]}
+                                            This term starts on {toNaturalLanguageDate(year[`term${term}_start`])}
                                         </Typography>
                                         <TermChoiceCard term={term} csrf={csrf} days={auth.user.days[0].days_array} />
                                         <br />
@@ -279,4 +283,15 @@ export default function ClubMarket({
             </div>
         </AuthenticatedLayout>
     );
+}
+
+function toNaturalLanguageDate(dateString) {
+    const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    
+    const date = new Date(dateString);
+    const day = date.getDate();
+    const month = months[date.getMonth()];
+    const year = date.getFullYear();
+
+    return `${month} ${day}, ${year}`;
 }

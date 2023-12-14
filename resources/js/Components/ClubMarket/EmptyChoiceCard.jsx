@@ -85,7 +85,7 @@ export function EmptyChoiceCard({ csrf, term, day }) {
                         </div>
                         <div>
                             <Alert
-                                className="max-h-[150px] sm:h-[100px] h-[100px] min-h-[100px] mt-[6px] overflow-hidden"
+                                className="max-h-[130px] sm:h-[130px] h-[13px] min-h-[130px] mt-[6px] overflow-hidden"
                                 variant="ghost"
                                 color="orange"
                                 icon={

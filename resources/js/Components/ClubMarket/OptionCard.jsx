@@ -38,13 +38,13 @@ export function OptionCard({
             currentClubInstance.day_of_week
         ]?.id == currentClubInstance.id;
 
-        const truncateText = (text, length = 15) => {
-            if (text.length > length) {
-                return `${text.substring(0, length)}...`;
-            }
-            return text;
-        };
-    
+    const truncateText = (text, length = 15) => {
+        if (text.length > length) {
+            return `${text.substring(0, length)}...`;
+        }
+        return text;
+    };
+
     return (
         <div className="flex justify-center" key={currentClubInstance.id}>
             <ChangeConfirmationDialogue
@@ -57,7 +57,7 @@ export function OptionCard({
                 csrf={csrf}
             />
 
-            <Card className="mt-6 w-96 border">
+            <Card className="mt-6 min-w-[450px] max-w-[400px] border">
                 <CardHeader
                     variant="gradient"
                     color="green"
@@ -81,7 +81,7 @@ export function OptionCard({
                     </Typography>
                 </CardHeader>
                 <CardBody>
-                    
+
                     <div className="flex justify-between items-center mb-2">
                         <Typography
                             variant="h5"
@@ -92,8 +92,9 @@ export function OptionCard({
                         <div className="flex gap-2">
                             {currentClubInfo.is_paid ? (
                                 <ChipWithStatus
-                                    text="Requires Payment"
+                                    text={`£${currentClubInfo.is_paid} - ${currentClubInfo.payment_type}`}
                                     color="red"
+                                    tooltipContent={"This club costs to join"}
                                 />
                             ) : (
                                 <ChipWithStatus
@@ -102,23 +103,26 @@ export function OptionCard({
                                     tooltipContent="This club is free to join"
                                 />
                             )}
-                            
-                            <ChipWithStatus
-                                text={currentClubInstance.capacity}
-                                color={
-                                    currentClubInstance.capacity <= 5
-                                        ? "red"
-                                        : currentClubInstance.capacity <= 10
-                                            ? "amber"
-                                            : "green"
-                                }
-                                tooltipContent={`${currentClubInstance.capacity} spaces left`}
-                            />
+
+                            {
+                                currentClubInstance.capacity ?
+                                    <ChipWithStatus
+                                        text={currentClubInstance.capacity}
+                                        color={
+                                            currentClubInstance.capacity <= 5
+                                                ? "red"
+                                                : currentClubInstance.capacity <= 10
+                                                    ? "amber"
+                                                    : "green"
+                                        }
+                                        tooltipContent={`${currentClubInstance.capacity} spaces left`}
+                                    /> : <></>
+                            }
                         </div>
                     </div>
                     <div className="flex-col flex ">
                         <div className="flex items-center justify-between">
-                        <Typography
+                            <Typography
                                 variant="h3"
                                 className="mb-2 min-h-[40px] h-[40px] max-h-[40px]"
                                 style={{
@@ -127,16 +131,21 @@ export function OptionCard({
                                     textOverflow: "ellipsis"
                                 }}
                             >
-                                {truncateText(currentClubInfo.name, 15)}
+                                {currentClubInfo.name}
                             </Typography>
 
-                           </div>
+                        </div>
+                        <p className="text-red-600 font-bold">
+                            {
+                                currentClubInfo.is_paid ? "This club costs" : <p>&nbsp;</p>
+                            }
+                        </p>
 
                         <Typography className="max-h-[100px] h-[100px] min-h-[100px] overflow-hidden">
                             {currentClubInfo.description}.
                         </Typography>
                     </div>
-                    
+
                     <Alert
                         icon={
                             <svg
@@ -154,7 +163,7 @@ export function OptionCard({
                                 />
                             </svg>
                         }
-                        className="mb-2 min-h-[60px] h-[60px] w-full max-h-[60px] mt-2 p-2 items-center "
+                        className="mb-2 min-h-[120px] h-[120px] w-full max-h-[120px] mt-2 p-2 items-center "
                         color="blue"
                         variant="ghost"
                     >

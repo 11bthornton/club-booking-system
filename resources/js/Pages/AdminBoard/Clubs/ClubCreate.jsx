@@ -20,8 +20,9 @@ export default function ClubCreate({ auth, availableDays, club }) {
             name: club.name,
             description: club.description,
             rule: club.rule,
-            ruleChoice: "",
+            ruleChoice: "Per Session",
             is_paid: club.is_paid,
+            payment_type: club.payment_type,
             instances: Array.from({ length: availableDaysForBooking.length * 6 }, (_, index) => availableDaysForBooking[index % availableDaysForBooking.length]
             ).map((day_of_week, i) => {
 
@@ -87,7 +88,8 @@ export default function ClubCreate({ auth, availableDays, club }) {
         description: "",
         rule: "",
         ruleChoice: "",
-        is_paid: false,
+        is_paid: 0,
+        payment_type: "Per Session",
         instances: Array.from({ length: availableDaysForBooking.length * 6 }, (_, index) => availableDaysForBooking[index % availableDaysForBooking.length]
         ).map((day_of_week, i) => ({
             half_term: Math.floor(i / availableDaysForBooking.length) + 1,
@@ -147,14 +149,6 @@ export default function ClubCreate({ auth, availableDays, club }) {
             <Head title={club ? `Update club ${club.name}` : "Add New Club"} />
 
             <form>
-
-                {/* {
-                    JSON.stringify(errors)
-                }
-                <br />
-                {
-                    JSON.stringify(data)
-                } */}
 
                 <div className="container mx-auto flex-col gap-4">
 

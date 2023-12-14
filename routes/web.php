@@ -215,8 +215,8 @@ Route::middleware(['auth', 'is.admin'])->group(function () {
         ->name('admin.booking-config.delete');
 
     Route::get('/admin/simulate-book/{clubInstanceId}/student/{studentId}', [BookingController::class, 'simulateBookAdminMode'])->name("admin.book.simulate");
-    Route::post('/admin/book-for-student/{clubInstanceId}/student/{studentId}', [BookingController::class, 'bookClubForStudentAsAdmin'])->name("admin.clubs.book");
-    Route::delete('/admin/delete-for-student/{clubInstanceId}/student/{studentId}', [BookingController::class, 'deleteClubForStudentAsAdmin'])->name("admin.clubs.delete");
+    Route::post('/admin/book-for-student/{clubInstanceId}/student/{studentId}', [BookingController::class, 'bookClubForStudentAsAdmin'])->name("admin.bookings.book");
+    Route::delete('/admin/delete-for-student/{clubInstanceId}/student/{studentId}', [BookingController::class, 'deleteClubForStudentAsAdmin'])->name("admin.bookings.delete");
 
 
     Route::post('/admin/reset', [SystemController::class, 'reset'])->name("admin.reset");

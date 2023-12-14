@@ -26,6 +26,8 @@ export default async function postClub(clubId, csrfToken, adminMode) {
         console.error("There was an error:", error);
         throw error;
     } finally {
-        
+        if(adminMode.flag) {
+            location.reload();
+        }
     }
 }

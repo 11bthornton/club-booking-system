@@ -23,6 +23,7 @@ class Club extends Model
         'max_per_year',
         'max_per_term',
         'must_do_all',
+        'payment_type'
     ];
 
     public function clubInstances()

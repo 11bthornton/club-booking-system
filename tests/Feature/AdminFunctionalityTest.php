@@ -176,7 +176,7 @@ class AdminFunctionalityTest extends TestCase
 
         $clubInstanceToBook = $this->cookeryClub->clubInstances[0];
 
-        $response = $this->post(route("admin.clubs.book",
+        $response = $this->post(route("admin.bookings.book",
             [
                 'studentId' => $this->testStudent->id,
                 'clubInstanceId' => $clubInstanceToBook->id
@@ -206,9 +206,9 @@ class AdminFunctionalityTest extends TestCase
             ]
         ));
 
-        $response->assertServerError();
+        $response->assertSuccessful();
 
-        $this->assertDatabaseMissing(
+        $this->assertDatabaseHas(
             'user_club',
             [
                 'user_id' => $this->testStudent->id,

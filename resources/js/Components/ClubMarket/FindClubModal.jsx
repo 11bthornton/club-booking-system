@@ -42,7 +42,7 @@ export function FindClubModal({ csrf, open, term, day, handleOpen, adminMode = {
                     </Typography>
                 </div>
             </DialogHeader>
-            <DialogBody className="  overflow-x-hidden pb-6 overflow-y-auto h-[80vh]">
+            <DialogBody className="  overflow-x-auto pb-6 overflow-y-auto h-[80vh]">
                 <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 mt-2" >
                     {filteredClubs.map((clubInstance) => {
                         const club = findClubByInstanceID(

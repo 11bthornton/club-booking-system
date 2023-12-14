@@ -173,11 +173,11 @@ export default function BookingConfigs({ auth, scheduleData, availableDays, club
             <div className="container mx-auto pb-10">
             <div className="mb-4 mt-9">
                     <h2 className="text-3xl mb-1">
-                        Clubs Overview 
+                        Booking Configurations
                     </h2>
 
                     <p className="mt-1 text-sm text-gray-600">
-                        All the clubs for the ongoing academic year.
+                        Open/schedule the system for specific years and club instances. 
                     </p>
                 </div>
                 <div className="bg-white  bg-white shadow sm:rounded-lg mt-4">
@@ -442,8 +442,7 @@ export default function BookingConfigs({ auth, scheduleData, availableDays, club
                         Which clubs should this apply to?
                     </Typography>
                     <p className="mb-3">
-                        You'll have the option to add / remove individual students
-                        later, but you can bulk-include year groups here.
+                        Which clubs do you want to open for bookings? You will need to select some year groups to unlock clubs to choose.
                     </p>
                     <div className="flex justify-between">
                         <div className="flex gap-3 items-center">

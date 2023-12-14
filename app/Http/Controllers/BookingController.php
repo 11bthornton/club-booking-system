@@ -139,7 +139,7 @@ class BookingController extends Controller
                     })->where('user_id', $user->id);
 
                     if ($existingBookings->count() >= $maxPerTerm) {
-                        
+
                         // dd($clubToBook);
 
                         $clubsToDelete = array_merge($clubsToDelete, $this->simulateDeleteBooking($existingBookings->first(), $user));
@@ -153,8 +153,8 @@ class BookingController extends Controller
                     $existingBookings = UserClub::whereHas('clubInstance', function ($query) use ($club) {
                         $query
                             ->where('club_id', $club->id);
-                            // ->where('half_term', $clubToBook->half_term)
-                            // ->whereNot('day_of_week', $clubToBook->day_of_week);
+                        // ->where('half_term', $clubToBook->half_term)
+                        // ->whereNot('day_of_week', $clubToBook->day_of_week);
                     })->where('user_id', $user->id);
 
                     if ($existingBookings->count() >= $maxPerYear) {
@@ -191,7 +191,7 @@ class BookingController extends Controller
         }
     }
 
-        /**
+    /**
      * User route
      */
     public function simulateBook($id, Request $request)
@@ -208,10 +208,17 @@ class BookingController extends Controller
                 ], 500);
             }
 
-            // Transform the success result into JSON
+            // Fetch the ClubInstance objects with their club relation
+            $clubsToBookObjects = ClubInstance::with('club')->findMany($result['data']['clubsToBook']);
+            $clubsToDeleteObjects = ClubInstance::with('club')->findMany($result['data']['clubsToDelete']);
+
+            // Transform the success result into JSON including the ClubInstance objects with club relation
             $jsonResult = [
                 'status' => 'success',
-                'data' => $result['data'],
+                'data' => [
+                    'clubsToBook' => $clubsToBookObjects,
+                    'clubsToDelete' => $clubsToDeleteObjects,
+                ],
             ];
 
             return response()->json($jsonResult);
@@ -223,6 +230,8 @@ class BookingController extends Controller
             ], 500);
         }
     }
+
+
 
     public function simulateBookAdminMode($id, $userId, Request $request)
     {
@@ -241,11 +250,20 @@ class BookingController extends Controller
                 ], 500);
             }
 
-            // Transform the success result into JSON
+            
+            $clubsToBookObjects = ClubInstance::with('club')->findMany($result['data']['clubsToBook']);
+            $clubsToDeleteObjects = ClubInstance::with('club')->findMany($result['data']['clubsToDelete']);
+
+            // Transform the success result into JSON including the ClubInstance objects with club relation
             $jsonResult = [
                 'status' => 'success',
-                'data' => $result['data'],
+                'data' => [
+                    'clubsToBook' => $clubsToBookObjects,
+                    'clubsToDelete' => $clubsToDeleteObjects,
+                ],
             ];
+
+           
 
             return response()->json($jsonResult);
         } catch (\Exception $e) {
@@ -257,20 +275,23 @@ class BookingController extends Controller
         }
     }
 
-    public function bookClubStudent(Request $request, $id) {
+    public function bookClubStudent(Request $request, $id)
+    {
 
         // dd($request->user());
         return $this->bookForUser($request->user(), $id);
     }
 
-    public function bookClubForStudentAsAdmin(Request $request, $clubId, $userId) {
+    public function bookClubForStudentAsAdmin(Request $request, $clubId, $userId)
+    {
 
         // dd($request);
         $user = User::findOrFail($userId);
         return $this->bookForUser($user, $clubId, true);
     }
 
-    public function deleteClubForStudentAsAdmin(Request $request, $clubId, $userId) {
+    public function deleteClubForStudentAsAdmin(Request $request, $clubId, $userId)
+    {
         $user = User::findOrFail($userId);
 
         return $this->deleteBookingForUser($clubId, $user);
@@ -307,12 +328,16 @@ class BookingController extends Controller
                 ->pluck('clubInstances')->flatten(1)->pluck('id');
 
             /**
-            * Admin can make special exceptions on behalf of the user
-            */
-            if(!$adminMode) {
+             * Admin can make special exceptions on behalf of the user
+             */
+            if (!$adminMode) {
                 $allClubsToBookIds->each(function ($clubId) use ($availableClubs) {
                     if (!$availableClubs->contains($clubId)) {
-                        throw new \Exception("ID {$clubId} not found in required clubs to book");
+                        $relatedClub = ClubInstance::find($clubId)->club;
+
+                        if(!$relatedClub->must_do_all) {
+                            throw new \Exception("ID {$clubId} not found in required clubs to book");
+                        }
                     }
                 });
             }
@@ -384,7 +409,8 @@ class BookingController extends Controller
     /**
      * User route method.
      */
-    public function deleteBookingStudent(Request $request, $id) {
+    public function deleteBookingStudent(Request $request, $id)
+    {
         return $this->deleteBookingForUser($id, $request->user());
     }
 
@@ -410,11 +436,11 @@ class BookingController extends Controller
                 foreach ($clubsToDelete as $clubToDelete) {
 
                     $existingBooking = UserClub::where('user_id', $user->id)->where('club_instance_id', $clubToDelete->id)->first();
-    
+
                     if ($existingBooking) {
                         $existingBooking->delete();
                     }
-    
+
                 }
             } else {
                 throw new \Exception("Can't delete non-existent booking");

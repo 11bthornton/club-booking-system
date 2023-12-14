@@ -26,11 +26,12 @@ class ClubRequest extends FormRequest
             'name' => 'required|string|min:3',
             'description' => 'required|string|min:3',
             'rule' => 'required|string|min:3',
-            'is_paid' => 'required|boolean',
+            'is_paid' => 'required|integer',
             'must_do_all' => [
                 'boolean', 
                 'required',
             ],
+            'payment_type' => 'nullable|string|in:Per Session,One Off',
             'max_per_term' => [
                 'integer',
                 'nullable',

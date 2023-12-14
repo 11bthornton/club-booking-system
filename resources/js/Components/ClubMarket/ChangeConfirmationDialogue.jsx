@@ -64,27 +64,17 @@ export function ChangeConfirmationDialogue({
                                 following will be removed:
                             </p>
                             <ol>
-                                {data.data.clubsToDelete.map(
-                                    (clubInstanceId) => {
-                                        const club = findClubByInstanceID(
-                                            availableClubs,
-                                            clubInstanceId,
-                                        );
-                                        const clubInstance = Object.values(
-                                            club.club_instances,
-                                        ).filter(
-                                            (ci) => ci.id == clubInstanceId,
-                                        )[0];
-
+                                {data.data.clubsToDelete.map((clubInstance) => {
+                                    if (clubInstance) {
                                         return (
                                             <li>
-                                                <strong>{club.name}</strong> -{" "}
+                                                <strong>{clubInstance.club.name}</strong> - {" "}
                                                 {clubInstance.day_of_week}, Term{" "}
                                                 {clubInstance.half_term}
                                             </li>
                                         );
-                                    },
-                                )}
+                                    }
+                                })}
                             </ol>
                         </Alert>
                     ) : (
@@ -130,27 +120,16 @@ export function ChangeConfirmationDialogue({
                                 account:
                             </p>
                             <ol>
-                                {data.data.clubsToBook.map((clubInstanceId) => {
-                                    const club = findClubByInstanceID(
-                                        availableClubs,
-                                        clubInstanceId,
-                                    );
-                                    
-                                    console.log("Club is ", availableClubs)
-
-                                    const clubInstance = Object.values(
-                                        club.club_instances,
-                                    ).filter(
-                                        (ci) => ci.id == clubInstanceId,
-                                    )[0];
-
-                                    return (
-                                        <li>
-                                            <strong>{club.name}</strong> - {" "}
-                                            {clubInstance.day_of_week}, Term{" "}
-                                            {clubInstance.half_term}
-                                        </li>
-                                    );
+                                {data.data.clubsToBook.map((clubInstance) => {
+                                    if (clubInstance) {
+                                        return (
+                                            <li>
+                                                <strong>{clubInstance.club.name}</strong> - {" "}
+                                                {clubInstance.day_of_week}, Term{" "}
+                                                {clubInstance.half_term}
+                                            </li>
+                                        );
+                                    }
                                 })}
                             </ol>
                         </Alert>
@@ -193,14 +172,14 @@ export function ChangeConfirmationDialogue({
                             setTimeout(() => {
                                 setAlreadyBooked(data.data.alreadyBookedOn);
                                 setAvailableClubs(data.data.availableClubs);
-                                
+
                                 /**
                                  * Run this regardless of if error or not.
                                  */
                                 setShowSpinner(false);
                             }, 500);
 
-                            
+
                         }, 1000);
                     }}
                 >

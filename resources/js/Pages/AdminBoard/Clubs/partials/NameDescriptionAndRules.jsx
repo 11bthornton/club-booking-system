@@ -6,7 +6,7 @@ import { Alert, Checkbox, Input, Textarea } from "@material-tailwind/react";
 
 export default function NameDescriptionAndRules({ data, setData, errors }) {
 
-    
+
 
     return (
         <div className="bg-white mt-4 p-6 rounded-lg shadow-sm">
@@ -66,10 +66,36 @@ export default function NameDescriptionAndRules({ data, setData, errors }) {
             <p className="text-sm text-gray-600">
                 <em><strong>Required</strong></em>: Is <strong>payment</strong> required for this club?
             </p>
+
+            <div className="flex gap-20 items-center">
+                <div className="w-32">
+                    <Input
+                        type="number"
+                        value={data.is_paid ? data.is_paid : 0}
+                        onChange={(e) => setData("is_paid", e.target.value)}
+                    />
+
+                </div>
+                pounds
+            </div>
+
+            <div className="flex items-center gap-4">
+            Per Session:
             <Checkbox
-                color={data.is_paid ? "green" : ""}
-                checked={data.is_paid}
-                onChange={() => { setData("is_paid", !data.is_paid); }} />
+                // color={data.is_paid ? "green" : ""}
+                checked={data.payment_type == "Per Session"}
+                disabled={data.payment_type == "Per Session"}
+                onChange={() => { setData("payment_type", "Per Session"); }} />
+            </div>
+
+            <div className="flex items-center gap-4">
+            One off payment:
+            <Checkbox
+                // color={data.is_paid ? "green" : ""}
+                checked={data.payment_type == "One Off"}
+                disabled={data.payment_type == "One Off"}
+                onChange={() => { setData("payment_type", "One Off"); }} />
+            </div>
 
             <p className="mt-4 mb-3 text-sm text-gray-600">
                 <em><strong>Required</strong></em>: Configure a ruleset. <br />
@@ -81,29 +107,29 @@ export default function NameDescriptionAndRules({ data, setData, errors }) {
                         Max per year must be greater or equal to max per term.
                     </Alert>}
                 <p className="text-sm text-gray-600">
-                    How many times can a student pick this club per <strong>term</strong>? 
+                    How many times can a student pick this club per <strong>term</strong>?
 
                 </p>
                 <div className="flex w-full items-center gap-40">
 
-                <div className="w-32 mt-2">
-                    <Input
-                        id="max-per-term"
-                        name="max-per-term"
-                        disabled={data.max_per_term == null}
+                    <div className="w-32 mt-2">
+                        <Input
+                            id="max-per-term"
+                            name="max-per-term"
+                            disabled={data.max_per_term == null}
 
-                        type="number"
-                        placeholder={ data.max_per_year == null ? "Unlimited" : ""}
-                        
-                        value={data.max_per_term}
-                        onChange={(e) => setData("max_per_term", e.target.value ? Number(e.target.value) : null)} />
-                </div>
-                <div className="flex items-center mt-2">
+                            type="number"
+                            placeholder={data.max_per_year == null ? "Unlimited" : ""}
+
+                            value={data.max_per_term}
+                            onChange={(e) => setData("max_per_term", e.target.value ? Number(e.target.value) : null)} />
+                    </div>
+                    <div className="flex items-center mt-2">
                         <em>Or unlimited</em>
                         <Checkbox
                             checked={data.max_per_term == null}
                             onChange={() => {
-                                if(data.max_per_term == null) {
+                                if (data.max_per_term == null) {
                                     setData("max_per_term", 1);
                                 } else {
                                     setData("max_per_term", null);
@@ -125,7 +151,7 @@ export default function NameDescriptionAndRules({ data, setData, errors }) {
                             type="number"
                             disabled={data.max_per_year == null}
 
-                            placeholder={ data.max_per_year == null ? "Unlimited" : ""}
+                            placeholder={data.max_per_year == null ? "Unlimited" : ""}
                             value={data.max_per_year}
                             onChange={(e) => setData("max_per_year", e.target.value ? Number(e.target.value) : null)} />
                     </div>
@@ -134,7 +160,7 @@ export default function NameDescriptionAndRules({ data, setData, errors }) {
                         <Checkbox
                             checked={data.max_per_year == null}
                             onChange={() => {
-                                if(data.max_per_year == null) {
+                                if (data.max_per_year == null) {
                                     setData("max_per_year", 1);
                                 } else {
                                     setData("max_per_year", null);
@@ -151,7 +177,7 @@ export default function NameDescriptionAndRules({ data, setData, errors }) {
                     label="Yes"
                     checked={data.must_do_all}
                     onChange={() => {
-                        setData("must_do_all", !data.must_do_all); 
+                        setData("must_do_all", !data.must_do_all);
                         // setData("max_per_term", null);
                         // setData("max_per_year", null);
                     }}
