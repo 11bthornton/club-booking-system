@@ -35,6 +35,7 @@ class UsersImport implements ToCollection, WithHeadingRow, WithValidation
 
             // Fill the User model with attributes
             $user->fill($attributes);
+            $user->second_name = $attributes['last_name'];
 
             // Hash the password
             $user->password = Hash::make($attributes['password']);
@@ -82,6 +83,8 @@ class UsersImport implements ToCollection, WithHeadingRow, WithValidation
                 'required',
                 'unique:users,username', // Unique username within the 'users' table
             ],
+            // 'last_name' => 'required',
+            // 'email' => ['unique:users,email'],
             'password' => 'required|min:6', // Example: Password must be at least 6 characters long
             // Add more rules for other columns as needed
         ];

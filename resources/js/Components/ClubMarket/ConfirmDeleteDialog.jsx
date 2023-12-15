@@ -1,5 +1,5 @@
 import React from "react";
-import { useAvailableClubs } from "@/ClubContext";
+
 import {
     Alert,
     Button,
@@ -9,6 +9,7 @@ import {
     DialogBody,
     DialogFooter,
 } from "@material-tailwind/react";
+
 import deleteClub from "../../Pages/ClubMarket/scripts/DeleteBooking";
 import { useSpinner } from "@/LoadingContext";
 
@@ -18,10 +19,11 @@ export function ConfirmDeleteDialog({
     currentClubInfo,
     currentClubInstance,
     csrf,
-    adminMode
+    adminMode,
+    setAlreadyBooked,
+    setAvailableClubs,
 }) {
     const { setShowSpinner } = useSpinner();
-    const { setAlreadyBooked, setAvailableClubs } = useAvailableClubs();
 
     return (
         <Dialog open={open} handler={handleOpen}>

@@ -233,20 +233,27 @@ export default function YearConfigure({ auth, year, clubs }) {
                     </div>
 
                     <div className="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
+                        <div className="flex justify-between items-center">
                         <h2 className="text-lg font-medium text-gray-900">
                             Students
                         </h2>
-                        <p className="mb-3 text-sm text-black-600 font-bold">
+                        <p className="text-red-600 font-bold">
+                            {
+                                data.usersFile ? "Required! " : ""
+                            }
+                        </p>
+                        </div>
+                        <p className="mb-3 text-sm text-black-600 font-black">
                             Users in Year 11 already in the system from previous academic year(s) will be deleted.
                         </p>
-                        <p className="mt-1 mb-4 text-sm text-gray-600">
+                        {/* <p className="mt-1 mb-4 text-sm text-gray-600">
                             You can opt to transfer across (current) years 7-10 through to the next academic year,
                             with each student retaining the same login information. Or, instead, you can upload
                             a csv for the students you need for this academic year. With this option, students will be
                             provided with new login information. Naturally, this option will be required for the first year
                             the system is run.
-                        </p>
-                        {year ? <><InputLabel
+                        </p> */}
+                        {/* {year ? <><InputLabel
                             value={`Transfer across from the current academic year, ${year.year_start}/${year.year_end}?`}
                             check
                         />
@@ -263,20 +270,21 @@ export default function YearConfigure({ auth, year, clubs }) {
                                     onChange={() => setData("transferStudents", !data.transferStudents)}
                                     defaultChecked={data.transferStudents}
                                 />
-                            </div></> : <></>}
+                            </div></> : <></>} */}
                             <Alert variant="ghost" color="orange" className="mt-4">The system will only accept <strong className="font-black">.xlsx</strong> files. </Alert>
                             <p className="mt-1 text-sm text-gray-600">
                                 Upload a file with all the new users you wish to add. This should be a .xlsx file with the following headers.
                             </p>
                             <ul className="text-sm mt-3 ml-3">
                                 <li>username *</li>
-                                <li>year *</li>
+                                <li>year * - number only</li>
+                                <li>password *</li>
                                 <li>email</li>
                                 <li>first_name</li>
                                 <li>last_name</li>
                             </ul>
                             <p className="mt-3 text-sm text-gray-600">
-                                All of the header names are required but the columns can be in any order. While the header names are required, you only have to poplate the fields
+                                All of the header names are required but the columns can be in any order. While the header names are required, you only have to populate the fields
                                 of the items with asterisks above.
 
                             </p>
@@ -293,7 +301,7 @@ export default function YearConfigure({ auth, year, clubs }) {
                                 {
                                     data.transferStudents ?
                                         <span>
-                                            Upload file with any new users you have to add. Users in Years 7-10 from the previous academic year, _, will move
+                                            Upload file with any new users you have to add. Users in Years 7-10 from the previous academic year, will move
                                             up a year and retain the same login information.
                                         </span>
                                         :

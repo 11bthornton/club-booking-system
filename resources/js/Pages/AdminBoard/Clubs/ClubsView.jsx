@@ -33,7 +33,7 @@ export default function ClubView({ auth, clubs, year }) {
         {
             field: "instances",
             headerName: "Edit",
-            width: 140,
+            width: 60,
             renderCell: (params) => (
                 <Link
                     href={route("admin.clubs.index", {
@@ -60,7 +60,24 @@ export default function ClubView({ auth, clubs, year }) {
             width: 50,
             renderCell: (params) => {
                 if (params.row.is_paid) {
-                    return <FontAwesomeIcon icon={faDollarSign} />;
+                    return <>
+                        <FontAwesomeIcon icon={faDollarSign} /> &nbsp; {params.row.is_paid}
+                    </>;
+                }
+                return "/";
+            },
+        },
+        {
+            field: "payment_type",
+            headerName: "Payment Type",
+            align: "center",
+            width: 140,
+            headerAlign: "center",
+            renderCell: (params) => {
+                if (params.row.is_paid) {
+                    return <>
+                        {params.row.payment_type}
+                    </>;
                 }
                 return "/";
             },
@@ -74,14 +91,7 @@ export default function ClubView({ auth, clubs, year }) {
             renderCell: (params) => (
                 <div className="flex gap-5 items-center">
 
-                    <a href={route("admin.download.club-data-id-spreadsheet", { id: params.row.id })}>
-                        <Button
-                            variant="outlined"
-                            size="sm"
-                        >
-                            Download
-                        </Button>
-                    </a>
+                    
                     <Button
                         onClick={() => destroy(route("admin.clubs.delete", { id: params.row.id }))}
 
@@ -117,6 +127,14 @@ export default function ClubView({ auth, clubs, year }) {
                     <p className="mt-1 text-sm text-gray-600">
                         All the clubs for the ongoing academic year.
                     </p>
+                </div>
+
+                <div className="mt-4 mb-4">
+                    <a href={route("admin.clubs.new")}>
+                        <Button>
+                            + New Club
+                        </Button>
+                    </a>
                 </div>
 
                 <div className="bg-white rounded-lg shadow-lg">

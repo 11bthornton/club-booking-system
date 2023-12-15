@@ -1,5 +1,4 @@
 import React from "react";
-import { useAvailableClubs, findClubByInstanceID } from "@/ClubContext";
 import {
     Typography,
     Dialog,
@@ -8,16 +7,27 @@ import {
 } from "@material-tailwind/react";
 import { OptionCard } from "@/Components/ClubMarket/OptionCard";
 
-export function FindClubModal({ csrf, open, term, day, handleOpen, adminMode = { flag: false, id: -1 } }) {
-    const { availableClubs } = useAvailableClubs();
+export function FindClubModal({ csrf, open, term, day, handleOpen, adminMode = { flag: false, id: -1 }, userAvailableClubs, alreadyBooked, setAvailableClubs, setAlreadyBooked }) {
 
-    const filteredClubs = Object.values(availableClubs)
-        .flatMap((club) => Object.values(club.club_instances))
-        .filter(
-            (clubInstance) =>
-                clubInstance.day_of_week == day &&
-                clubInstance.half_term == term,
-        );
+
+
+    const filteredClubs = Object.values(userAvailableClubs)
+        .map(club => (
+            {
+                name : club.name,
+                description : club.description,
+                is_paid: club.is_paid,
+                rule: club.rule,
+                instances: Object.values(club.club_instances).filter(
+                    x => x.half_term == term && x.day_of_week == day
+                    // x => true
+                ),
+                payment_type: club.payment_type
+            }
+        )).filter(club => club.instances.length > 0)
+
+    console.log("filtered ", filteredClubs)
+        
 
     return (
         <Dialog
@@ -43,24 +53,37 @@ export function FindClubModal({ csrf, open, term, day, handleOpen, adminMode = {
                 </div>
             </DialogHeader>
             <DialogBody className="  overflow-x-auto pb-6 overflow-y-auto h-[80vh]">
-                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 mt-2" >
-                    {filteredClubs.map((clubInstance) => {
-                        const club = findClubByInstanceID(
-                            availableClubs,
-                            clubInstance.id,
-                        );
-                        return (
-                            <OptionCard
-                                currentClubInstance={clubInstance}
-                                currentClubInfo={club}
-                                term={term}
-                                day={day}
-                                handleOpenFind={handleOpen}
-                                adminMode={adminMode}
-                                key={clubInstance.id}
-                                csrf={csrf}
-                            />
-                        );
+                <div class="flex flex-col" >
+                    
+                    {
+                        filteredClubs.map(club => {
+                            
+                            if(club.instances.length) {
+                                return (
+                                    <>
+                                        <OptionCard
+                                        currentClubInstance={club.instances[0]}
+                                        currentClubInfo={club}
+                                        term={term}
+                                        day={day}
+                                        handleOpenFind={handleOpen}
+                                        adminMode={adminMode}
+                                        key={club.instances[0].id}
+                                        csrf={csrf}
+                                        userAvailableClubs={userAvailableClubs}
+                                        alreadyBooked={alreadyBooked}
+                                        setAvailableClubs={setAvailableClubs}
+                                        setAlreadyBooked={setAlreadyBooked}
+                                    /></>
+                            );
+                            }
+
+
+                            return(
+                                <></>
+                            )
+                            
+                            
                     })}
                 </div>
             </DialogBody>

@@ -1,7 +1,6 @@
 import { Button } from "@material-tailwind/react";
 import { Link, useForm, usePage } from "@inertiajs/react";
 
-import { useAvailableClubs } from "@/ClubContext";
 import { useEffect } from "react";
 
 import { FindClubModal } from "@/Components/ClubMarket/FindClubModal";
@@ -13,28 +12,17 @@ import { ConfirmDeleteDialog } from "@/Components/ClubMarket/ConfirmDeleteDialog
 import { useSpinner } from "@/LoadingContext";
 export default function UpdateClubInformationForm({
     student,
-    organizedByTerm,
+    alreadyBooked,
+    setAlreadyBooked,
     availableClubs,
+    setAvailableClubs,
     csrf
 }) {
 
     const { setShowSpinner } = useSpinner();
 
-    const { setAvailableClubs, setAlreadyBooked, alreadyBooked } =
-        useAvailableClubs();
 
-    useEffect(() => {
-        setAvailableClubs(availableClubs);
-        setAlreadyBooked(organizedByTerm);
-    }, []);
 
-    useEffect(() => {
-        setAvailableClubs(availableClubs);
-
-        if (JSON.stringify(alreadyBooked) == "{}") {
-            setAlreadyBooked(organizedByTerm);
-        }
-    }, [alreadyBooked]);
 
     const [findClubModalOpen, setFindClubModalOpen] = useState(false);
     const handleFindClubModalOpen = () =>
@@ -47,6 +35,10 @@ export default function UpdateClubInformationForm({
         <div>
             <FindClubModal
                 open={findClubModalOpen}
+                userAvailableClubs={availableClubs}
+                setAvailableClubs={setAvailableClubs}
+                alreadyBooked={alreadyBooked}
+                setAlreadyBooked={setAlreadyBooked}
                 handleOpen={handleFindClubModalOpen}
                 term={currentTerm}
                 day={currentDay}
@@ -66,7 +58,7 @@ export default function UpdateClubInformationForm({
             </p>
 
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {Object.values(organizedByTerm).map((term, index) => {
+                {Object.values(alreadyBooked).map((term, index) => {
                     return (
                         <div class="col-span-1 flex flex-col items-center justify-center ">
                             <h3 className="text-lg font-medium text-gray-900">
@@ -113,9 +105,9 @@ export default function UpdateClubInformationForm({
                                                                 id: student.id
                                                             }
                                                         );
+                                                        setAlreadyBooked(data.data.alreadyBookedOn);
 
                                                         setAvailableClubs(data.data.availableClubs);
-                                                        setAlreadyBooked(data.data.alreadyBookedOn);
                                                     } catch (error) {
                                                         console.error("An error occurred:", error);
                                                         // Handle the error appropriately
@@ -123,7 +115,6 @@ export default function UpdateClubInformationForm({
                                                     } finally {
                                                         setShowSpinner(false);
                                                         // handleOpen(); // If handleOpen needs to be called regardless of success or error, put it in finally block
-                                                        window.location.reload()
                                                     }
                                                 }, 1000);
                                             }}

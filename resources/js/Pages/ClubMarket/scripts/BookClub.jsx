@@ -27,7 +27,7 @@ export default async function postClub(clubId, csrfToken, adminMode) {
         throw error;
     } finally {
         if(adminMode.flag) {
-            location.reload();
+            // location.reload();
         }
     }
 }

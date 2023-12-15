@@ -147,7 +147,7 @@ class AcademicYearController extends Controller
             $students = User::getStudents();
             // $users = User::all();
             
-            if($request->transferStudents) {
+            // if($request->transferStudents) {
                 foreach ($students as $student) {
                     $year = $student->year;
                 
@@ -160,11 +160,6 @@ class AcademicYearController extends Controller
                         $student->delete();
                     }
                 }
-            } else {
-                foreach ($students as $student) {
-                    $student->delete();
-                }
-            }
 
             // Then insert the new users.
             if ($request->hasFile('usersFile')) {
@@ -175,7 +170,7 @@ class AcademicYearController extends Controller
                 $filePath = $file->getRealPath();
     
                 // Import the data using the file path
-                // Excel::import(new UsersImport, $filePath, null, $readerType = \Maatwebsite\Excel\Excel::XLSX);
+                Excel::import(new UsersImport, $filePath, null, $readerType = \Maatwebsite\Excel\Excel::XLSX);
     
             } 
             

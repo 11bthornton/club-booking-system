@@ -1,9 +1,7 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 
 import { Head } from "@inertiajs/react";
-import React, { useEffect } from "react";
-
-import { useAvailableClubs } from "@/ClubContext";
+import React, { useState } from "react";
 
 import {
     Alert,
@@ -30,23 +28,8 @@ export default function ClubMarket({
     year
 }) {
     
-    const { availableClubs, alreadyBooked, setAvailableClubs, setAlreadyBooked } =
-        useAvailableClubs();
-
-    useEffect(() => {
-        setAvailableClubs(userAvailableClubs);
-
-        if (JSON.stringify(alreadyBooked) == "{}") {
-            setAlreadyBooked(alreadyBookedOn);
-        }
-    }, [userAvailableClubs]);
-
-    const [activeStep, setActiveStep] = React.useState(0);
-    const [isLastStep, setIsLastStep] = React.useState(false);
-    const [isFirstStep, setIsFirstStep] = React.useState(false);
-
-    // const handleNext = () => !isLastStep && setActiveStep((cur) => cur + 1);
-    // const handlePrev = () => !isFirstStep && setActiveStep((cur) => cur - 1);
+    const [availableClubs, setAvailableClubs] = useState(userAvailableClubs);
+    const [alreadyBooked, setAlreadyBooked] = useState(alreadyBookedOn);
 
     return (
         <AuthenticatedLayout user={auth.user} header={
@@ -56,7 +39,7 @@ export default function ClubMarket({
         }>
             <Head title="Club Market" />
 
-
+        
             <div className="container mx-auto flex flex-col mt-5 px-4 sm:px-6">
 
 
@@ -134,7 +117,7 @@ export default function ClubMarket({
 
                 <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 justify-center items-center mb-8 gap-2">
                     {
-                        Object.values(alreadyBooked).map((bookings, term) => {
+                        Object.values(alreadyBookedOn).map((bookings, term) => {
 
                             const stillNeedsToBook = Object.values(bookings).some(booking => !booking)
                             const length = Object.values(bookings).length
@@ -170,7 +153,7 @@ export default function ClubMarket({
 
                             // console.log(availableClubs);
 
-                            const availableToWhichYearGroups = Object.values(availableClubs)
+                            const availableToWhichYearGroups = Object.values(userAvailableClubs)
                                 .flatMap(c => c.club_instances)
                                 .filter(i => i.half_term == term)
                                 .flatMap(i => i.year_groups)
@@ -272,7 +255,13 @@ export default function ClubMarket({
                                         <Typography className="text-2xl text-center mb-10">
                                             This term starts on {toNaturalLanguageDate(year[`term${term}_start`])}
                                         </Typography>
-                                        <TermChoiceCard term={term} csrf={csrf} days={auth.user.days[0].days_array} />
+                                        <TermChoiceCard
+                                            userAvailableClubs={availableClubs}
+                                            alreadyBookedOn={alreadyBooked}
+                                            setAvailableClubs={setAvailableClubs}
+                                            setAlreadyBooked={setAlreadyBooked}
+                                            term={term} csrf={csrf} days={auth.user.days[0].days_array} 
+                                        />
                                         <br />
                                     </TimelineBody>
                                 </TimelineItem>)

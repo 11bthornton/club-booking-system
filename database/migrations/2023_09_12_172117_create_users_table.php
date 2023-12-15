@@ -27,8 +27,8 @@ return new class extends Migration
         });
 
         DB::table('users')->insert([
-            'username' => 'testuser',
-            'password' => Hash::make('testing123'),
+            'username' => 'admin',
+            'password' => Hash::make('dIP7O#9tha87LhEwrl#i'),
             'year' => "7", // replace this with the appropriate year value
             'role' => "1", // replace this with the appropriate role value
             'created_at' => now(),

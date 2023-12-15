@@ -1,5 +1,4 @@
 import React, { useEffect } from "react";
-import { useAvailableClubs, findClubByInstanceID } from "@/ClubContext";
 import {
     Alert,
     Button,
@@ -20,13 +19,16 @@ export function ChangeConfirmationDialogue({
     clubIdToBook,
     handleOriginalFindDialog,
     adminMode,
-    csrf
+    csrf,
+    alreadyBooked,
+    availableClubs,
+    setAvailableClubs, 
+    setAlreadyBooked
 }) {
 
 
     const { setShowSpinner } = useSpinner();
-    const { availableClubs, setAlreadyBooked, setAvailableClubs } =
-        useAvailableClubs();
+    
 
     return open ? (
         <Dialog open={open}>

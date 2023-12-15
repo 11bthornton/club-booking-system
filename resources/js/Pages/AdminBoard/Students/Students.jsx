@@ -96,7 +96,8 @@ export default function Students({ auth, students }) {
                             </p>
                             <ul className="text-sm mt-3 ml-3">
                                 <li>username *</li>
-                                <li>year *</li>
+                                <li>year * - number only</li>
+                                <li>password *</li>
                                 <li>email</li>
                                 <li>first_name</li>
                                 <li>last_name</li>
@@ -431,11 +432,11 @@ function UserDataGrid({ studentData }) {
             renderCell: (params) => {
                 return (
                     <div className="flex justify-between gap-2 ml-2 ">
-                        <Button variant="outlined" className="text-center" size="sm"
+                        {/* <Button variant="outlined" className="text-center" size="sm"
                             onClick={() => destroy(route("admin.students.delete", { id: params.row.id }))}
                         >
                             Email Choices
-                        </Button>
+                        </Button> */}
                         <Button variant="text" color="red" className="text-center" size="sm"
                             onClick={() => destroy(route("admin.students.delete", { id: params.row.id }))}
                         >

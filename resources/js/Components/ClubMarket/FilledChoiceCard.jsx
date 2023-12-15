@@ -12,13 +12,17 @@ import {
 import { ChipWithStatus } from "./ChipWithStatus";
 import { ConfirmDeleteDialog } from "@/Components/ClubMarket/ConfirmDeleteDialog";
 import { FindClubModal } from "@/Components/ClubMarket/FindClubModal";
-import { useAvailableClubs } from "@/ClubContext";
+
 export function FilledChoiceCard({
     term,
     day,
     currentClubInfo,
     currentClubInstance,
-    csrf
+    csrf,
+    alreadyBooked,
+    userAvailableClubs,
+    setAlreadyBooked,
+    setAvailableClubs,
 }) {
     const [openFind, setOpenFind] = useState(false);
     const handleOpenFind = () => setOpenFind(!openFind);
@@ -33,9 +37,8 @@ export function FilledChoiceCard({
         }
         return text;
     };
-    const { availableClubs } = useAvailableClubs();
 
-    const filteredClubs = Object.values(availableClubs).flatMap(c => Object.values(c.club_instances)).filter(c => c.half_term == term && c.day_of_week == day);
+    const filteredClubs = Object.values(userAvailableClubs).flatMap(c => Object.values(c.club_instances)).filter(c => c.half_term == term && c.day_of_week == day);
     
     return (
         <div className="flex justify-center" key={currentClubInstance.id}>
@@ -45,6 +48,10 @@ export function FilledChoiceCard({
                 term={term}
                 day={day}
                 csrf={csrf}
+                userAvailableClubs={userAvailableClubs}
+                alreadyBooked={alreadyBooked}
+                setAlreadyBooked={setAlreadyBooked}
+                setAvailableClubs={setAvailableClubs}
             />
 
             <ConfirmDeleteDialog
@@ -56,6 +63,8 @@ export function FilledChoiceCard({
                 adminMode={{
                     flag: false, id: null
                 }}
+                setAlreadyBooked={setAlreadyBooked}
+                setAvailableClubs={setAvailableClubs}
             />
 
 

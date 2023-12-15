@@ -112,11 +112,7 @@ class ClubController extends Controller
 
         $club->fill($data->toArray())->save();
 
-        $associatedUsers = $club->clubInstances->flatMap(function ($clubInstance) {
-            return $clubInstance->users;
-        });
-
-        if (count($associatedUsers) == 0) {
+        // if (count($associatedUsers) == 0) {
 
             $existingInstances = $club->clubInstances->keyBy(function ($instance) {
                 return $instance->half_term . '-' . $instance->day_of_week;
@@ -151,7 +147,7 @@ class ClubController extends Controller
 
             $club->fill($data->toArray())->save();
 
-        }
+        // }
 
         $this->show($id);
     }

@@ -156,6 +156,7 @@ class StudentController extends Controller
         $user = new User;
 
         $user->fill($request->toArray());
+        // $user->second_name = $request['last_name'];
         $user->role = 0;
         
         $user->save();

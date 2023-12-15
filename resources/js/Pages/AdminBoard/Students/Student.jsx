@@ -8,6 +8,7 @@ import UpdateClubInformationForm from "./UpdateClubInformationForm";
 
 import { Head } from "@inertiajs/react";
 import { useSpinner } from "@/LoadingContext";
+import { useState } from "react";
 
 export default function Edit({
     auth,
@@ -20,6 +21,8 @@ export default function Edit({
 }) {
 
     const { setShowSpinner } = useSpinner();
+    const [userAvailableClubs, setAvailableClubs] = useState(availableClubs);
+    const [alreadyBooked, setAlreadyBooked] = useState(organizedByTerm);
 
     return (
         <AuthenticatedLayout
@@ -53,8 +56,10 @@ export default function Edit({
                     <div className="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
                         <UpdateClubInformationForm
                             student={student}
-                            availableClubs={availableClubs}
-                            organizedByTerm={organizedByTerm}
+                            availableClubs={userAvailableClubs}
+                            setAvailableClubs={setAvailableClubs}
+                            alreadyBooked={alreadyBooked}
+                            setAlreadyBooked={setAlreadyBooked}
                             csrf={csrf}
                         />
                     </div>

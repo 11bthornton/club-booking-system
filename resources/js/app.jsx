@@ -6,7 +6,7 @@ import { createInertiaApp } from "@inertiajs/react";
 import { resolvePageComponent } from "laravel-vite-plugin/inertia-helpers";
 
 import { SpinnerProvider } from "./LoadingContext";
-import { AvailableClubsProvider } from "./ClubContext";
+// import { AvailableClubsProvider } from "./ClubContext";
 
 const appName = import.meta.env.VITE_APP_NAME || "Laravel";
 
@@ -47,7 +47,6 @@ createInertiaApp({
   setup({ el, App, props }) {
     const root = createRoot(el);
     root.render(
-      <AvailableClubsProvider>
         <SpinnerProvider>
           <ThemeProvider>
             <ErrorBoundary>
@@ -57,7 +56,6 @@ createInertiaApp({
 
           </ThemeProvider>
         </SpinnerProvider>
-      </AvailableClubsProvider>,
     );
   },
   progress: {

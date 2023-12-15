@@ -10,18 +10,16 @@ import {
     Tooltip,
 } from "@material-tailwind/react";
 
-import { ChipWithStatus } from "./ChipWithStatus";
 import { FindClubModal } from "@/Components/ClubMarket/FindClubModal";
 
-import { useAvailableClubs } from "@/ClubContext";
 
-export function EmptyChoiceCard({ csrf, term, day }) {
+export function EmptyChoiceCard({ csrf, term, day, userAvailableClubs, alreadyBooked, setAvailableClubs, setAlreadyBooked }) {
     const [open, setOpen] = useState(false);
     const handleOpen = () => setOpen(!open);
 
-    const { availableClubs } = useAvailableClubs();
+    console.log("sht", userAvailableClubs);
 
-    const filteredClubs = Object.values(availableClubs).flatMap(c => Object.values(c.club_instances)).filter(c => c.half_term == term && c.day_of_week == day);
+    const filteredClubs = Object.values(userAvailableClubs).flatMap(c => Object.values(c.club_instances)).filter(c => c.half_term == term && c.day_of_week == day);
 
     return (
         <div className={`flex justify-center ${filteredClubs.length ? '': 'opacity-50'}`} key={1}>
@@ -31,6 +29,10 @@ export function EmptyChoiceCard({ csrf, term, day }) {
                 term={term}
                 day={day}
                 csrf={csrf}
+                userAvailableClubs={userAvailableClubs}
+                alreadyBooked={alreadyBooked}
+                setAvailableClubs={setAvailableClubs}
+                setAlreadyBooked={setAlreadyBooked}
             />
             <Card className="mt-2 w-96 border-4 border-dashed bg-gray-50 shadow-none">
                 <CardHeader
