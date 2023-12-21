@@ -104,7 +104,7 @@ export default function Students({ auth, students }) {
                             </ul>
                             <p className="mt-3 text-sm text-gray-600">
                                 All of the header names are required but the columns can be in any order. While the header names are required, you only have to poplate the fields
-                                of the items with asterisks above.
+                                of the items with asterisks above. Do not include the instructional material in the header, just one word (or connected with underscores) suffices. E.g. username or last_name.
 
                             </p>
                             <p className="mt-3 text-sm text-gray-600">
@@ -153,7 +153,8 @@ export default function Students({ auth, students }) {
                                     onClick={() => {
                                         post(route("admin.students.import"),
                                             {
-                                                onSuccess: () => handleReset()
+                                                onSuccess: () => handleReset(),
+                                                preserveScroll: true,
                                             })
                                     }}
                                 >
