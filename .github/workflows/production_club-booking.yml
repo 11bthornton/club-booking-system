@@ -82,11 +82,20 @@ jobs:
       - name: Unzip artifact for deployment
         run: unzip release.zip
 
-      - name: 'Deploy to Azure Web App'
+      - name: 'Deploy to Azure Web App - Production'
         uses: azure/webapps-deploy@v2
         id: deploy-to-webapp
         with:
           app-name: 'club-booking'
           slot-name: 'Production'
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_98C751ABE734498FAE687B6CEF7A9970 }}
+          package: .
+      
+      - name: 'Deploy to Azure Web App - Staging'
+        uses: azure/webapps-deploy@v2
+        id: deploy-to-webapp
+        with:
+          app-name: 'club-booking'
+          slot-name: 'staging'
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_98C751ABE734498FAE687B6CEF7A9970 }}
           package: .
