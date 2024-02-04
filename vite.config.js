@@ -10,4 +10,10 @@ export default defineConfig({
         }),
         react(),
     ],
+    server: {
+        https: {
+            // key: readFileSync('path/to/localhost-key.pem'),
+            cert: readFileSync('DigiCertGlobalRootG2.crt.pem'),
+        },
+    },
 });
