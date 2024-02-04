@@ -84,7 +84,7 @@ jobs:
 
       - name: 'Deploy to Azure Web App - Production'
         uses: azure/webapps-deploy@v2
-        id: deploy-to-webapp
+        id: deploy-to-production
         with:
           app-name: 'club-booking'
           slot-name: 'Production'
@@ -93,7 +93,7 @@ jobs:
       
       - name: 'Deploy to Azure Web App - Staging'
         uses: azure/webapps-deploy@v2
-        id: deploy-to-webapp
+        id: deploy-to-staging
         with:
           app-name: 'club-booking'
           slot-name: 'staging'
