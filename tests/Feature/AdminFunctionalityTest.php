@@ -14,8 +14,6 @@ class AdminFunctionalityTest extends TestCase
 {
     use RefreshDatabase;
 
-    use RefreshDatabase;
-
     protected $user;
     protected $yearGroups;
     protected $yearGroupDays;

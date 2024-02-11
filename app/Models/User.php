@@ -89,7 +89,12 @@ class User extends Authenticatable
         $clubInstances = $this->bookedClubs()->get();
 
         $organizedByTerm = [];
-        $daysOfWeek = [$this->yearGroup->yearGroupDays()->first()->day_1, $this->yearGroup->yearGroupDays()->first()->day_2];
+
+        $daysOfWeek = [
+            $this->yearGroup->yearGroupDays()->first()->day_1, 
+            $this->yearGroup->yearGroupDays()->first()->day_2
+        ];
+        
         $maxTerms = 6;
 
         for ($term = 1; $term <= $maxTerms; $term++) {
