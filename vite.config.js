@@ -13,7 +13,7 @@ export default defineConfig({
     ],
     server: {
         https: {
-            // key: readFileSync('path/to/localhost-key.pem'),
+            key: readFileSync('path/to/localhost-key.pem'),
             cert: readFileSync('DigiCertGlobalRootG2.crt.pem'),
         },
     },

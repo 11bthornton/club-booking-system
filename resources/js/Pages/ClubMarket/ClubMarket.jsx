@@ -5,6 +5,7 @@ import React, { useState } from "react";
 
 import {
     Alert,
+    Button,
     Chip,
     Tooltip,
     Typography,
@@ -27,22 +28,30 @@ export default function ClubMarket({
     csrf,
     year
 }) {
-    
+
     const [availableClubs, setAvailableClubs] = useState(userAvailableClubs);
     const [alreadyBooked, setAlreadyBooked] = useState(alreadyBookedOn);
 
     return (
         <AuthenticatedLayout user={auth.user} header={
-            <h2 className="font-semibold text-xl text-gray-800 leading-tight">
-                Club Market
-            </h2>
+            <div className="flex gap-10 align-middle">
+                <div>
+                    <h2 className="font-semibold text-xl text-gray-800 leading-tight">
+                        Club Market
+                    </h2>
+                </div>
+            </div>
         }>
             <Head title="Club Market" />
 
-        
             <div className="container mx-auto flex flex-col mt-5 px-4 sm:px-6">
-
-
+                <div className="flex justify-end w-full mb-8">
+                    <form method="POST" action={route("logout")}>
+                        {/* If you're using a framework like Laravel, you might need to include a CSRF token field */}
+                        <input type="hidden" name="_token" value={csrf} />  
+                        <Button type="submit" color="red" variant="gradient">Logout</Button>
+                    </form>
+                </div>
                 <div className="flex justify-between items-start">
                     <div>
                         <Typography variant="h2" className="mb-1">
@@ -53,7 +62,7 @@ export default function ClubMarket({
                         </Typography>
                     </div>
                     {
-                        auth.user.bookingConfigs.length &&
+                        auth.user.bookingConfigs.length > 0 &&
                         <Tooltip
                             content="You can book clubs for one or more terms! Make sure to scroll all the way down "
                         >
@@ -65,7 +74,6 @@ export default function ClubMarket({
                     }
 
                 </div>
-
                 {
                     auth.user.bookingConfigs.length ?
                         <Alert className="mb-4" color="blue" variant="ghost"
@@ -117,7 +125,7 @@ export default function ClubMarket({
 
                 <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 justify-center items-center mb-8 gap-2">
                     {
-                        Object.values(alreadyBookedOn).map((bookings, term) => {
+                        Object.values(alreadyBooked).map((bookings, term) => {
 
                             const stillNeedsToBook = Object.values(bookings).some(booking => !booking)
                             const length = Object.values(bookings).length
@@ -260,7 +268,7 @@ export default function ClubMarket({
                                             alreadyBookedOn={alreadyBooked}
                                             setAvailableClubs={setAvailableClubs}
                                             setAlreadyBooked={setAlreadyBooked}
-                                            term={term} csrf={csrf} days={auth.user.days[0].days_array} 
+                                            term={term} csrf={csrf} days={auth.user.days[0].days_array}
                                         />
                                         <br />
                                     </TimelineBody>
@@ -276,7 +284,7 @@ export default function ClubMarket({
 
 function toNaturalLanguageDate(dateString) {
     const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-    
+
     const date = new Date(dateString);
     const day = date.getDate();
     const month = months[date.getMonth()];

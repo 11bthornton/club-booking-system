@@ -3,14 +3,12 @@ import { useState } from "react";
 import ApplicationLogo from "@/Components/ApplicationLogo";
 import Dropdown from "@/Components/Dropdown";
 import NavLink from "@/Components/NavLink";
-
 import ResponsiveNavLink from "@/Components/ResponsiveNavLink";
 
 import { Link } from "@inertiajs/react";
 
 import { Toaster } from "react-hot-toast";
 
-import { Badge } from "@material-tailwind/react";
 
 export default function Authenticated({ user, header, children }) {
     const [showingNavigationDropdown, setShowingNavigationDropdown] =
@@ -31,6 +29,8 @@ export default function Authenticated({ user, header, children }) {
                                     </svg>
                                 </Link>
                             </div>
+
+                            
 
                             <div className="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
                                 <NavLink
@@ -64,6 +64,8 @@ export default function Authenticated({ user, header, children }) {
                                         </NavLink>
                                     )
                                 }
+
+                                
                             </div>
                         </div>
 
